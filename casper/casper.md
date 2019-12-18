@@ -5,6 +5,9 @@ A model of Casper FFG based on previsouly developed models in Coq [here](https:/
 and updated to accoommodate new justification and finalization rules. 
 
 ```k
+
+requires "proof-script.k"
+
 module CASPER-SYNTAX
 
     imports INT
