@@ -30,24 +30,28 @@ A Casper FFG vote
 ```
 
 - A predicate specifying valid block hashes
+
 ```k
     syntax BlockP ::= Block( Hash )
  // -------------------------------
 ```
 
 - `b1 <~ b2` : Block `b1` is the parent block of block `b2`
+
 ```k
     syntax ParentP ::= Hash "<~"  Hash
  // ----------------------------------
 ```
 
 - `b1 <~* b2`: Block `b1` is an ancestor block of block `b2`
+
 ```k
     syntax AncestorP ::= Hash "<~*" Hash
  // -----------------------------------
 ```
 
 - `b1 <~[n] b2)`: Block `b1` is the `n`th ancestor of block `b2`
+
 ```k
     syntax NthAncestorP ::= Hash "<~" "[" Int "]" Hash
  // --------------------------------------------------

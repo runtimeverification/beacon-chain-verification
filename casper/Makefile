@@ -64,7 +64,6 @@ SYNTAX_MODULE  := $(MAIN_MODULE)-SYNTAX
 MAIN_DEFN_FILE := casper
 
 KOMPILE_OPTS      :=
-LLVM_KOMPILE_OPTS := $(KOMPILE_OPTS) -ccopt -O2
 
 k_files := $(MAIN_DEFN_FILE).k proof-script.k
 
