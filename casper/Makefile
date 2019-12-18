@@ -28,8 +28,8 @@ export LUA_PATH
 
 .PHONY: all clean                                 \
         deps deps-k deps-tangle deps-media        \
-        defn defn-llvm defn-haskell               \
-        build build-llvm build-haskell build-java
+        defn defn-haskell defn-java               \
+        build build-haskell build-java
 
 .SECONDARY:
 
@@ -68,36 +68,27 @@ LLVM_KOMPILE_OPTS := $(KOMPILE_OPTS) -ccopt -O2
 
 k_files := $(MAIN_DEFN_FILE).k proof-script.k
 
-llvm_dir    := $(DEFN_DIR)/llvm
 haskell_dir := $(DEFN_DIR)/haskell
 java_dir    := $(DEFN_DIR)/java
 
-llvm_files    := $(patsubst %,$(llvm_dir)/%,$(k_files))
 haskell_files := $(patsubst %,$(haskell_dir)/%,$(k_files))
 java_files    := $(patsubst %,$(java_dir)/%,$(k_files))
 
-llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
 
-build: build-llvm build-haskell build-java
-build-llvm:    $(llvm_kompiled)
+build: build-haskell build-java
 build-haskell: $(haskell_kompiled)
 build-java:    $(java_kompiled)
 
 # Generate definitions from source files
 
-defn: defn-llvm defn-haskell defn-java
-defn-llvm:    $(llvm_files)
+defn: defn-haskell defn-java
 defn-haskell: $(haskell_files)
 defn-java:    $(java_files)
 
 concrete_tangle := .k:not(.symbolic),.concrete
 symbolic_tangle := .k:not(.concrete),.symbolic
-
-$(llvm_dir)/%.k: %.md
-	@mkdir -p $(llvm_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 $(haskell_dir)/%.k: %.md
 	@mkdir -p $(haskell_dir)
@@ -106,15 +97,6 @@ $(haskell_dir)/%.k: %.md
 $(java_dir)/%.k: %.md
 	@mkdir -p $(java_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
-
-# LLVM Backend
-
-$(llvm_kompiled): $(llvm_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
-	                 --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(llvm_dir) -I $(llvm_dir)                           \
-	                 --emit-json                                                      \
-	                 $(LLVM_KOMPILE_OPTS)
 
 # Haskell Backend
 
