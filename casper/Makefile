@@ -60,12 +60,12 @@ $(K_SUBMODULE)/mvn.timestamp: $(K_SUBMODULE)/submodule.timestamp
 # --------
 
 MAIN_MODULE    := CASPER
-SYNTAX_MODULE  := $(MAIN_MODULE)-SYNTAX
+SYNTAX_MODULE  := $(MAIN_MODULE)
 MAIN_DEFN_FILE := casper
 
 KOMPILE_OPTS      :=
 
-k_files := $(MAIN_DEFN_FILE).k proof-script.k
+k_files := $(MAIN_DEFN_FILE).k proof-script.k hash_parent.k hash_ancestor.k hash_ancestor_ext.k hash_nth_ancestor.k
 
 haskell_dir := $(DEFN_DIR)/haskell
 java_dir    := $(DEFN_DIR)/java
