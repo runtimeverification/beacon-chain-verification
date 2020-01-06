@@ -15,7 +15,8 @@ module PROOF-SCRIPT
       <p> .Map </p> // premises
     </T>
 
-    syntax Pred ::= Pred "and" Pred
+    syntax Pred ::= Pred "and" Pred   // conjunction
+                  | "~" Pred          // negation
                   | "none"
                   | Bool
 
