@@ -36,22 +36,6 @@ module HASH-ANCESTOR
     <g> B1 <~ B2 and B2 <~* B3 => B1 <~* B3 </g>
 ```
 
-The following  properties can be shown by induction on `<~*`:
-
-    rule
-    <k> apply("<~*.i") => . ... </k>
-    <g> B1 <~* B2 and B2 <~ B3 => B1 <~* B3 </g>
-    
-    rule
-    <k> apply("<~*.i") => . ... </k>
-    <g> B1 <~* B2 and B2 <~* B3 => B1 <~* B3 </g>
-
-This one as well: Two conflicting blocks cannot have common ancestry
-
-    rule
-    <k> apply("</~*.i") => . ... </k>
-    <g> B1 <~* B and ~ (B2 <~* B) => ~ (B2 <~* B1) </g>
-
 ```k
 endmodule
 ```
