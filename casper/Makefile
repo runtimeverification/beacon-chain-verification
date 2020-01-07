@@ -65,7 +65,15 @@ MAIN_DEFN_FILE := casper
 
 KOMPILE_OPTS      :=
 
-k_files := $(MAIN_DEFN_FILE).k proof-script.k hash.k hash_parent.k hash_ancestor.k hash_ancestor_ext.k hash_nth_ancestor.k state.k
+k_files := $(MAIN_DEFN_FILE).k     \
+           proof-script.k          \
+           hash.k                  \
+           hash_parent.k           \
+           hash_ancestor.k         \
+           hash_ancestor_ext.k     \
+           hash_nth_ancestor.k     \
+           hash_nth_ancestor_ext.k \
+           state.k
 
 haskell_dir := $(DEFN_DIR)/haskell
 java_dir    := $(DEFN_DIR)/java

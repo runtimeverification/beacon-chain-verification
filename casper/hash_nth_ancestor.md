@@ -37,7 +37,7 @@ module HASH-NTH-ANCESTOR
        => B1 <~[N +Int 1] B3 </g>
 ```
 
-- Nth Ancestor predicate `<~[n]` elemination rules:
+- Nth Ancestor predicate `<~[n]` elemination rules (should be derivable from rules above (?)):
 
 ```k
     rule

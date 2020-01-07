@@ -12,11 +12,12 @@ requires "hash_parent.k"
 requires "hash_ancestor.k"
 requires "hash_ancestor_ext.k"
 requires "hash_nth_ancestor.k"
+requires "hash_nth_ancestor_ext.k"
 requires "state.k"
 
 module CASPER
 
-    imports HASH-NTH-ANCESTOR
+    imports HASH-NTH-ANCESTOR-EXT
     imports STATE
 
 endmodule
