@@ -73,7 +73,8 @@ k_files := $(MAIN_DEFN_FILE).k     \
            hash_ancestor_ext.k     \
            hash_nth_ancestor.k     \
            hash_nth_ancestor_ext.k \
-           state.k
+           validator.k             \
+           vote.k
 
 haskell_dir := $(DEFN_DIR)/haskell
 java_dir    := $(DEFN_DIR)/java
