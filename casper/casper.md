@@ -7,14 +7,17 @@ and updated to accoommodate new justification and finalization rules.
 ```k
 
 requires "proof-script.k"
+requires "hash.k"
 requires "hash_parent.k"
 requires "hash_ancestor.k"
 requires "hash_ancestor_ext.k"
 requires "hash_nth_ancestor.k"
+requires "state.k"
 
 module CASPER
 
     imports HASH-NTH-ANCESTOR
+    imports STATE
 
 endmodule
 ```

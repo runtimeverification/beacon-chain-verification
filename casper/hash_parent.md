@@ -6,15 +6,11 @@ An abstract representation of block trees based on the block parent relation.
 ```k
 
 requires "proof-script.k"
+requires "hash.k"
 
 module HASH-PARENT 
     imports PROOF-SCRIPT
-
-    imports INT
-
-    syntax Hash ::= Int
-    
-    syntax Hash ::= "genesis"
+    imports HASH
 ```
 
 ### Predicates
