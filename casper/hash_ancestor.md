@@ -29,6 +29,10 @@ module HASH-ANCESTOR
 ```k
     rule
     <k> apply("<~*.i") => . ... </k>
+    <g> Block(B) => B <~* B </g>
+ 
+    rule
+    <k> apply("<~*.i") => . ... </k>
     <g> B1 <~ B2 => B1 <~* B2 </g>
  
     rule

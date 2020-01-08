@@ -13,12 +13,28 @@ module HASH-NTH-ANCESTOR-EXT
 
 ### Properties
 
-- The parent block is the first ancestor
+- Th 0th ancestor of a block is itself
 
+```k
+    rule
+    <k> apply("zero_ancestor") => . ... </k>
+    <g> B1 <~[0] B2 => B1 == B2 </g>
+```
+
+- The parent block is the first ancestor
+ 
 ```k
     rule
     <k> apply("parent_ancestor") => . ... </k>
     <g> B1 <~ B2 => B1 <~[1] B2 </g>
+```
+
+- The nth ancestor is an ancestor
+ 
+```k
+    rule
+    <k> apply("nth_ancestor_ancestor") => . ... </k>
+    <g> B1 <~[N] B2 => B1 <~* B2 </g>
 ```
 
 ```k

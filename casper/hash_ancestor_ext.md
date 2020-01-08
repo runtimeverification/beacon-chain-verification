@@ -21,7 +21,7 @@ module HASH-ANCESTOR-EXT
     <g> B1 <~* B2 and B2 <~ B3 => B1 <~* B3 </g>
 ```
 
-- Transitivity of the relation composes ([TODO] shown in `hash_ancestor_comp-spec.md` by induction on `<~*`):
+- Concatenation of the ancestry relation ([TODO] shown in `hash_ancestor_concat-spec.md` by induction on `<~*`):
 
 ```k
     rule
