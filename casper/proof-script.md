@@ -16,11 +16,14 @@ module PROOF-SCRIPT
     </T>
 
     syntax Pred ::= Pred "and" Pred   // conjunction
+                  | Pred "or" Pred    // disjunction
                   | "~" Pred          // negation
                   | "none"
                   | Bool
 
     syntax Script ::= apply(String)
+                    | fold(String)
+                    | unfold(String)
                     | load(String)
                     | store1(String)
                     | store2(String, String)
