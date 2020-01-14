@@ -37,10 +37,12 @@ Validator set predicates
 
     syntax SubsetP ::= FinValSet "<=" FinValSet
     
+    syntax ValMemberP ::= Validator "in" FinValSet
+   
+    syntax ValEmptyP ::= "empty" FinValSet
     
     // subset properties?
     // finite set assumption
-    // membership predicate?
 ```
 
 Quorum Predicates:

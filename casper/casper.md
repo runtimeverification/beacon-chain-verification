@@ -13,12 +13,15 @@ requires "hash_ancestor.k"
 requires "hash_ancestor_ext.k"
 requires "hash_nth_ancestor.k"
 requires "hash_nth_ancestor_ext.k"
-requires "state.k"
+requires "validator.k"
+requires "vote.k"
+requires "slashing.k"
+requires "justification.k"
 
 module CASPER
 
     imports HASH-NTH-ANCESTOR-EXT
-    imports STATE
+    imports JUSTIFICATION
 
 endmodule
 ```
