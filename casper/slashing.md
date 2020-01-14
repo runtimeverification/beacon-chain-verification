@@ -7,7 +7,7 @@ Slashing
 requires "proof-script.k"
 requires "vote.k"
 
-module VOTE 
+module SLASHING 
 
     imports PROOF-SCRIPT
     imports VOTE
