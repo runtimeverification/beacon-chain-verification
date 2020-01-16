@@ -19,10 +19,11 @@ requires "slashing.k"
 requires "justification.k"
 requires "justification_ext.k"
 requires "justification_epoch.k"
+requires "justification_ext2.k"
 
 module CASPER
 
-    imports JUSTIFICATION-EPOCH
+    imports JUSTIFICATION-EXT2
 
 endmodule
 ```

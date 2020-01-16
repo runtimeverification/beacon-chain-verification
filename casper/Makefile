@@ -78,7 +78,8 @@ k_files := $(MAIN_DEFN_FILE).k     \
            slashing.k              \
            justification.k         \
            justification_ext.k     \
-           justification_epoch.k
+           justification_epoch.k   \
+           justification_ext2.k
 
 haskell_dir := $(DEFN_DIR)/haskell
 java_dir    := $(DEFN_DIR)/java
