@@ -76,7 +76,9 @@ k_files := $(MAIN_DEFN_FILE).k     \
            validator.k             \
            vote.k                  \
            slashing.k              \
-           justification.k
+           justification.k         \
+           justification_ext.k     \
+           justification_epoch.k
 
 haskell_dir := $(DEFN_DIR)/haskell
 java_dir    := $(DEFN_DIR)/java

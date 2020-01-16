@@ -17,11 +17,12 @@ requires "validator.k"
 requires "vote.k"
 requires "slashing.k"
 requires "justification.k"
+requires "justification_ext.k"
+requires "justification_epoch.k"
 
 module CASPER
 
-    imports HASH-NTH-ANCESTOR-EXT
-    imports JUSTIFICATION
+    imports JUSTIFICATION-EPOCH
 
 endmodule
 ```

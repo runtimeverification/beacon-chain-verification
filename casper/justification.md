@@ -52,6 +52,8 @@ Supermajority links
 
 ```k
     syntax SuperMP ::= superMajorityLink(FinVoteSet, Hash, Hash, Int, Int)
+ 
+    syntax Pred ::= SuperMP
     
     rule
     <k> unfold("superMajorityLink") => . ... </k>
