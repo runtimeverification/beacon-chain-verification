@@ -13,7 +13,7 @@ module HASH-NTH-ANCESTOR-EXT
 
 ### Properties
 
-- Th 0th ancestor of a block is itself
+- The 0th ancestor of a block is itself (shown in `zero-ancestor-spec.md`)
 
 ```k
     rule
