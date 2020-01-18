@@ -29,7 +29,7 @@ module HASH-NTH-ANCESTOR
 ```k
     rule
     <k> apply("nth.i") => . ... </k>
-    <g> Block(B) => B <~[0] B  </g>
+    <g> B1 == B2 => B1 <~[0] B2  </g>
 
     rule
     <k> apply("nth.i") => . ... </k>

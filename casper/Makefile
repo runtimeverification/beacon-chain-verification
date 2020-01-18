@@ -79,10 +79,11 @@ k_files := $(MAIN_DEFN_FILE).k     \
            justification.k         \
            justification_ext.k     \
            justification_epoch.k   \
-           justification_ext2.k
+           justification_ext2.k    \
+           zero-ancestor-spec.k
 
-haskell_dir := $(DEFN_DIR)/haskell
-java_dir    := $(DEFN_DIR)/java
+haskell_dir       := $(DEFN_DIR)/haskell
+java_dir          := $(DEFN_DIR)/java
 
 haskell_files := $(patsubst %,$(haskell_dir)/%,$(k_files))
 java_files    := $(patsubst %,$(java_dir)/%,$(k_files))
