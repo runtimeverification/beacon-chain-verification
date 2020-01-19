@@ -27,6 +27,7 @@ module PROOF-SCRIPT
                     | load(String)
                     | store1(String)
                     | store2(String, String)
+                    | subst(KItem, KItem)
 
     rule [load]:
     <k> load(N) => . ... </k>
@@ -46,6 +47,6 @@ module PROOF-SCRIPT
     <g> X1 and X2 => none </g>
     <p> M => M [ N1 <- X1 ]
                [ N2 <- X2 ] </p>
-
+               
 endmodule
 ```

@@ -69,5 +69,12 @@ module HASH-PARENT
 ```
 
 ```k
+    rule [subst]:
+    <k> subst(V1, V2) => . ... </k>
+    <g> V1 <~ V3 => V2 <~ V3 </g>
+    <p> M </p> 
+```
+
+```k
 endmodule
 ```
