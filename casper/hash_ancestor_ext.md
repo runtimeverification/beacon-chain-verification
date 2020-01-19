@@ -13,19 +13,25 @@ module HASH-ANCESTOR-EXT
 
 ### Properties
 
-- Transitivity of the relation extends to the right ([TODO] shown in `hash_ancestor_rstep-spec.md` by induction on `<~*`):
+- Transitivity of the relation extends to the right. Proved by induction on `<~*` in
+  - `ancestor-parent-base1-spec`
+  - `ancestor-parent-base2-spec`
+  - `ancestor-parent-ind-spec` 
 
 ```k
     rule
-    <k> apply("<~*.rstep") => . ... </k>
+    <k> apply("ancestor-parent") => . ... </k>
     <g> B1 <~* B2 and B2 <~ B3 => B1 <~* B3 </g>
 ```
 
-- Concatenation of the ancestry relation ([TODO] shown in `hash_ancestor_concat-spec.md` by induction on `<~*`):
+- Concatenation of the ancestry relation. [TODO] Proved by induction on `<~*` in
+  - `ancestor-ancestor-base1-spec`
+  - `ancestor-ancestor-base2-spec`
+  - `ancestor-ancestor-ind-spec` 
 
 ```k
     rule
-    <k> apply("<~*.i") => . ... </k>
+    <k> apply("ancestor-ancestor") => . ... </k>
     <g> B1 <~* B2 and B2 <~* B3 => B1 <~* B3 </g>
 ```
 
