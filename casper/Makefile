@@ -82,7 +82,8 @@ k_files := $(MAIN_DEFN_FILE).k     \
            justification_ext2.k    \
            zero-ancestor-spec.k    \
            ancestor-parent-base1-spec.k \
-           ancestor-parent-base2-spec.k
+           ancestor-parent-base2-spec.k \
+           ancestor-parent-ind-spec.k
 
 haskell_dir       := $(DEFN_DIR)/haskell
 java_dir          := $(DEFN_DIR)/java
