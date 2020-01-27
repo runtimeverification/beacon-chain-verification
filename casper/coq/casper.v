@@ -626,7 +626,7 @@ Lemma l00 : forall st s t final s_h t_h final_h,
   quorum_slashed st.
 Admitted.
 
-Lemma non_equal_case : forall st b1 b1_h b2 b2_h,
+Lemma non_equal_height_case : forall st b1 b1_h b2 b2_h,
   finalized st b1 b1_h ->
   finalized st b2 b2_h ->
   b2 </~* b1 ->
@@ -635,43 +635,57 @@ Lemma non_equal_case : forall st b1 b1_h b2 b2_h,
 Proof.
 (*
 by Reconstr.hexhaustive 0 Reconstr.Empty
-		(@non_equal_case_ind)
+		(@non_equal_height_case_ind)
 		(@Coq.Init.Datatypes.is_true, @finalized).
 Qed.
 *)
 Admitted.
 
-Lemma equal_case : forall st b1 b2 h,
+Lemma l5 : forall st bf bf_h bj bj_h,
+  finalized st bf bf_h ->
+  ~ quorum_slashed st ->
+  justified st bj bj_h ->
+  bj <> bf ->
+  bf_h <> bj_h.
+Proof.
+(* 
+by Reconstr.hcrush Reconstr.Empty
+		(@l5')
+		(@finalized).
+Qed.
+*)
+Admitted.
+
+Lemma equal_height_case : forall st b1 b2 h,
   finalized st b1 h ->
   finalized st b2 h ->
   b1 <> b2 ->
   quorum_slashed st.
 Proof.
-(*
-move => s q1 h1 v1 x q2 h2 xa Hf Hf' Hh.
-have Hq1: q1 \in quorum_1 by Reconstr.scrush.
-have Hq2: q2 \in quorum_1 by Reconstr.scrush.
-have Hn: forall n, n \in q1 -> vote_msg s n x v1.+1 v1 by Reconstr.scrush.
-have Hn': forall n, n \in q2 -> vote_msg s n xa v1.+1 v1 by Reconstr.scrush.
-have [q Hq]: exists q, q \in quorum_2 /\ forall n, n \in q -> n \in q1 /\ n \in q2
+move => st b1 b2 h Hf1 Hf2 Hh.
+unfold finalized, supermajority_link, link_supporters, vote_msg in Hf1, Hf2.
+destruct Hf1 as [Hj1 [c1 [Hp1 Hq1]]].
+destruct Hf2 as [Hj2 [c2 [Hp2 Hq2]]].
+have [q [Hq_qourum Hq_dblvote]]: exists q, 
+  q \in quorum_1 /\ 
+  forall v, v \in q -> 
+    v \in [set v | (v, b1, c1, h, h.+1) \in st] /\ v \in [set v | (v, b2, c2, h, h.+1) \in st]
   by Reconstr.rsimple (@quorums_property) Reconstr.Empty.
-have Hq': forall n, n \in q -> vote_msg s n x v1.+1 v1 /\ vote_msg s n xa v1.+1 v1 by Reconstr.scrush.
-have Hx: x <> xa.
+have Hx: c1 <> c2.
   move => Hx.
-  rewrite Hx in Hf.
-  move: Hf => [Hf1 [Hf2 Hf3]].
-  move: Hf' => [Hf'1 [Hf'2 Hf'3]].
-  by have Hp := hash_at_most_one_parent Hf1 Hf'1.
-have Hnn: forall n, vote_msg s n x v1.+1 v1 -> vote_msg s n xa v1.+1 v1 -> slashed_dbl_vote s n.
-  move => n Hv1 Hv2.
-  rewrite /slashed_dbl_vote.
-  exists x,xa.
-  split => //.
-  by exists v1.+1, v1,v1.
-by Reconstr.ryelles6 (@l5) (@finalized).
+  rewrite Hx in Hp1.
+  by have Hp := hash_at_most_one_parent Hp1 Hp2.
+unfold quorum_slashed.
+exists q. split;[assumption|].
+intros v Hvinq. unfold slashed. left.
+unfold slashed_dbl_vote.
+exists c1, c2. split;[assumption|].
+exists b1, h, b2, h, (h.+1).
+unfold vote_msg.
+have H:= @Hq_dblvote v Hvinq.
+repeat rewrite in_set in H.
+assumption.
 Qed.
-*)
-Admitted.
 
 Lemma safety' : forall st b1 b1_h b2 b2_h,
   finalized st b1 b1_h ->
@@ -686,18 +700,18 @@ have Hn:= hash_nonancestor_nonequal Hh2.
   move/eqP: Hbh => Hbh.
   subst.
   move: Hf1 Hf2 Hn.
-  exact: equal_case.
+  exact: equal_height_case.
 move/eqP: Hbh => Hbh.
 case H1: (b1_h > b2_h).
   move: Hf1 Hf2 Hh1 H1.
-  by apply: non_equal_case; eauto.
+  by apply: non_equal_height_case; eauto.
 have Hgt: b2_h > b1_h.
   apply/ltP.
   move/ltP: H1.
   move => Hnn.
   by intuition.
 move: Hgt.
-by apply: non_equal_case; eauto.
+by apply: non_equal_height_case; eauto.
 Qed.
 
 Theorem accountable_safety : forall st, finalization_fork st -> quorum_slashed st.
@@ -798,7 +812,7 @@ Definition vote_target_height (v:Vote) : nat :=
   end.
 
 (** And finally, the overall plausible liveness theorem **)
-Lemma plausible_liveness :
+Theorem plausible_liveness :
   forall st, two_thirds_good st ->
   (forall b b_h, highest_justified st b b_h -> blocks_exist_high_over b) ->
   exists st', unslashed_can_extend st st'
