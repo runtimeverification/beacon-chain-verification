@@ -4,6 +4,9 @@ Require Import all_ssreflect.
 From mathcomp.finmap
 Require Import finmap.
 
+From Hammer
+Require Reconstr.
+
 Require Import Classical. 
 
 Require Import Coq.micromega.Lia.
@@ -233,6 +236,16 @@ move => h1 h2 h3 H2 H1.
 by apply: connect_trans; eauto.
 Qed.
 
+Lemma hash_nonancestor_nonequal:
+  forall h1 h2,
+    h1 </~* h2 -> h1 <> h2.
+Proof.
+intros h1 h2 Hna.
+contradict Hna.
+replace h1 with h2.
+apply hash_self_ancestor.
+Qed.
+
 Lemma hash_ancestor_conflict:
   forall h1 h2 p, 
     h1 <~* h2 -> p </~* h2 -> p </~* h1.
@@ -377,7 +390,7 @@ Proof.
   assumption.
 Qed.
 
-(* This is probably trivial now. We are not referring to epochs anymore! 
+(* This is trivial now and add nothing new. We are not referring to epochs anymore! 
    [From P.L.] *)
 Lemma justified_is_descendant st n n_h:
   justified st n n_h -> genesis <~* n.
@@ -431,23 +444,10 @@ destruct Ht_justified. contradict Ht. trivial.
 exists s. exists s_h. 
 by repeat(try(split;assumption)).
 Qed.
-(* 
-Lemma justified_means_ancestor :
-  forall s q parent pre new now,
-  justified_link s q parent pre new now -> parent <~* new.Proof.
-move => st s t s_h t_h.
-unfold supermajority_link.
-move => smH .
-destruct smH as [supp stH]. destruct stH as [stH staH]. 
-apply ancestor_means with (t_h - s_h).
-  assumption. 
-rewrite <- subn_gt0 in stH .
-assumption.
-Qed.
-*)
 
 (* A s.m. link from s to t means that t_h > s_h 
-   [Corresponds to L01 from A.S.] *)
+   [Corresponds to L01 from A.S.] 
+   subsumed roughly by justified_means above *)
 (*
 Lemma justified_means_forwardlink :
   forall st s t s_h t_h,
@@ -463,9 +463,9 @@ Qed.
 
 (* a finalized block is a justified block that has a child who is also justified 
    by a supermajority link to the block *)
-Definition finalized st v v_h :=
-  justified st v v_h /\ 
-  exists c, (v <~ c /\ supermajority_link st v c v_h v_h.+1).
+Definition finalized st b b_h :=
+  justified st b b_h /\ 
+  exists c, (b <~ c /\ supermajority_link st b c b_h b_h.+1).
 
 Lemma finalized_means_justified_child: forall st p p_h,
   finalized st p p_h -> exists c, p <~ c /\ justified st c p_h.+1.
@@ -483,10 +483,10 @@ Qed.
 
 (* a state has a fork when blocks in different branches are both finalized *)
 Definition finalization_fork st :=
-  exists v1 v1_h v2 v2_h,
-    finalized st v1 v1_h /\
-    finalized st v2 v2_h /\
-    v2 </~* v1 /\ v1 </~* v2 /\ v1 <> v2.
+  exists b1 b1_h b2 b2_h,
+    finalized st b1 b1_h /\
+    finalized st b2 b2_h /\
+    b2 </~* b1 /\ b1 </~* b2.
 
 (* In a vote message, the source must be an ancestor of the target 
    and the source must be justified 
@@ -504,17 +504,17 @@ Definition finalization_fork st :=
 *)
 
 (* "1/3" or more of validators are slashed *)
-Definition quorum_slashed s :=
-  exists q, q \in quorum_1 /\ forall n, n \in q -> slashed s n.
+Definition quorum_slashed st :=
+  exists q, q \in quorum_1 /\ forall v, v \in q -> slashed st v.
 
 (*
-  If there is a s.m. link from s (with hight s_h) to t (with hight final_h + 1),
-  and a node final (in a conflicting branch) is finalized at hight final_h (> s_h),
+  If there is a s.m. (justified) link from s (with height s_h) to t (with height final_h + 1),
+  and a node final (in a conflicting branch) is finalized at height final_h (> s_h),
   then a 1/3 quorum must have been slashed for double-voting.
   [From A. S.: L02]
 *)
 Lemma l02 : forall st s t s_h final_h final,
-    supermajority_link st s t s_h final_h.+1 ->
+    supermajority_link st s t s_h final_h.+1 -> (* may not be enough *)
     finalized st final final_h ->
     final </~* t -> s_h < final_h ->
     exists q, q \in quorum_1 /\ forall v, v \in q -> slashed_dbl_vote st v.
@@ -577,18 +577,18 @@ Admitted.
 *)
 
 (*
-  If there is a s.m. link from s (with hight s_h) to t (with hight final_h + 1),
-  and a node final (in a conflicting branch) is finalized at hight final_h (> s_h),
+  If there is a s.m. (justified) link from s (with height s_h) to t (with height final_h + 1),
+  and a node final (in a conflicting branch) is finalized at height final_h (> s_h),
   then a 1/3 quorum must have been slashed.
   [From A. S.: L01]
 *)
 Lemma l01 : forall st s t s_h final_h final,
-  supermajority_link st s t s_h final_h.+1 ->
+  supermajority_link st s t s_h final_h.+1 -> (* may not be enough *)
   finalized st final final_h ->
   final </~* t -> s_h < final_h ->
   quorum_slashed st.
 Proof.
-intros. 
+intros.
 unfold quorum_slashed.
 unfold slashed. 
 pose (q := [set v | vote_msg st v s t s_h final_h.+1]).
@@ -596,21 +596,116 @@ refine (ex_intro _ q _). split.
 (* apply l02. *)
 Admitted.
 
-(* If a supermajority link from s to t exists, then h(t) > s(t) *)
-(* Lemma l0 in A.S. 
-   This is now subsumed by assuming sources_justified *)
+(* slash surround case *)
+Lemma l04 : forall st s t final s_h t_h final_h,
+  supermajority_link st s t s_h t_h -> (* may not be enough *)
+  finalized st final final_h ->
+  final_h.+1 < t_h ->
+  final </~* t -> 
+  s_h < final_h ->
+  exists q, q \in quorum_2 /\ forall v, v \in q -> slashed_surround st v.
+Admitted.
 
+(* slash surround case *)
+Lemma l03 : forall st s t final s_h t_h final_h,
+  supermajority_link st s t s_h t_h -> (* may not be enough *)
+  finalized st final final_h ->
+  final_h.+1 < t_h ->
+  final </~* t -> 
+  s_h < final_h ->
+  quorum_slashed st.
+Admitted.
+
+(* slash surround case 2 *)
+Lemma l00 : forall st s t final s_h t_h final_h,
+  supermajority_link st s t s_h t_h -> (* may not be enough *)
+  finalized st final final_h ->
+  final_h < t_h ->
+  final </~* t -> 
+  s_h < final_h ->
+  quorum_slashed st.
+Admitted.
+
+Lemma non_equal_case : forall st b1 b1_h b2 b2_h,
+  finalized st b1 b1_h ->
+  finalized st b2 b2_h ->
+  b2 </~* b1 ->
+  b1_h > b2_h ->
+  quorum_slashed st.
+Proof.
 (*
-If in a state s, a s.m. link from  
-A.S.
-Lemma l02 : forall s q1 q2 h2 v2 h1 v3 h3 c3,
-    justified_link s q1 h2 v2 h1 v3.+1 ->
-    finalized s q2 h3 v3 c3 ->
-    h3 </~* h1 -> v2 < v3 ->
-    exists q, q \in quorum_2 /\ forall n, n \in q -> slashed_dbl_vote s n.
-
+by Reconstr.hexhaustive 0 Reconstr.Empty
+		(@non_equal_case_ind)
+		(@Coq.Init.Datatypes.is_true, @finalized).
+Qed.
 *)
+Admitted.
 
+Lemma equal_case : forall st b1 b2 h,
+  finalized st b1 h ->
+  finalized st b2 h ->
+  b1 <> b2 ->
+  quorum_slashed st.
+Proof.
+(*
+move => s q1 h1 v1 x q2 h2 xa Hf Hf' Hh.
+have Hq1: q1 \in quorum_1 by Reconstr.scrush.
+have Hq2: q2 \in quorum_1 by Reconstr.scrush.
+have Hn: forall n, n \in q1 -> vote_msg s n x v1.+1 v1 by Reconstr.scrush.
+have Hn': forall n, n \in q2 -> vote_msg s n xa v1.+1 v1 by Reconstr.scrush.
+have [q Hq]: exists q, q \in quorum_2 /\ forall n, n \in q -> n \in q1 /\ n \in q2
+  by Reconstr.rsimple (@quorums_property) Reconstr.Empty.
+have Hq': forall n, n \in q -> vote_msg s n x v1.+1 v1 /\ vote_msg s n xa v1.+1 v1 by Reconstr.scrush.
+have Hx: x <> xa.
+  move => Hx.
+  rewrite Hx in Hf.
+  move: Hf => [Hf1 [Hf2 Hf3]].
+  move: Hf' => [Hf'1 [Hf'2 Hf'3]].
+  by have Hp := hash_at_most_one_parent Hf1 Hf'1.
+have Hnn: forall n, vote_msg s n x v1.+1 v1 -> vote_msg s n xa v1.+1 v1 -> slashed_dbl_vote s n.
+  move => n Hv1 Hv2.
+  rewrite /slashed_dbl_vote.
+  exists x,xa.
+  split => //.
+  by exists v1.+1, v1,v1.
+by Reconstr.ryelles6 (@l5) (@finalized).
+Qed.
+*)
+Admitted.
+
+Lemma safety' : forall st b1 b1_h b2 b2_h,
+  finalized st b1 b1_h ->
+  finalized st b2 b2_h ->
+  b2 </~* b1 ->
+  b1 </~* b2 ->
+  quorum_slashed st.
+Proof.
+move => st b1 b1_h b2 b2_h Hf1 Hf2 Hh1 Hh2.
+have Hn:= hash_nonancestor_nonequal Hh2.
+  case Hbh: (b1_h == b2_h).
+  move/eqP: Hbh => Hbh.
+  subst.
+  move: Hf1 Hf2 Hn.
+  exact: equal_case.
+move/eqP: Hbh => Hbh.
+case H1: (b1_h > b2_h).
+  move: Hf1 Hf2 Hh1 H1.
+  by apply: non_equal_case; eauto.
+have Hgt: b2_h > b1_h.
+  apply/ltP.
+  move/ltP: H1.
+  move => Hnn.
+  by intuition.
+move: Hgt.
+by apply: non_equal_case; eauto.
+Qed.
+
+Theorem accountable_safety : forall st, finalization_fork st -> quorum_slashed st.
+Proof.
+by Reconstr.hobvious Reconstr.Empty
+		(@safety')
+		(@finalization_fork).
+Qed.
 
 
 (* Now we begin making definitions used in the statement and proof of
