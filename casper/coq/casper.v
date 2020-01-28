@@ -576,26 +576,6 @@ admit.
 Admitted.
 *)
 
-(*
-  If there is a s.m. (justified) link from s (with height s_h) to t (with height final_h + 1),
-  and a node final (in a conflicting branch) is finalized at height final_h (> s_h),
-  then a 1/3 quorum must have been slashed.
-  [From A. S.: L01]
-*)
-Lemma l01 : forall st s t s_h final_h final,
-  supermajority_link st s t s_h final_h.+1 -> (* may not be enough *)
-  finalized st final final_h ->
-  final </~* t -> s_h < final_h ->
-  quorum_slashed st.
-Proof.
-intros.
-unfold quorum_slashed.
-unfold slashed. 
-pose (q := [set v | vote_msg st v s t s_h final_h.+1]).
-refine (ex_intro _ q _). split.
-(* apply l02. *)
-Admitted.
-
 (* slash surround case *)
 Lemma l04 : forall st s t final s_h t_h final_h,
   justified st s s_h ->
@@ -613,19 +593,6 @@ Lemma l03 : forall st s t final s_h t_h final_h,
   supermajority_link st s t s_h t_h -> (* may not be enough *)
   finalized st final final_h ->
   final_h.+1 < t_h ->
-  final </~* t -> 
-  s_h < final_h ->
-  quorum_slashed st.
-Admitted.
-
-(* slash surround case 2 *)
-Lemma l00 : forall st s t final s_h t_h final_h,
-  justified st s s_h ->
-  t_h > s_h ->
-  nth_ancestor (t_h - s_h) s t ->
-  supermajority_link st s t s_h t_h -> (* may not be enough alone *)
-  finalized st final final_h ->
-  final_h < t_h ->
   final </~* t -> 
   s_h < final_h ->
   quorum_slashed st.
@@ -675,6 +642,47 @@ by Reconstr.hcrush Reconstr.Empty
 		(@no_two_justified_same_height)
 		(@finalized).
 Qed.
+
+(* slash surround case 2 *)
+Lemma l00 : forall st s t final s_h t_h final_h,
+  justified st s s_h ->
+  t_h > s_h ->
+  nth_ancestor (t_h - s_h) s t ->
+  supermajority_link st s t s_h t_h -> (* may not be enough alone *)
+  finalized st final final_h ->
+  final_h < t_h ->
+  final </~* t -> 
+  s_h < final_h ->
+  quorum_slashed st.
+Proof.
+move => st s t final s_h t_h final_h Hsj Htgts Hnth Hsm Hfinal Hft Hnoans Hsf.
+case Hn: (t_h == final_h.+1).
+  move/eqP: Hn => Hn.
+  have Htj : justified st t t_h by apply (justified_link Hsj Htgts Hnth Hsm).
+  subst t_h.  
+  destruct Hfinal as [Hfj [c [Hcp Hcsm]]].
+  have Hfh : final_h.+1 > final_h by trivial.
+  have Hca : final <~* c by apply (hash_parent_ancestor Hcp).
+  apply parent_ancestor in Hcp.
+  replace 1 with (final_h.+1 - final_h) in Hcp.
+  have Hcj : justified st c final_h.+1 by apply (justified_link Hfj Hfh Hcp Hcsm).
+  Print hash_ancestor_conflict.
+  have Hfcconf: t <> c by (contradict Hnoans;subst c;assumption).
+  have Hconf := no_two_justified_same_height Htj Hcj.
+  have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.  
+  case: Ho => // Ho.
+  apply Hconf in Ho;[contradiction|assumption].
+  admit. (* arith *)
+move/negP/negP/eqP: Hn => Hn.
+have Hgt: final_h.+1 < t_h.
+  apply/ltP.
+  move/ltP: Hft => Hft.
+  by intuition.
+by Reconstr.hobvious (@Hf, @Hh, @Hv', @Hgt, @Hj)
+		(@l03)
+		(@hash_ancestor).
+Qed.
+Admitted.
 
 Lemma non_equal_height_case_ind : forall st b1 b1_h b2 b2_h,
   justified st b1 b1_h ->
