@@ -284,20 +284,6 @@ apply: nth_ancestor_nth; eauto.
 exact: nth_ancestor_0.
 Qed.
 
-(* Unused *)
-Lemma strict_nth_ancestor: forall n h1 h2,
-  nth_ancestor n h1 h2 -> n > 0 -> h1 <> h2.
-Proof. 
-  intros n h1 h2 Hnth Hnp.
-  revert Hnp Hnth.
-  generalize n as k.
-  induction k.
-  intro Hz.
-  contradict Hz. trivial.
-  intro Hkp.
-  intro Hnth.
-Admitted.
-  
 (* A boolean vote_msg predicate is then a definition rather than
    a field of State as in AccountableSafety.v 
    Further constraints on what constitutes a valid vote message have
@@ -507,96 +493,37 @@ Definition finalization_fork st :=
 Definition quorum_slashed st :=
   exists q, q \in quorum_1 /\ forall v, v \in q -> slashed st v.
 
-(*
-  If there is a s.m. (justified) link from s (with height s_h) to t (with height final_h + 1),
-  and a node final (in a conflicting branch) is finalized at height final_h (> s_h),
-  then a 1/3 quorum must have been slashed for double-voting.
-  [From A. S.: L02]
-*)
-Lemma l02 : forall st s t s_h final_h final,
-    supermajority_link st s t s_h final_h.+1 -> (* may not be enough *)
-    finalized st final final_h ->
-    final </~* t -> s_h < final_h ->
-    exists q, q \in quorum_1 /\ forall v, v \in q -> slashed_dbl_vote st v.
-Proof. 
-Admitted.
-(*
-move => st s t s_h final_h final smlH finlzdH ft_ancestorH shfhH .
-destruct smlH as [lsupH stlinkH].
-unfold link_supporters in lsupH.
-destruct finlzdH as [fjustH fcjustH].
-have fhnonzeroH : final_h > 0.
-  induction s_h in shfhH;[assumption | auto].
-destruct fjustH.
-  discriminate.
-destruct H0 as [lsupH2 stlinkH2].
-unfold link_supporters in lsupH2.
-
-pose (q2a := [set v | vote_msg st v s t s_h t_h.+1]). 
-have lsupH': q2a \in quorum_2. by assumption.
-pose (q2b := [set v | vote_msg st v s0 t0 s_h0 t_h]).
-have lsupH2': q2b \in quorum_2. by assumption.
-
-refine (ex_intro _ (q2a :&: q2b) _). 
-split.
-
-pose proof (quorums_intersection_property (q2 := q2a) (q2' := q2b) ) .
-apply H0 in lsupH';[|assumption].
-inversion lsupH'.
-
-destruct lsupH' as (wt & wtH).
-refine (ex_intro _ (q2a :&: q2b) _). 
-
-pose (wt := q2a :&: q2b).
-split.
-
-move: lsupH'.
-refine (ex_intro _ (q2a :&: q2b) ). 
-
-
-refine (ex_intro _ wt _). 
-
-unfold slashed_dbl_vote.
-
-
-
-refine (ex_intro _ wt _) in lsubH'.
-
-split.
-move: H0.
-  intros.
-apply quorums_propertyquorums_intersection in lsupH .
-with (q2 := q2a) (q2' := q2b) .
-pose (wt :=  :&: ).
-
-split. apply quorums_propertyquorums_intersection with .
-induction final_h in fjustH.
-(* induction final_h in fjustH.*)
-admit.
-Admitted.
-*)
-
-(* slash surround case *)
-Lemma l04 : forall st s t final s_h t_h final_h,
-  justified st s s_h ->
-  
-  supermajority_link st s t s_h t_h -> (* may not be enough *)
-  finalized st final final_h ->
-  final_h.+1 < t_h ->
-  final </~* t -> 
-  s_h < final_h ->
-  exists q, q \in quorum_2 /\ forall v, v \in q -> slashed_surround st v.
-Admitted.
-
-(* slash surround case *)
+(* slash surround: the case of proper containment of justified links *)
 Lemma l03 : forall st s t final s_h t_h final_h,
+  justified st s s_h ->
+  t_h > s_h ->
+  nth_ancestor (t_h - s_h) s t ->
   supermajority_link st s t s_h t_h -> (* may not be enough *)
   finalized st final final_h ->
   final_h.+1 < t_h ->
   final </~* t -> 
   s_h < final_h ->
   quorum_slashed st.
-Admitted.
+Proof.
+  move => st s t final s_h t_h final_h Hsj Htgts Hnth Hsm Hfinal Hft Hnoans Hsf.
+  destruct Hfinal as [Hfj [c [Hcp Hcsm]]].
+  unfold supermajority_link, link_supporters, vote_msg in Hsm.
+  unfold supermajority_link, link_supporters, vote_msg in Hcsm.
+  have [q1 [Hq1 Hq1slashed]]: exists q1, q1 \in quorum_1 /\ 
+    forall v, v \in q1 -> 
+      v \in [set v | (v, s, t, s_h, t_h) \in st] /\ 
+      v \in [set v | (v, final, c, final_h, final_h.+1) \in st] 
+    by Reconstr.reasy (@quorums_property) Reconstr.Empty.
+  unfold quorum_slashed.
+  exists q1. split;[assumption|].
+  intros v Hvinq.
+  apply Hq1slashed in Hvinq as [H1 H2].
+  rewrite in_set in H1. rewrite in_set in H2.
+  unfold slashed. right.
+  unfold slashed_surround.
+  exists s, t, s_h, t_h. exists final, c, final_h, final_h.+1.
+  repeat (split;try assumption).
+Qed.
 
 Lemma no_two_justified_same_height: forall st b1 b1_h b2 b2_h,
   justified st b1 b1_h ->
@@ -643,7 +570,7 @@ by Reconstr.hcrush Reconstr.Empty
 		(@finalized).
 Qed.
 
-(* slash surround case 2 *)
+(* slash surround - general *)
 Lemma l00 : forall st s t final s_h t_h final_h,
   justified st s s_h ->
   t_h > s_h ->
@@ -664,7 +591,7 @@ case Hn: (t_h == final_h.+1).
   have Hfh : final_h.+1 > final_h by trivial.
   have Hca : final <~* c by apply (hash_parent_ancestor Hcp).
   apply parent_ancestor in Hcp.
-  replace 1 with (final_h.+1 - final_h) in Hcp.
+  replace 1 with (final_h.+1 - final_h) in Hcp by apply subSnn.
   have Hcj : justified st c final_h.+1 by apply (justified_link Hfj Hfh Hcp Hcsm).
   Print hash_ancestor_conflict.
   have Hfcconf: t <> c by (contradict Hnoans;subst c;assumption).
@@ -672,17 +599,15 @@ case Hn: (t_h == final_h.+1).
   have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.  
   case: Ho => // Ho.
   apply Hconf in Ho;[contradiction|assumption].
-  admit. (* arith *)
 move/negP/negP/eqP: Hn => Hn.
 have Hgt: final_h.+1 < t_h.
   apply/ltP.
   move/ltP: Hft => Hft.
   by intuition.
-by Reconstr.hobvious (@Hf, @Hh, @Hv', @Hgt, @Hj)
+by Reconstr.hobvious (@Hfinal, @Hnoans, @Hsf, @Hgt, @Hsj, @Htgts, @Hnth, @Hsm)
 		(@l03)
 		(@hash_ancestor).
 Qed.
-Admitted.
 
 Lemma non_equal_height_case_ind : forall st b1 b1_h b2 b2_h,
   justified st b1 b1_h ->
