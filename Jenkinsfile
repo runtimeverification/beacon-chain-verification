@@ -34,14 +34,14 @@ pipeline {
             }
           }
         }
-        stage('Static - Coq') {
-          steps {
-            sh '''
-              cd casper/coq
-              make
-            '''
-          }
-        }
+        //stage('Static - Coq') {
+        //  steps {
+        //    sh '''
+        //      cd casper/coq
+        //      make
+        //    '''
+        //  }
+        //}
       }
     }
   }
