@@ -392,8 +392,8 @@ rule <k> false ~> finalize(_, _) => . ... </k>
 // TODO: check if no mistake was made as this process is associated with the previous epoch
 syntax KItem ::= processValidatorUpdates()
 rule <k> processValidatorUpdates()
-      => processValidatorEjection(Validators)
-      ~> updateActivationEligibility(Validators)
+      => processValidatorEjection(keys_list(Validators))
+      ~> updateActivationEligibility(keys_list(Validators))
       ~> processValidatorActivation() ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -402,24 +402,24 @@ rule <k> processValidatorUpdates()
        ...
      </state>
 
-syntax KItem ::= processValidatorEjection(Map)
-rule <k> processValidatorEjection(VID |-> _ M:Map)
+syntax KItem ::= processValidatorEjection(List)
+rule <k> processValidatorEjection(ListItem(VID) VIDS:List)
       => #if isActiveValidator(V, epochOf(Slot) -Int 1) andBool V.effective_balance <=Int EJECTION_BALANCE
          #then initiateValidatorExit(V)
          #else .
          #fi
-      ~> processValidatorEjection(M) ... </k>
+      ~> processValidatorEjection(VIDS) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
        <validators> VID |-> V:Validator ... </validators>
        ...
      </state>
-rule processValidatorEjection(.Map) => .
+rule processValidatorEjection(.List) => .
 
-syntax KItem ::= updateActivationEligibility(Map)
-rule <k> updateActivationEligibility(VID |-> _ M:Map)
-      => updateActivationEligibility(M) ... </k>
+syntax KItem ::= updateActivationEligibility(List)
+rule <k> updateActivationEligibility(ListItem(VID) VIDS:List)
+      => updateActivationEligibility(VIDS) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -432,7 +432,7 @@ rule <k> updateActivationEligibility(VID |-> _ M:Map)
        </validators>
        ...
      </state>
-rule updateActivationEligibility(.Map) => .
+rule updateActivationEligibility(.List) => .
 
 syntax Bool ::= isActivationEligible(Validator) [function]
 rule isActivationEligible(V)
