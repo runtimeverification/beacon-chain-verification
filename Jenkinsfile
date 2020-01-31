@@ -12,20 +12,36 @@ pipeline {
         }
       }
     }
-    stage('Dependencies') {
-      steps {
-        sh '''
-          cd casper/k
-          make deps -j3
-        '''
-      }
-    }
-    stage('Build') {
-      steps {
-        sh '''
-          cd casper/k
-          make build -j4
-        '''
+    stage('Build and Test') {
+      parallel {
+        stage('Dynamic - K') {
+          stages {
+            stage('Dependencies') {
+              steps {
+                sh '''
+                  cd casper/k
+                  make deps -j3
+                '''
+              }
+            }
+            stage('Build') {
+              steps {
+                sh '''
+                  cd casper/k
+                  make build -j4
+                '''
+              }
+            }
+          }
+        }
+        stage('Static - Coq') {
+          steps {
+            sh '''
+              cd casper/coq
+              make
+            '''
+          }
+        }
       }
     }
   }
