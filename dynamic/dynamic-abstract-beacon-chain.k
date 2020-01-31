@@ -393,7 +393,7 @@ rule <k> false ~> finalize(_, _) => . ... </k>
 syntax KItem ::= processValidatorUpdates()
 rule <k> processValidatorUpdates()
       => processValidatorEjection(keys_list(Validators))
-      ~> updateActivationEligibility(Validators)
+      ~> updateActivationEligibility(keys_list(Validators))
       ~> processValidatorActivation() ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -417,9 +417,9 @@ rule <k> processValidatorEjection(ListItem(VID) VIDS:List)
      </state>
 rule processValidatorEjection(.List) => .
 
-syntax KItem ::= updateActivationEligibility(Map)
-rule <k> updateActivationEligibility(VID |-> _ M:Map)
-      => updateActivationEligibility(M) ... </k>
+syntax KItem ::= updateActivationEligibility(List)
+rule <k> updateActivationEligibility(ListItem(VID) VIDS:List)
+      => updateActivationEligibility(VIDS) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -432,7 +432,7 @@ rule <k> updateActivationEligibility(VID |-> _ M:Map)
        </validators>
        ...
      </state>
-rule updateActivationEligibility(.Map) => .
+rule updateActivationEligibility(.List) => .
 
 syntax Bool ::= isActivationEligible(Validator) [function]
 rule isActivationEligible(V)
