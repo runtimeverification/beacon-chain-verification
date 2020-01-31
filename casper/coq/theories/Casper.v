@@ -509,7 +509,6 @@ case Hn: (t_h == final_h.+1).
   apply parent_ancestor in Hcp.
   replace 1 with (final_h.+1 - final_h) in Hcp by apply subSnn.
   have Hcj : justified st c final_h.+1 by apply (justified_link Hfj Hfh Hcp Hcsm).
-  Print hash_ancestor_conflict.
   have Hfcconf: t <> c by (contradict Hnoans;subst c;assumption).
   have Hconf := no_two_justified_same_height Htj Hcj.
   have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.  
