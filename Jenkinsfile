@@ -15,7 +15,7 @@ pipeline {
     stage('Dependencies') {
       steps {
         sh '''
-          cd casper
+          cd casper/k
           make deps -j3
         '''
       }
@@ -23,14 +23,8 @@ pipeline {
     stage('Build') {
       steps {
         sh '''
+          cd casper/k
           make build -j4
-        '''
-      }
-    }
-    stage('Test') {
-      steps {
-        sh '''
-          make test -j8
         '''
       }
     }
