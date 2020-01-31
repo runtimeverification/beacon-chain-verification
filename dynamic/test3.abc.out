@@ -1,0 +1,1259 @@
+<T>
+  <k>
+    .
+  </k>
+  <currentSlot>
+    12
+  </currentSlot>
+  <states>
+    <slot>
+      0
+    </slot> |-> <state>
+      <slot>
+        0
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+      </justified>
+      <finalized>
+        0 |-> some 0
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 0 , 0 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      1
+    </slot> |-> <state>
+      <slot>
+        1
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+      </justified>
+      <finalized>
+        0 |-> some 0
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 1 , 10001 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      2
+    </slot> |-> <state>
+      <slot>
+        2
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+      </justified>
+      <finalized>
+        0 |-> some 0
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 1 , 10001 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      3
+    </slot> |-> <state>
+      <slot>
+        3
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+      </justified>
+      <finalized>
+        0 |-> some 0
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 1 , 10001 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      4
+    </slot> |-> <state>
+      <slot>
+        4
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+        1 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+        1 |-> none
+      </justified>
+      <finalized>
+        0 |-> some 0
+        1 |-> none
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          4
+        </bSlot> |-> <block>
+          <bSlot>
+            4
+          </bSlot>
+          <bID>
+            10004
+          </bID>
+          <parent>
+            ( 1 , 10001 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 4 , 10004 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      5
+    </slot> |-> <state>
+      <slot>
+        5
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+        1 |-> #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+        1 |-> none
+      </justified>
+      <finalized>
+        0 |-> some 0
+        1 |-> none
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          4
+        </bSlot> |-> <block>
+          <bSlot>
+            4
+          </bSlot>
+          <bID>
+            10004
+          </bID>
+          <parent>
+            ( 1 , 10001 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          5
+        </bSlot> |-> <block>
+          <bSlot>
+            5
+          </bSlot>
+          <bID>
+            10005
+          </bID>
+          <parent>
+            ( 4 , 10004 )
+          </parent>
+          <attestations>
+            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 5 , 10005 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      6
+    </slot> |-> <state>
+      <slot>
+        6
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+        1 |-> #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+        1 |-> none
+      </justified>
+      <finalized>
+        0 |-> some 0
+        1 |-> none
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          4
+        </bSlot> |-> <block>
+          <bSlot>
+            4
+          </bSlot>
+          <bID>
+            10004
+          </bID>
+          <parent>
+            ( 1 , 10001 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          5
+        </bSlot> |-> <block>
+          <bSlot>
+            5
+          </bSlot>
+          <bID>
+            10005
+          </bID>
+          <parent>
+            ( 4 , 10004 )
+          </parent>
+          <attestations>
+            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 5 , 10005 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      7
+    </slot> |-> <state>
+      <slot>
+        7
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+        1 |-> #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+        1 |-> none
+      </justified>
+      <finalized>
+        0 |-> some 0
+        1 |-> none
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          4
+        </bSlot> |-> <block>
+          <bSlot>
+            4
+          </bSlot>
+          <bID>
+            10004
+          </bID>
+          <parent>
+            ( 1 , 10001 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          5
+        </bSlot> |-> <block>
+          <bSlot>
+            5
+          </bSlot>
+          <bID>
+            10005
+          </bID>
+          <parent>
+            ( 4 , 10004 )
+          </parent>
+          <attestations>
+            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 5 , 10005 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      8
+    </slot> |-> <state>
+      <slot>
+        8
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+        1 |-> #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+        2 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+        1 |-> none
+        2 |-> none
+      </justified>
+      <finalized>
+        0 |-> some 0
+        1 |-> none
+        2 |-> none
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          4
+        </bSlot> |-> <block>
+          <bSlot>
+            4
+          </bSlot>
+          <bID>
+            10004
+          </bID>
+          <parent>
+            ( 1 , 10001 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          5
+        </bSlot> |-> <block>
+          <bSlot>
+            5
+          </bSlot>
+          <bID>
+            10005
+          </bID>
+          <parent>
+            ( 4 , 10004 )
+          </parent>
+          <attestations>
+            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 5 , 10005 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      9
+    </slot> |-> <state>
+      <slot>
+        9
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+        1 |-> #Attestation ( 90004 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+        2 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+        1 |-> none
+        2 |-> none
+      </justified>
+      <finalized>
+        0 |-> some 0
+        1 |-> none
+        2 |-> none
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          4
+        </bSlot> |-> <block>
+          <bSlot>
+            4
+          </bSlot>
+          <bID>
+            10004
+          </bID>
+          <parent>
+            ( 1 , 10001 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          5
+        </bSlot> |-> <block>
+          <bSlot>
+            5
+          </bSlot>
+          <bID>
+            10005
+          </bID>
+          <parent>
+            ( 4 , 10004 )
+          </parent>
+          <attestations>
+            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          9
+        </bSlot> |-> <block>
+          <bSlot>
+            9
+          </bSlot>
+          <bID>
+            10009
+          </bID>
+          <parent>
+            ( 5 , 10005 )
+          </parent>
+          <attestations>
+            #Attestation ( 90003 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 9 , 10009 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      10
+    </slot> |-> <state>
+      <slot>
+        10
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+        1 |-> #Attestation ( 90004 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+        2 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+        1 |-> none
+        2 |-> none
+      </justified>
+      <finalized>
+        0 |-> some 0
+        1 |-> none
+        2 |-> none
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          4
+        </bSlot> |-> <block>
+          <bSlot>
+            4
+          </bSlot>
+          <bID>
+            10004
+          </bID>
+          <parent>
+            ( 1 , 10001 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          5
+        </bSlot> |-> <block>
+          <bSlot>
+            5
+          </bSlot>
+          <bID>
+            10005
+          </bID>
+          <parent>
+            ( 4 , 10004 )
+          </parent>
+          <attestations>
+            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          9
+        </bSlot> |-> <block>
+          <bSlot>
+            9
+          </bSlot>
+          <bID>
+            10009
+          </bID>
+          <parent>
+            ( 5 , 10005 )
+          </parent>
+          <attestations>
+            #Attestation ( 90003 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 9 , 10009 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      11
+    </slot> |-> <state>
+      <slot>
+        11
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+        1 |-> #Attestation ( 90004 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+        2 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+        1 |-> none
+        2 |-> none
+      </justified>
+      <finalized>
+        0 |-> some 0
+        1 |-> none
+        2 |-> none
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          4
+        </bSlot> |-> <block>
+          <bSlot>
+            4
+          </bSlot>
+          <bID>
+            10004
+          </bID>
+          <parent>
+            ( 1 , 10001 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          5
+        </bSlot> |-> <block>
+          <bSlot>
+            5
+          </bSlot>
+          <bID>
+            10005
+          </bID>
+          <parent>
+            ( 4 , 10004 )
+          </parent>
+          <attestations>
+            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          9
+        </bSlot> |-> <block>
+          <bSlot>
+            9
+          </bSlot>
+          <bID>
+            10009
+          </bID>
+          <parent>
+            ( 5 , 10005 )
+          </parent>
+          <attestations>
+            #Attestation ( 90003 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 9 , 10009 )
+      </lastBlock>
+      <lastJustified>
+        ( 0 , 0 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+    <slot>
+      12
+    </slot> |-> <state>
+      <slot>
+        12
+      </slot>
+      <validators>
+        90000 |-> #Validator ( 90000 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90001 |-> #Validator ( 90001 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90002 |-> #Validator ( 90002 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90003 |-> #Validator ( 90003 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90004 |-> #Validator ( 90004 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90005 |-> #Validator ( 90005 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+      </validators>
+      <attested>
+        0 |-> .VoluntaryExits
+        1 |-> #Attestation ( 90004 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+        2 |-> .VoluntaryExits
+        3 |-> .VoluntaryExits
+      </attested>
+      <justified>
+        0 |-> some 0
+        1 |-> some 10004
+        2 |-> none
+        3 |-> none
+      </justified>
+      <finalized>
+        0 |-> some 0
+        1 |-> none
+        2 |-> none
+        3 |-> none
+      </finalized>
+      <blocks>
+        <bSlot>
+          0
+        </bSlot> |-> <block>
+          <bSlot>
+            0
+          </bSlot>
+          <bID>
+            0
+          </bID>
+          <parent>
+            ( -1 , -1 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          1
+        </bSlot> |-> <block>
+          <bSlot>
+            1
+          </bSlot>
+          <bID>
+            10001
+          </bID>
+          <parent>
+            ( 0 , 0 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          4
+        </bSlot> |-> <block>
+          <bSlot>
+            4
+          </bSlot>
+          <bID>
+            10004
+          </bID>
+          <parent>
+            ( 1 , 10001 )
+          </parent>
+          <attestations>
+            .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          5
+        </bSlot> |-> <block>
+          <bSlot>
+            5
+          </bSlot>
+          <bID>
+            10005
+          </bID>
+          <parent>
+            ( 4 , 10004 )
+          </parent>
+          <attestations>
+            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+        <bSlot>
+          9
+        </bSlot> |-> <block>
+          <bSlot>
+            9
+          </bSlot>
+          <bID>
+            10009
+          </bID>
+          <parent>
+            ( 5 , 10005 )
+          </parent>
+          <attestations>
+            #Attestation ( 90003 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) )  .VoluntaryExits
+          </attestations>
+        </block>
+      </blocks>
+      <lastBlock>
+        ( 9 , 10009 )
+      </lastBlock>
+      <lastJustified>
+        ( 1 , 10004 )
+      </lastJustified>
+      <lastFinalized>
+        ( 0 , 0 )
+      </lastFinalized>
+    </state>
+  </states>
+</T>
