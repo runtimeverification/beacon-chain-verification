@@ -392,7 +392,7 @@ rule <k> false ~> finalize(_, _) => . ... </k>
 // TODO: check if no mistake was made as this process is associated with the previous epoch
 syntax KItem ::= processValidatorUpdates()
 rule <k> processValidatorUpdates()
-      => processValidatorEjection(Validators)
+      => processValidatorEjection(keys_list(Validators))
       ~> updateActivationEligibility(Validators)
       ~> processValidatorActivation() ... </k>
      <currentSlot> Slot </currentSlot>
@@ -402,20 +402,20 @@ rule <k> processValidatorUpdates()
        ...
      </state>
 
-syntax KItem ::= processValidatorEjection(Map)
-rule <k> processValidatorEjection(VID |-> _ M:Map)
+syntax KItem ::= processValidatorEjection(List)
+rule <k> processValidatorEjection(ListItem(VID) VIDS:List)
       => #if isActiveValidator(V, epochOf(Slot) -Int 1) andBool V.effective_balance <=Int EJECTION_BALANCE
          #then initiateValidatorExit(V)
          #else .
          #fi
-      ~> processValidatorEjection(M) ... </k>
+      ~> processValidatorEjection(VIDS) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
        <validators> VID |-> V:Validator ... </validators>
        ...
      </state>
-rule processValidatorEjection(.Map) => .
+rule processValidatorEjection(.List) => .
 
 syntax KItem ::= updateActivationEligibility(Map)
 rule <k> updateActivationEligibility(VID |-> _ M:Map)
