@@ -1,5 +1,7 @@
 FROM runtimeverificationinc/ubuntu:bionic
 
+RUN add-apt-repository ppa:avsm/ppa
+
 RUN    apt-get update                \
     && apt-get upgrade --yes         \
     && apt-get install --yes         \
@@ -35,20 +37,6 @@ RUN    apt-get update                \
             python3                  \
             zlib1g-dev
 
-RUN    opam init --yes --no-setup     \
-    && eval $(opam env)               \
-    && opam update                    \
-    && opam upgrade --yes             \
-    && opam install --yes opam-depext \
-    && opam-depext --yes coq          \
-    && opam pin add coq 8.11.0        \
-    && opam repo add coq-released https://coq.inria.fr/opam/released \
-    && opam install --yes coq-mathcomp-ssreflect \
-                          coq-fcsl-pcm \
-                          coq-hammer \
-                          coq-mathcomp-finmap
-
-
 ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
 
@@ -62,6 +50,19 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.6 \
     && rm -rf z3
 
 USER user:user
+
+RUN    opam init --yes --no-setup     \
+    && eval $(opam env)               \
+    && opam update                    \
+    && opam upgrade --yes             \
+    && opam install --yes opam-depext \
+    && opam-depext --yes coq          \
+    && opam pin add coq 8.11.0        \
+    && opam repo add coq-released https://coq.inria.fr/opam/released \
+    && opam install --yes coq-mathcomp-ssreflect \
+                          coq-fcsl-pcm \
+                          coq-hammer \
+                          coq-mathcomp-finmap
 
 ENV LC_ALL=C.UTF-8
 ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/stack.yaml /home/user/.tmp-haskell/
