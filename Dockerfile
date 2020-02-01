@@ -37,8 +37,8 @@ RUN    apt-get update                \
 
 RUN    add-apt-repository ppa:avsm/ppa \
     && apt-get update                  \
-    && apt-get upgrade --yes
-    && apt-get install --yes  opam     \
+    && apt-get upgrade --yes           \
+    && apt-get install --yes  opam
 
 ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
