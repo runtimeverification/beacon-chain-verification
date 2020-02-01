@@ -1,7 +1,5 @@
 FROM runtimeverificationinc/ubuntu:bionic
 
-RUN add-apt-repository ppa:avsm/ppa
-
 RUN    apt-get update                \
     && apt-get upgrade --yes         \
     && apt-get install --yes         \
@@ -35,7 +33,12 @@ RUN    apt-get update                \
             pandoc                   \
             pkg-config               \
             python3                  \
-            zlib1g-dev
+            zlib1g-dev               \
+            software-properties-common
+
+RUN    add-apt-repository ppa:avsm/ppa \
+    && apt-get update                  \
+    && apt-get upgrade --yes
 
 ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
