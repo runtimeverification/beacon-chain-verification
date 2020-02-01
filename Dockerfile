@@ -7,7 +7,7 @@ RUN    apt-get update                \
             bison                    \
             clang-8                  \
             cmake                    \
-            coq                      \
+            opam                     \
             curl                     \
             flex                     \
             gcc                      \
@@ -34,6 +34,20 @@ RUN    apt-get update                \
             pkg-config               \
             python3                  \
             zlib1g-dev
+
+RUN    opam init --yes --no-setup     \
+    && eval $(opam env)               \
+    && opam update                    \
+    && opam upgrade --yes             \
+    && opam install --yes opam-depext \
+    && opam-depext --yes coq          \
+    && opam pin add coq 8.11.0        \
+    && opam repo add coq-released https://coq.inria.fr/opam/released \
+    && opam install --yes coq-mathcomp-ssreflect \
+                          coq-fcsl-pcm \
+                          coq-hammer \
+                          coq-mathcomp-finmap
+
 
 ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
