@@ -7,12 +7,15 @@ Require Import finmap.
 From Hammer
 Require Reconstr.
 
-From Casper
-Require Import StrongInductionLtn.
-
 Require Import Classical. 
 
 Require Import Coq.micromega.Lia.
+
+From Casper
+Require Import StrongInductionLtn.
+
+From Casper
+Require Import Quorums.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -23,46 +26,7 @@ Section CasperProperties.
 (* We consider the checkpoint tree of blocks, and so a "block" refers to a 
    "checkpoint block" throughout the specs below. *)
 
-(* Validator and Hash are types of finite sets *)
-Variable Validator : finType.
 Variable Hash : finType.
-
-(* The sets of "at least 1/3 weight" validators *)
-Variable quorum_1 : {set {set Validator}}.
-
-(* The sets of "at least 2/3 weight" validators *)
-Variable quorum_2 : {set {set Validator}}.
-
-(* The essential intersection property that comes from the
-   numeric choices 2/3 and 1/3 - any two sets from quorum_2
-   have an intersection containing a quorum_1 set. *)
-Hypothesis quorums_intersection_property :
-  forall (q2 q2': {set Validator}), q2 \in quorum_2 -> q2' \in quorum_2 ->
-  exists q1, q1 \in quorum_1 /\ q1 \subset q2 /\ q1 \subset q2'.
-
-Lemma quorums_property :
- forall (q2 q2': {set Validator}), q2 \in quorum_2 -> q2' \in quorum_2 ->
- exists q1, q1 \in quorum_1 /\ forall n, n \in q1 -> n \in q2 /\ n \in q2'.
-Proof.
-move => q1 q2 Hq1 Hq2.
-have [q3 [Hq3 [Hq13 Hq23]]] := (quorums_intersection_property Hq1 Hq2).
-exists q3.
-split => //.
-move => n Hn.
-split.
-- by apply/(subsetP Hq13).
-- by apply/(subsetP Hq23).
-Qed.
-
-(* For liveness proof we use additional assumptions that
-   a supermajority quorum is nonempty, and that adding
-   more validators to a supermajority leaves a supermajority
- *)
-Hypothesis quorum_2_nonempty:
-  forall q, q \in quorum_2 -> exists v, v \in q.
-
-Hypothesis quorum_2_upclosed:
-  forall (q q':{set Validator}), q \subset q' -> q \in quorum_2 -> q' \in quorum_2.
 
 
 (* Each vote names source and target nodes by giving hash and height,
@@ -817,7 +781,7 @@ Proof.
 
   assert (forall n n_h, justified st n n_h -> n_h <= highest_target)
     as Hjust_le_target by
-     (clear -quorum_2_nonempty;intros n n_h H;
+     (clear;intros n n_h H;
      apply highest_ub;destruct H;[by apply fset1U1|];
      destruct (quorum_2_nonempty H2) as [t_supporter Ht];
      rewrite in_set in Ht; apply/fsetUP; right;

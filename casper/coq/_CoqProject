@@ -1,4 +1,5 @@
 -Q theories Casper
 
 theories/StrongInductionLtn.v
+theories/Quorums.v
 theories/Casper.v
