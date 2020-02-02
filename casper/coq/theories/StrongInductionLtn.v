@@ -1,5 +1,7 @@
+Set Warnings "-parsing".
 From mathcomp
 Require Import all_ssreflect.
+Set Warnings "parsing".
 
 (*
   This utility module proves a few induction principles
@@ -25,7 +27,7 @@ Section StrongInductionLtn.
     exfalso; inversion H.
   Qed.
 
-  Hint Resolve P0.
+  Hint Resolve P0 : core.
 
   Lemma pred_increasing : forall (n m : nat),
       n <= m ->

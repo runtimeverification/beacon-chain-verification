@@ -1,5 +1,7 @@
+Set Warnings "-parsing".
 From mathcomp.ssreflect
 Require Import all_ssreflect.
+Set Warnings "parsing".
 
 From mathcomp.finmap
 Require Import finmap.
