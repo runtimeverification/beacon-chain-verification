@@ -25,7 +25,6 @@ Unset Printing Implicit Defensive.
 
 Section CasperProperties.
 
-
 (* Each vote names source and target nodes by giving hash and height,
    and is signed by a particular validator.
    This definition is different from votes in AccountableSafety.v,
@@ -68,11 +67,6 @@ Definition slashed_surround st v :=
 Definition slashed st v : Prop :=
  slashed_dbl_vote st v \/ slashed_surround st v.
 
-(* The finalized node at which the current epoch started. *)
-(* Variable epoch_start : Hash.
-Variable epoch_height : nat.
-Hypothesis epoch_ancestry : nth_ancestor epoch_height genesis epoch_start.*)
-
 (* Now we define justification *)
 (* First a definition of supermajority links *)
 Definition link_supporters st s t s_h t_h : {set Validator} :=
@@ -81,17 +75,6 @@ Definition link_supporters st s t s_h t_h : {set Validator} :=
 Definition supermajority_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
   link_supporters st s t s_h t_h \in quorum_2.
   
-(* [Modified: now requires the link to be based on proper votes, where proper means
-    that votes must link a source being an ancestor of the target]
-   [It's a Prop now]
-   [this now matches the version in A.S.] *)
-(* 
-Definition justified_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
-  supermajority_link st s t s_h t_h 
-  /\ t_h > s_h 
-  /\ nth_ancestor (t_h - s_h) s t .
-  *)
-
 Lemma supermajority_weaken: forall (st st':State)
   (HSub:forall (v: Vote), v \in st -> v \in st'),
     forall s t s_h t_h,
@@ -143,65 +126,6 @@ have Hg := hash_ancestor_concat IHjustified H1.
 eassumption.
 Defined.
 
-(* From A.S. *)
-(* The nth_ancestor, with n positive, is an ancestor 
-   [Now subsumed by nth_ancestor_ancestor] 
- *)
-Lemma ancestor_means :
-  forall n parent new,
-  nth_ancestor n parent new -> n > 0 -> parent <~* new.
-Proof.
-elim => //=.
-move => n IH parent new Hn.
-inversion Hn; subst.
-case Hn0: (n == 0).
-  move/eqP: Hn0 H0 -> => Hnt Hlt.
-  inversion Hnt; subst.
-  by apply/connect1.
-move/negP/negP: Hn0 => Hn0 Hltn.
-have Hnn: 0 < n.
-  apply: neq0_lt0n.
-  by apply/negP/negP.
-move: (IH _ _ H0 Hnn) => Hp.
-apply: connect_trans; eauto.
-by apply/connect1.
-Qed.
-
-(*  From A.S. *)
-(*    
-*)
-Lemma justified_means:
-  forall st t t_h,
-  t <> genesis -> 
-  justified st t t_h -> 
-  exists s s_h, 
-    justified st s s_h /\
-    t_h > s_h /\
-    nth_ancestor (t_h - s_h) s t /\ 
-    supermajority_link st s t s_h t_h.
-Proof.
-intros st t t_h Ht Ht_justified.
-destruct Ht_justified. contradict Ht. trivial.
-exists s. exists s_h. 
-by repeat(try(split;assumption)).
-Qed.
-
-(* A s.m. link from s to t means that t_h > s_h 
-   [Corresponds to L01 from A.S.] 
-   subsumed roughly by justified_means above *)
-(*
-Lemma justified_means_forwardlink :
-  forall st s t s_h t_h,
-  justified_link st s t s_h t_h -> t_h > s_h .
-Proof.
-move => st s t s_h t_h.
-unfold supermajority_link.
-move => smH .
-destruct smH as [supp stH]. destruct stH as [stH staH].
-assumption. 
-Qed.
-*)
-
 (* a finalized block is a justified block that has a child who is also justified 
    by a supermajority link to the block *)
 Definition finalized st b b_h :=
@@ -228,21 +152,6 @@ Definition finalization_fork st :=
     finalized st b1 b1_h /\
     finalized st b2 b2_h /\
     b2 </~* b1 /\ b1 </~* b2.
-
-(* In a vote message, the source must be an ancestor of the target 
-   and the source must be justified 
-  [from P.L.] 
-  [Replaced epoch_start <~* s (and later s <~* t) with the stronger conclusion that 
-   the source must be the kth ancestor of the target, with k the distance] 
-
-  But this is no longer needed as it is already assumed in the defition of a supermajority link *)
-
-(*
- Definition sources_justified st v :=
-  forall s t s_h t_h,
-    vote_msg st v s t s_h t_h ->
-    nth_ancestor (t_h - s_h) s t /\ justified st s s_h.
-*)
 
 (* "1/3" or more of validators are slashed *)
 Definition quorum_slashed st :=
