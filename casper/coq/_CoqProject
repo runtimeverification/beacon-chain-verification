@@ -2,4 +2,5 @@
 
 theories/StrongInductionLtn.v
 theories/Quorums.v
+theories/HashTree.v
 theories/Casper.v
