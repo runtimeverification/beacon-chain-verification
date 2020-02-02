@@ -4,4 +4,7 @@ theories/StrongInductionLtn.v
 theories/Quorums.v
 theories/HashTree.v
 theories/State.v
+theories/Slashing.v
+theories/Justification.v
+theories/AccountableSafety.v
 theories/Casper.v
