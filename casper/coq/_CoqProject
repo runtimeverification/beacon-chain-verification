@@ -1,4 +1,10 @@
 -Q theories Casper
 
 theories/StrongInductionLtn.v
-theories/Casper.v
+theories/Quorums.v
+theories/HashTree.v
+theories/State.v
+theories/Slashing.v
+theories/Justification.v
+theories/AccountableSafety.v
+theories/PlausibleLiveness.v
