@@ -6,11 +6,6 @@ Set Warnings "parsing".
 From mathcomp.finmap
 Require Import finmap.
 
-From Hammer
-Require Reconstr.
-
-Require Import Classical. 
-
 From Casper
 Require Import StrongInductionLtn.
 

@@ -7,4 +7,4 @@ theories/State.v
 theories/Slashing.v
 theories/Justification.v
 theories/AccountableSafety.v
-theories/Casper.v
+theories/PlausibleLiveness.v
