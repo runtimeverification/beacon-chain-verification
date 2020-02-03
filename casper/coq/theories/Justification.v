@@ -13,14 +13,17 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Now we define justification *)
-(* First a definition of supermajority links *)
+(* Definitions of justification and finalization *)
+
+(* The set of validators voted for a given link *)
 Definition link_supporters st s t s_h t_h : {set Validator} :=
   [set v | vote_msg st v s t s_h t_h ].
 
+(* The voter set constitute a supermajority *)
 Definition supermajority_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
   link_supporters st s t s_h t_h \in quorum_2.
-  
+
+(* Adding more votes to a state preserves supermajority links *)
 Lemma supermajority_weaken: forall (st st':State)
   (HSub:forall (v: Vote), v \in st -> v \in st'),
     forall s t s_h t_h,
@@ -31,11 +34,11 @@ Proof.
   unfold supermajority_link, link_supporters, vote_msg.
   apply quorum_2_upclosed.
   apply/subsetP. intro. rewrite in_set. rewrite in_set.
-  apply Hsub. 
+  apply Hsub.
 Qed.
 
-(* We define justification of a block inductively in terms of a path from 
-   the genesis block all the way to that block.
+(* We define justification of a block inductively in terms of a path
+   from the genesis block all the way to that block.
  *)
 Inductive justified (st:State) : Hash -> nat -> Prop :=
 | justified_genesis : justified st genesis 0
@@ -46,7 +49,7 @@ Inductive justified (st:State) : Hash -> nat -> Prop :=
     supermajority_link st s t s_h t_h ->
     justified st t t_h.
 
-(* Some properties of justification *)
+(* Justification is preserved when the state is expanded with new votes *)
 Lemma justified_weaken: forall (st st':State)
     (HSub:forall (v: Vote), v \in st -> v \in st'),
   forall t t_h, justified st t t_h -> justified st' t t_h.
@@ -60,12 +63,13 @@ Proof.
   assumption.
 Qed.
 
-(* a finalized block is a justified block that has a child who is also justified 
-   by a supermajority link to the block *)
+(* A finalized block is a justified block that has a child who is also
+   justified by a supermajority link to the block *)
 Definition finalized st b b_h :=
-  justified st b b_h /\ 
+  justified st b b_h /\
   exists c, (b <~ c /\ supermajority_link st b c b_h b_h.+1).
 
+(* A finalized block has a child who is justified *)
 Lemma finalized_means_justified_child: forall st p p_h,
   finalized st p p_h -> exists c, p <~ c /\ justified st c p_h.+1.
 Proof.

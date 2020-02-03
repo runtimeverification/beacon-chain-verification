@@ -7,7 +7,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Validator is a type of finite sets *)
+(* We assume finite sets of validators *)
 Parameter Validator : finType.
 
 (* The sets of "at least 1/3 weight" validators *)
@@ -23,7 +23,7 @@ Axiom quorums_intersection_property :
   forall (q2 q2': {set Validator}), q2 \in quorum_2 -> q2' \in quorum_2 ->
   exists q1, q1 \in quorum_1 /\ q1 \subset q2 /\ q1 \subset q2'.
 
-(* The quorums property is a re-statement of the property above *)
+(* This is a re-statement of the property above in terms of membership *)
 Lemma quorums_property :
  forall (q2 q2': {set Validator}), q2 \in quorum_2 -> q2' \in quorum_2 ->
  exists q1, q1 \in quorum_1 /\ forall n, n \in q1 -> n \in q2 /\ n \in q2'.
@@ -38,12 +38,12 @@ split.
 - by apply/(subsetP Hq23).
 Qed.
 
-(* For liveness proof we use additional assumptions on quorums that
-   a supermajority quorum is nonempty *)
+(* The assumption on quorums that a supermajority quorum is nonempty
+   (Needed for liveness) *)
 Axiom quorum_2_nonempty:
   forall (q :{set Validator}), q \in quorum_2 -> exists v, v \in q.
 
-(* and that adding more validators to a supermajority leaves a 
-   supermajority. *)
+(* The assumption that adding more validators to a supermajority
+   leaves a supermajority (Needed for liveness) *)
 Axiom quorum_2_upclosed:
   forall (q q':{set Validator}), q \subset q' -> q \in quorum_2 -> q' \in quorum_2.

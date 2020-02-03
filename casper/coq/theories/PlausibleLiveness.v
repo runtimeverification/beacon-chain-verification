@@ -16,8 +16,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Now we begin making definitions used in the statement and proof of
-   the plausible liveness theorem *)
+(* The plausible liveness theorem *)
 
 (* The liveness theorem will assume that 2/3 of validators
    have not behaved badly. For liveness it is not sufficient to merely
@@ -27,20 +26,14 @@ Unset Printing Implicit Defensive.
    because votes spanning over the unjustified vote would violate
    slashing condition II.
    No correct validator should ever make such a vote.
-   We also simplify the problem by forbidding good validators from
-   having votes with sources higher than the start of the current epoch
-   but not descended from the current epoch.
-   In the older casper design with Prepare/Commit messages this was
-   prevented by slashing conditions.
  *)
- 
-(* [Modified: no longer includes the now vacuous conclusion that genesis 
-   is an ancestor of s] *)
+
+(* All votes have justified sources *)
 Definition sources_justified st v :=
   forall s t s_h t_h,
     vote_msg st v s t s_h t_h -> justified st s s_h.
 
-(* This assumption says 2/3 of the validators have behaved well *)
+(* 2/3 of the validators have behaved well *)
 Definition two_thirds_good (st : State) :=
   exists q2, q2 \in quorum_2 /\
   forall v, v \in q2 -> (~ slashed st v /\ sources_justified st v).
@@ -63,7 +56,6 @@ Definition highest_justified st b b_h : Prop :=
    of maximum height would require depending on
    the accountable safety theorem and assumptions of
    good behavior. *)
-(* This should be provable in the merged version *)
 Lemma highest_exists: forall st,
     exists b b_h,
       justified st b b_h /\
@@ -76,6 +68,7 @@ Definition unslashed_can_extend st st' : Prop :=
   forall v s t s_h t_h,
     vote_msg st' v s t s_h t_h = true ->
     vote_msg st v s t s_h t_h = true \/ ~ slashed st v.
+
 (* Second, making the new votes does not cause any previously unslashed
    validator to be slashed *)
 Definition no_new_slashed st st' :=
@@ -84,7 +77,6 @@ Definition no_new_slashed st st' :=
 (** Now a few minor lemmas and definitions used in the proof **)
 Definition highest (A : {fset nat}) : nat :=
   \max_(i : A) (val i).
-
 
 Lemma highest_ub:
   forall (A : {fset nat}) (x:nat), x \in A -> x <= highest A.
@@ -126,7 +118,7 @@ Proof.
 
   pose targets := (0 |` [ fset vote_target_height vote | vote in st])%fset;
                     change {fset nat} in (type of targets).
-  
+
   (* perhaps *)
   (* pose targets := ([ fset vote_target_height vote | vote in st])%fset;
                     change {fset nat} in (type of targets). *)
@@ -264,7 +256,7 @@ Proof.
   change (is_true (badV \in good_quorum)) in x_good.
 
   apply Hgood in x_good. destruct x_good as [Hnot_slashed Hsources_justified].
-  apply Hsources_justified in Hinner as Hst2_justified. 
+  apply Hsources_justified in Hinner as Hst2_justified.
   clear -Hjust_max_max Hst2_justified Hstarts.
   apply Hjust_max_max in Hst2_justified;[|apply ltnW;assumption].
   destruct Hst2_justified.
@@ -313,13 +305,13 @@ Proof.
     apply (@justified_link _ just_max just_max_h).
       revert Hjust_max_just. apply justified_weaken.
       apply/fsubsetP. by eapply fsubset_trans;apply fsubsetUl.
-    
+
     rewrite <- addn1 with (highest_target.+1 - just_max_h) in Hdist.
     replace 1 with (0 + 1) in Hdist at 1 by trivial.
     rewrite -> ltn_add2r with 1 0 (highest_target.+1 - just_max_h) in Hdist.
     revert Hdist.
     rewrite subn_gt0. trivial.
-    
+
     assumption.
 
     unfold supermajority_link, link_supporters, vote_msg.
