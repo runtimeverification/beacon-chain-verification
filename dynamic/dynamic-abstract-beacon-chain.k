@@ -309,8 +309,15 @@ rule attestationsBalance(Target, A Attestations, Validators)
      #fi +Int attestationsBalance(Target, Attestations, Validators)
 rule attestationsBalance(_, .Attestations, _) => 0
 
+/*
 syntax Int ::= balanceOf(Attestation, Map) [function]
 rule balanceOf(A, A.attester |-> V:Validator _:Map) => V.effective_balance
+*/
+// TODO: use the above simpler version
+syntax Int ::= balanceOf(Attestation, Map) [function]
+             | balanceOf(K) [function]
+rule balanceOf(A:Attestation, M) => balanceOf(M[A.attester])
+rule balanceOf(V:Validator) => V.effective_balance
 
 syntax Int ::= totalBalance(List) [function]
 rule totalBalance(ListItem(V:Validator) Vs:List) => V.effective_balance +Int totalBalance(Vs)
