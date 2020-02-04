@@ -66,11 +66,11 @@ rule <k> init => . ... </k>
      </states>
 
 // state_transition
-rule <k> stateTransition(Block)
-      => processSlots(Block.slot)
-      ~> processBlock(Block) ... </k>
+rule <k> stateTransition(NewBlock)
+      => processSlots(NewBlock.slot)
+      ~> processBlock(NewBlock) ... </k>
      <currentSlot> Slot </currentSlot>
-     requires Slot <Int Block.slot
+     requires Slot <Int NewBlock.slot
 
 rule <k> (. => processSlot()
             ~> processEpoch())
@@ -190,7 +190,7 @@ rule isActiveValidator(V, Epoch)
 
 syntax KItem ::= initiateValidatorExit(Validator)
 rule <k> initiateValidatorExit(V)
-      => setExitEpoch(V, computeExitEpoch(Validators, epochOf(Slot))) ... </k>
+      => setExitEpoch(V, computeExitEpoch(values_list(Validators), epochOf(Slot))) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -212,8 +212,8 @@ rule <k> setExitEpoch(V, ExitEpoch) => . ... </k>
        ...
      </state>
 
-syntax Int ::= computeExitEpoch(Map, Int) [function]
-             | computeExitEpochAux(Map, Int, Int) [function]
+syntax Int ::= computeExitEpoch(List, Int) [function]
+             | computeExitEpochAux(List, Int, Int) [function]
 rule computeExitEpoch(Validators, CurrentEpoch)
   => computeExitEpochAux(
        Validators,
@@ -226,22 +226,22 @@ rule computeExitEpochAux(Validators, ExitEpoch, ActiveValidatorSize)
      #else ExitEpoch
      #fi
 
-syntax Int ::= maxExitEpoch(Map) [function]
-rule maxExitEpoch(_ |-> V:Validator M:Map) => maxInt(V.exit_epoch, maxExitEpoch(M))
-rule maxExitEpoch(.Map) => 0
+syntax Int ::= maxExitEpoch(List) [function]
+rule maxExitEpoch(ListItem(V:Validator) Vs:List) => maxInt(V.exit_epoch, maxExitEpoch(Vs))
+rule maxExitEpoch(.List) => 0
 
-syntax Int ::= countValidatorsToExit(Map, Int) [function]
-rule countValidatorsToExit(_ |-> V:Validator M:Map, ExitEpoch)
-  => #if V.exit_epoch ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(M, ExitEpoch)
-rule countValidatorsToExit(.Map, _) => 0
+syntax Int ::= countValidatorsToExit(List, Int) [function]
+rule countValidatorsToExit(ListItem(V:Validator) Vs:List, ExitEpoch)
+  => #if V.exit_epoch ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(Vs, ExitEpoch)
+rule countValidatorsToExit(.List, _) => 0
 
-syntax Map ::= activeValidators(Map, Int) [function]
-rule activeValidators(_ |-> V:Validator M:Map, Epoch)
+syntax Map ::= activeValidators(List, Int) [function]
+rule activeValidators(ListItem(V:Validator) Vs:List, Epoch)
   => #if isActiveValidator(V, Epoch)
-     #then V.id |-> V activeValidators(M, Epoch)
-     #else            activeValidators(M, Epoch)
+     #then V.id |-> V activeValidators(Vs, Epoch)
+     #else            activeValidators(Vs, Epoch)
      #fi
-rule activeValidators(.Map, _) => .Map
+rule activeValidators(.List, _) => .Map
 
 syntax Int ::= delayedActivationExitEpoch(Int) [function]
 rule delayedActivationExitEpoch(Epoch) => Epoch +Int 1 +Int ACTIVATION_EXIT_DELAY
@@ -296,7 +296,7 @@ rule <k> processJustification(Epoch) => . ... </k>
 
 syntax Bool ::= isJustifiable(Int, Attestations, Map) [function]
 rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
-  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(Validators))
+  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values_list(Validators)))
 
 syntax Bool ::= isMajority(Int, Int) [function]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
@@ -312,9 +312,9 @@ rule attestationsBalance(_, .Attestations, _) => 0
 syntax Int ::= balanceOf(Attestation, Map) [function]
 rule balanceOf(A, A.attester |-> V:Validator _:Map) => V.effective_balance
 
-syntax Int ::= totalBalance(Map) [function]
-rule totalBalance(_ |-> V:Validator M:Map) => V.effective_balance +Int totalBalance(M)
-rule totalBalance(.Map) => 0
+syntax Int ::= totalBalance(List) [function]
+rule totalBalance(ListItem(V:Validator) Vs:List) => V.effective_balance +Int totalBalance(Vs)
+rule totalBalance(.List) => 0
 
 syntax KItem ::= justify(Int, Int)
 rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
@@ -441,7 +441,7 @@ rule isActivationEligible(V)
 
 syntax Kitem ::= processValidatorActivation()
 rule <k> processValidatorActivation()
-      => activateValidators(activationQueueUptoChurnLimit(Validators, FinalizedEpoch, epochOf(Slot) -Int 1)) ... </k>
+      => activateValidators(activationQueueUptoChurnLimit(values_list(Validators), FinalizedEpoch, epochOf(Slot) -Int 1)) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -468,20 +468,21 @@ rule <k> activateValidators(ListItem(V:Validator) Vs)
      </state>
 rule activateValidators(.List) => .
 
-syntax List ::= activationQueueUptoChurnLimit(Map, Int, Int) [function]
+syntax List ::= activationQueueUptoChurnLimit(List, Int, Int) [function]
 rule activationQueueUptoChurnLimit(Validators, FinalizedEpoch, CurrentEpoch)
   => dropBeyondLimit(
        activationQueue(Validators, FinalizedEpoch),
        churnLimit(size(activeValidators(Validators, CurrentEpoch)))
      )
 
-syntax List ::= activationQueue(Map, Int) [function]
-rule activationQueue(_ |-> V:Validator M:Map, FinalizedEpoch)
+syntax List ::= activationQueue(List, Int) [function]
+rule activationQueue(ListItem(V:Validator) Vs:List, FinalizedEpoch)
   => #if V.activation_eligibility_epoch =/=Int FAR_FUTURE_EPOCH andBool
          V.activation_epoch >=Int delayedActivationExitEpoch(FinalizedEpoch) // TODO: why is this needed?
-     #then ListItem(V) activationQueue(M, FinalizedEpoch)
-     #else             activationQueue(M, FinalizedEpoch)
+     #then ListItem(V) activationQueue(Vs, FinalizedEpoch)
+     #else             activationQueue(Vs, FinalizedEpoch)
      #fi
+rule activationQueue(.List, _) => .List
 
 syntax List ::= dropBeyondLimit(List, Int) [function]
 rule dropBeyondLimit(Vs, Limit) => Vs requires size(Vs) <=Int Limit
@@ -499,5 +500,11 @@ rule dropLastActivationEligibleValidatorAux(ListItem(V:Validator) Vs, MaxV, AccV
      #else dropLastActivationEligibleValidatorAux(Vs, MaxV, ListItem(   V) AccVs)
      #fi
 rule dropLastActivationEligibleValidatorAux(.List, _, Vs) => Vs
+
+syntax List ::= "values_list" "(" Map ")" [function]
+              | "values_list" "(" Map "," List "," List ")" [function]
+rule values_list(M:Map) => values_list(M, keys_list(M), .List)
+rule values_list(M, ListItem(K) Ks:List, Vs) => values_list(M, Ks, ListItem(M[K]) Vs)
+rule values_list(_, .List, Vs) => Vs
 
 endmodule
