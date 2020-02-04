@@ -40,10 +40,10 @@ Lemma no_two_justified_same_height: forall st b1 b1_h b2 b2_h,
   b1_h <> b2_h.
 Proof.
 move => st b1 b1_h b2 b2_h Hj1 Hj2 Hs Hneq.
-destruct Hj1 as [| sb1 sb1_h b1 b1_h Hjs1 Hh1 Ha1 Hsm1] eqn:E1.
+destruct Hj1 as [| sb1 sb1_h b1 b1_h Hjs1 [Hh1 [Ha1 Hsm1]]] eqn:E1.
 - destruct Hj2 eqn:E2; first by contradiction.
   by Reconstr.scrush.
-- destruct Hj2 as [| sb2 sb2_h b2 b2_h Hjs2 Hh2 Ha2 Hsm2] eqn:E2; first by Reconstr.scrush.
+- destruct Hj2 as [| sb2 sb2_h b2 b2_h Hjs2 [Hh2 [Ha2 Hsm2]]] eqn:E2; first by Reconstr.scrush.
   unfold supermajority_link, link_supporters, vote_msg in Hsm1.
   unfold supermajority_link, link_supporters, vote_msg in Hsm2.
   have [q1 [Hq1 Hq1dblvote]]: exists q1, q1 \in quorum_1 /\
@@ -83,16 +83,14 @@ Qed.
 (* The specific case of proper link containment *)
 Lemma slash_surround_case_strict : forall st s t final s_h t_h final_h,
   justified st s s_h ->
-  t_h > s_h ->
-  nth_ancestor (t_h - s_h) s t ->
-  supermajority_link st s t s_h t_h -> (* may not be enough *)
+  justification_link st s t s_h t_h ->
   finalized st final final_h ->
   final_h.+1 < t_h ->
   final </~* t ->
   s_h < final_h ->
   quorum_slashed st.
 Proof.
-  move => st s t final s_h t_h final_h Hsj Htgts Hnth Hsm Hfinal Hft Hnoans Hsf.
+  move => st s t final s_h t_h final_h Hsj [Htgts [Hnth Hsm]] Hfinal Hft Hnoans Hsf.
   destruct Hfinal as [Hfj [c [Hcp Hcsm]]].
   unfold supermajority_link, link_supporters, vote_msg in Hsm.
   unfold supermajority_link, link_supporters, vote_msg in Hcsm.
@@ -116,26 +114,26 @@ Qed.
 (* The general case *)
 Lemma slash_surround_case_general : forall st s t final s_h t_h final_h,
   justified st s s_h ->
-  t_h > s_h ->
-  nth_ancestor (t_h - s_h) s t ->
-  supermajority_link st s t s_h t_h ->
+  justification_link st s t s_h t_h ->
   finalized st final final_h ->
   final_h < t_h ->
   final </~* t ->
   s_h < final_h ->
   quorum_slashed st.
 Proof.
-move => st s t final s_h t_h final_h Hsj Htgts Hnth Hsm Hfinal Hft Hnoans Hsf.
+move => st s t final s_h t_h final_h Hsj [Htgts [Hnth Hsm]] Hfinal Hft Hnoans Hsf.
 case Hn: (t_h == final_h.+1).
   move/eqP: Hn => Hn.
-  have Htj : justified st t t_h by apply (justified_link Hsj Htgts Hnth Hsm).
+  have Htjl : justification_link st s t s_h t_h by trivial.
+  have Htj : justified st t t_h by apply (justified_link Hsj Htjl).
   subst t_h.
   destruct Hfinal as [Hfj [c [Hcp Hcsm]]].
   have Hfh : final_h.+1 > final_h by trivial.
   have Hca : final <~* c by apply (hash_parent_ancestor Hcp).
   apply parent_ancestor in Hcp.
   replace 1 with (final_h.+1 - final_h) in Hcp by apply subSnn.
-  have Hcj : justified st c final_h.+1 by apply (justified_link Hfj Hfh Hcp Hcsm).
+  have Hcjl : justification_link st final c final_h final_h.+1 by trivial.
+  have Hcj : justified st c final_h.+1 by apply (justified_link Hfj Hcjl).
   have Hfcconf: t <> c by (contradict Hnoans;subst c;assumption).
   have Hconf := no_two_justified_same_height Htj Hcj.
   have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.
@@ -146,7 +144,8 @@ have Hgt: final_h.+1 < t_h.
   apply/ltP.
   move/ltP: Hft => Hft.
   by intuition.
-by Reconstr.hobvious (@Hfinal, @Hnoans, @Hsf, @Hgt, @Hsj, @Htgts, @Hnth, @Hsm)
+have Hjl : justification_link st s t s_h t_h by trivial.
+by Reconstr.hobvious (@Hfinal, @Hnoans, @Hsf, @Hgt, @Hsj, @Hjl)
 		(@slash_surround_case_strict)
 		(@hash_ancestor).
 Qed.
@@ -174,9 +173,7 @@ move => b1_h b1 IH Hb1j Hb2f Hconfl Hh.
 have Hor: (b1 = genesis /\ b1_h = 0) \/
           (exists s s_h,
              justified st s s_h /\
-             b1_h > s_h /\
-             nth_ancestor (b1_h - s_h) s b1 /\
-             supermajority_link st s b1 s_h b1_h).
+             justification_link st s b1 s_h b1_h).
   inversion Hb1j; first by left.
   right.
   by exists s, s_h.
@@ -211,7 +208,8 @@ case Hlt: (b2_h < s_h); last first.
       move/eqP => Hpp.
       by apply sym_eq in Hpp.
     move => Hlt.
-    by have Hslash_surround := slash_surround_case_general Hsj Hsh Hsa Hsm Hb2f Hh Hconfl Hlt.
+    have Hjl : justification_link st s b1 s_h b1_h by trivial.
+    by have Hslash_surround := slash_surround_case_general Hsj Hjl Hb2f Hh Hconfl Hlt.
 by apply: IH'.
 Qed.
 
