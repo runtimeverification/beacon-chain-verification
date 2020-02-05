@@ -163,7 +163,8 @@ Proof.
     as Hjust_le_target by
      (clear;intros n n_h H;
      apply highest_ub;destruct H;[by apply fset1U1|];
-     destruct (quorum_2_nonempty H2) as [t_supporter Ht];
+     destruct H0 as [_ [_ Hsm]];
+     destruct (quorum_2_nonempty Hsm) as [t_supporter Ht];
      rewrite in_set in Ht; apply/fsetUP; right;
      revert Ht; apply in_imfset).
 
@@ -306,13 +307,14 @@ Proof.
       revert Hjust_max_just. apply justified_weaken.
       apply/fsubsetP. by eapply fsubset_trans;apply fsubsetUl.
 
+    unfold justification_link. split.
     rewrite <- addn1 with (highest_target.+1 - just_max_h) in Hdist.
     replace 1 with (0 + 1) in Hdist at 1 by trivial.
     rewrite -> ltn_add2r with 1 0 (highest_target.+1 - just_max_h) in Hdist.
     revert Hdist.
     rewrite subn_gt0. trivial.
 
-    assumption.
+    split. assumption.
 
     unfold supermajority_link, link_supporters, vote_msg.
     apply quorum_2_upclosed with good_quorum;[|assumption].
