@@ -190,7 +190,7 @@ rule isActiveValidator(V, Epoch)
 
 syntax KItem ::= initiateValidatorExit(Validator)
 rule <k> initiateValidatorExit(V)
-      => setExitEpoch(V, computeExitEpoch(values_list(Validators), epochOf(Slot))) ... </k>
+      => setExitEpoch(V, computeExitEpoch(values(Validators), epochOf(Slot))) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -296,7 +296,7 @@ rule <k> processJustification(Epoch) => . ... </k>
 
 syntax Bool ::= isJustifiable(Int, Attestations, Map) [function]
 rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
-  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values_list(Validators)))
+  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values(Validators)))
 
 syntax Bool ::= isMajority(Int, Int) [function]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
@@ -443,7 +443,7 @@ rule isActivationEligible(V)
 
 syntax Kitem ::= processValidatorActivation()
 rule <k> processValidatorActivation()
-      => activateValidators(activationQueueUptoChurnLimit(values_list(Validators), FinalizedEpoch, epochOf(Slot) -Int 1)) ... </k>
+      => activateValidators(activationQueueUptoChurnLimit(values(Validators), FinalizedEpoch, epochOf(Slot) -Int 1)) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -504,11 +504,5 @@ rule dropLastActivationEligibleValidatorAux(ListItem(V:Validator) Vs, MaxV, AccV
      #else dropLastActivationEligibleValidatorAux(Vs, MaxV, ListItem(   V) AccVs)
      #fi
 rule dropLastActivationEligibleValidatorAux(.List, _, Vs) => Vs
-
-syntax List ::= "values_list" "(" Map ")" [function]
-              | "values_list" "(" Map "," List "," List ")" [function]
-rule values_list(M:Map) => values_list(M, keys_list(M), .List)
-rule values_list(M, ListItem(K) Ks:List, Vs) => values_list(M, Ks, ListItem(M[K]) Vs)
-rule values_list(_, .List, Vs) => Vs
 
 endmodule
