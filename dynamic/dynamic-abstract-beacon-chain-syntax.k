@@ -19,6 +19,8 @@ rule C:Cmd Cs:Cmds => C ~> Cs
 syntax Pair ::= "(" Int "," Int ")"
 syntax Option ::= "none" | "some" Int
 
+// TODO: add slashings
+// randao_reveal and eth1_data are omitted
 syntax Block ::= #Block(Pair,Pair,Attestations,Deposits,VoluntaryExits) // (slot,id), parent, attestations, deposits, voluntary exits
 syntax Int            ::= Block ".slot"            [function]
 syntax Int            ::= Block ".id"              [function]
@@ -33,6 +35,7 @@ rule #Block((_,_),_,X,_,_).attestations    => X
 rule #Block((_,_),_,_,X,_).deposits        => X
 rule #Block((_,_),_,_,_,X).voluntary_exits => X
 
+// beacon_block_root (LMD GHOST vote) is omitted
 syntax Attestations ::= List{Attestation,""}
 syntax Attestation  ::= #Attestation(Int,Int,Pair,Pair) // attester, assigned slot, source epoch/block, target epoch/block
 syntax Int ::= Attestation ".attester"     [function]
@@ -62,6 +65,7 @@ syntax Int ::= VoluntaryExit ".epoch"     [function]
 rule #VoluntaryExit(X,_).validator => X
 rule #VoluntaryExit(_,X).epoch     => X
 
+// TODO: add slashed info
 syntax Validator ::= #Validator(Int,Pair,Pair,Pair) // id, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
 syntax Int ::= Validator ".id"                           [function]
 syntax Int ::= Validator ".balance"                      [function]
@@ -91,8 +95,8 @@ rule #Validator(A,(B,C),(D,E),(F,G)) with exit_epoch                   = V => #V
 rule #Validator(A,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => #Validator(A,(B,C),(D,E),(F,V))
 
 // macros
-syntax Int ::= "SLOTS_PER_EPOCH"                        rule SLOTS_PER_EPOCH                     =>      4 /*    64 */    [macro]
-syntax Int ::= "MIN_ATTESTATION_INCLUSION_DELAY"        rule MIN_ATTESTATION_INCLUSION_DELAY     =>      1 /*     4 */    [macro]
+syntax Int ::= "SLOTS_PER_EPOCH"                        rule SLOTS_PER_EPOCH                     =>      4 /*    32 */    [macro]
+syntax Int ::= "MIN_ATTESTATION_INCLUSION_DELAY"        rule MIN_ATTESTATION_INCLUSION_DELAY     =>      1 /*     1 */    [macro]
 syntax Int ::= "MAX_ATTESTATION_INCLUSION_DELAY"        rule MAX_ATTESTATION_INCLUSION_DELAY     => SLOTS_PER_EPOCH       [macro]
 syntax Int ::= "FAR_FUTURE_EPOCH"                       rule FAR_FUTURE_EPOCH                    => 999999 /* 2^64 - 1 */ [macro]
 syntax Int ::= "MIN_DEPOSIT_AMOUNT"                     rule MIN_DEPOSIT_AMOUNT                  =>      1 /*     1 */    [macro]

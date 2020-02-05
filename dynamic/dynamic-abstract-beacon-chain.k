@@ -7,6 +7,8 @@ imports INT
 imports MAP
 imports LIST
 
+// TODO: add slashings
+// eth1_* and randao_mixes are omitted
 configuration <T>
   <k> init ~> $PGM:Cmds </k>
   <currentSlot> 0 </currentSlot>
@@ -65,7 +67,10 @@ rule <k> init => . ... </k>
        </state>
      </states>
 
-// state_transition
+//
+// State Transition
+//
+
 rule <k> stateTransition(NewBlock)
       => processSlots(NewBlock.slot)
       ~> processBlock(NewBlock) ... </k>
@@ -93,6 +98,7 @@ rule <k> processSlots(TargetSlot) => . ... </k>
 
 rule <k> processSlot() => . ... </k>
 
+// TODO: add process_proposer_slashing, process_attester_slashing
 rule <k> processBlock(#Block((Slot, ID), Parent, Attestations, Deposits, VoluntaryExits))
       => processAttestations(Attestations)
       ~> processDeposits(Deposits) 
@@ -117,6 +123,10 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Attestations, Deposits, Volunta
      </state>
      // TODO: check if the block proposer is valid (assigned, not slashed)
 
+//
+// Attestations
+//
+
 syntax KItem ::= processAttestations(Attestations)
 rule <k> processAttestations(A Attestations => Attestations) ... </k>
      <currentSlot> Slot </currentSlot>
@@ -139,6 +149,10 @@ rule <k> processAttestations(A Attestations => Attestations) ... </k>
       andBool epochOf(A.slot) ==Int A.target_epoch
       // TODO: check if A.attester is assigned to A.slot, and not slashed
 rule processAttestations(.Attestations) => .
+
+//
+// Deposits
+//
 
 syntax KItem ::= processDeposits(Deposits)
 rule <k> processDeposits(D Deposits => Deposits) ... </k>
@@ -167,6 +181,10 @@ rule <k> processDeposits(D Deposits => Deposits) ... </k>
      </state>
      requires notBool D.sender in keys(Validators)
 rule processDeposits(.Deposits) => .
+
+//
+// Voluntary Exits
+//
 
 syntax KItem ::= processVoluntaryExits(VoluntaryExits)
 rule <k> processVoluntaryExits(E Exits)
@@ -250,6 +268,11 @@ syntax Int ::= churnLimit(Int) [function]
 rule churnLimit(ActiveValidatorSize)
   => maxInt(MIN_PER_EPOCH_CHURN_LIMIT, ActiveValidatorSize /Int CHURN_LIMIT_QUOTIENT)
 
+//
+// Epoch Processing
+//
+
+// TODO: add process_rewards_and_penalties, process_slashings, process_final_updates (?)
 rule <k> processEpoch()
       => processJustification(epochOf(Slot) -Int 2)
       ~> processJustification(epochOf(Slot) -Int 1)
@@ -269,6 +292,10 @@ rule <k> processEpoch()
 rule <k> processEpoch() => . ... </k>
      <currentSlot> Slot </currentSlot>
      requires notBool isFirstSlotOfEpoch(Slot)
+
+//
+// Justification
+//
 
 syntax KItem ::= processJustification(Int)
 rule <k> processJustification(Epoch)
@@ -338,6 +365,10 @@ rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
      </state>
 rule <k> false ~> justify(_,_) => . ... </k>
 
+//
+// Finalization
+//
+
 syntax KItem ::= processFinalization(Int)
 rule <k> processFinalization(TargetEpoch)
       => isFinalizable(SourceEpoch, TargetEpoch, Justified)
@@ -390,6 +421,10 @@ rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
        ...
      </state>
 rule <k> false ~> finalize(_, _) => . ... </k>
+
+//
+// Validator Updates
+//
 
 // TODO: check if no mistake was made as this process is associated with the previous epoch
 syntax KItem ::= processValidatorUpdates()
