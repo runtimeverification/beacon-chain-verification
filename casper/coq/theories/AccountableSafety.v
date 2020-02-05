@@ -239,11 +239,10 @@ move => st b1 b2 h Hf1 Hf2 Hh.
 unfold finalized, supermajority_link, link_supporters, vote_msg in Hf1, Hf2.
 destruct Hf1 as [Hj1 [c1 [Hp1 Hq1]]].
 destruct Hf2 as [Hj2 [c2 [Hp2 Hq2]]].
-
-  have Hconf := no_two_justified_same_height Hj1 Hj2.
-  have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.
-  case: Ho => // Ho.
-  apply Hconf in Ho;[contradiction|assumption].
+have Hconf := no_two_justified_same_height Hj1 Hj2.
+have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.
+case: Ho => // Ho.
+apply Hconf in Ho;[contradiction|assumption].
 Qed.
 
 (* A quorum is slashed if two conflicting blocks are finalized *)
