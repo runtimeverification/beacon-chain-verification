@@ -239,11 +239,25 @@ move => st b1 b2 h Hf1 Hf2 Hh.
 unfold finalized, supermajority_link, link_supporters, vote_msg in Hf1, Hf2.
 destruct Hf1 as [Hj1 [c1 [Hp1 Hq1]]].
 destruct Hf2 as [Hj2 [c2 [Hp2 Hq2]]].
-
-  have Hconf := no_two_justified_same_height Hj1 Hj2.
-  have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.
-  case: Ho => // Ho.
-  apply Hconf in Ho;[contradiction|assumption].
+have [q [Hq_qourum Hq_dblvote]]: exists q,
+  q \in quorum_1 /\
+  forall v, v \in q ->
+    v \in [set v | (v, b1, c1, h, h.+1) \in st] /\ v \in [set v | (v, b2, c2, h, h.+1) \in st]
+  by Reconstr.rsimple (@quorums_property) Reconstr.Empty.
+have Hx: c1 <> c2.
+  move => Hx.
+  rewrite Hx in Hp1.
+  by have Hp := hash_at_most_one_parent Hp1 Hp2.
+unfold quorum_slashed.
+exists q. split;[assumption|].
+intros v Hvinq. unfold slashed. left.
+unfold slashed_dbl_vote.
+exists c1, c2. split;[assumption|].
+exists b1, h, b2, h, (h.+1).
+unfold vote_msg.
+have H:= @Hq_dblvote v Hvinq.
+repeat rewrite in_set in H.
+assumption.
 Qed.
 
 (* A quorum is slashed if two conflicting blocks are finalized *)
