@@ -19,7 +19,7 @@ Unset Printing Implicit Defensive.
 Definition link_supporters st s t s_h t_h : {set Validator} :=
   [set v | vote_msg st v s t s_h t_h ].
 
-(* The voter set constitute a supermajority *)
+(* The voter set for a link constitute a supermajority *)
 Definition supermajority_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
   link_supporters st s t s_h t_h \in quorum_2.
 
@@ -37,6 +37,11 @@ Proof.
   apply Hsub.
 Qed.
 
+Definition justification_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
+  t_h > s_h /\
+  nth_ancestor (t_h - s_h) s t /\
+  supermajority_link st s t s_h t_h.
+
 (* We define justification of a block inductively in terms of a path
    from the genesis block all the way to that block.
  *)
@@ -44,9 +49,7 @@ Inductive justified (st:State) : Hash -> nat -> Prop :=
 | justified_genesis : justified st genesis 0
 | justified_link : forall s s_h t t_h,
     justified st s s_h ->
-    t_h > s_h ->
-    nth_ancestor (t_h - s_h) s t ->
-    supermajority_link st s t s_h t_h ->
+    justification_link st s t s_h t_h ->
     justified st t t_h.
 
 (* Justification is preserved when the state is expanded with new votes *)
@@ -56,9 +59,10 @@ Lemma justified_weaken: forall (st st':State)
 Proof.
   move=> st st' Hsub t t_h.
   induction 1. constructor.
+  destruct H0 as [Hh [Ha Hsm]].
   apply (justified_link IHjustified).
-  assumption. assumption.
-  revert H2.
+  unfold justification_link;repeat (split; try assumption).
+  revert Hsm.
   apply supermajority_weaken.
   assumption.
 Qed.
@@ -81,5 +85,6 @@ exists c. split. assumption.
 have Hp := parent_ancestor Hc_parent.
 have Hc_h : p_h.+1 > p_h by trivial.
 replace 1 with (p_h.+1 - p_h) in Hp by (rewrite subSnn;reflexivity).
-apply (justified_link Hjustified_p Hc_h Hp Hc_sm).
+have Hjl : justification_link st p c p_h p_h.+1 by trivial.
+apply (justified_link Hjustified_p Hjl).
 Qed.
