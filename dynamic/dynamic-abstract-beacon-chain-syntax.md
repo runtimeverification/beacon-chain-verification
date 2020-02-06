@@ -23,7 +23,7 @@ syntax Pair ::= "(" Int "," Int ")"
 syntax Option ::= "none" | "some" Int
 ```
 
-## Abstract Block
+## Abstract Blocks
 
 An abstract block consists of:
 - `slot`: the slot number of the block
@@ -54,7 +54,7 @@ rule #Block((_,_),_,_,_,X,_).deposits        => X
 rule #Block((_,_),_,_,_,_,X).voluntary_exits => X
 ```
 
-## Slashings
+## Abstract Slashings
 
 An abstract slashing evidence is a pair of two conflict attestations.
 
@@ -72,7 +72,7 @@ rule #Slashing(X,_).attestation_1 => X
 rule #Slashing(_,X).attestation_2 => X
 ```
 
-## Attestations
+## Abstract Attestations
 
 An abstract attestation denotes a single attestation, consisting of an attester, an assigned slot, a source, and a target.
 
@@ -96,7 +96,7 @@ rule #Attestation(_,_,(_,_),(X,_)).target_epoch => X
 rule #Attestation(_,_,(_,_),(_,X)).target_block => X
 ```
 
-## Deposits
+## Abstract Deposits
 
 An abstract deposit is simply a pair of the deposit owner and the deposit amount.
 
@@ -111,7 +111,7 @@ rule #Deposit(X,_).sender => X
 rule #Deposit(_,X).amount => X
 ```
 
-## VoluntaryExits
+## Voluntary Exits
 
 This is a pair of a validator ID and an epoch to exit requested.
 
@@ -126,7 +126,7 @@ rule #VoluntaryExit(X,_).validator => X
 rule #VoluntaryExit(_,X).epoch     => X
 ```
 
-## Validator
+## Abstract Validators
 
 An abstract validator consists of:
 - `id`: a unique ID, corresponding to `pubkey` of the concrete model
