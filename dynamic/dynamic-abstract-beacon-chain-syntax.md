@@ -1,3 +1,4 @@
+```k
 module DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
 
@@ -133,3 +134,4 @@ rule lastSlotOf(Epoch)        => firstSlotOf(Epoch) +Int SLOTS_PER_EPOCH -Int 1
 rule isFirstSlotOfEpoch(Slot) => Slot %Int SLOTS_PER_EPOCH ==Int 0 // Slot is the first slot of an epoch?
 
 endmodule
+```

@@ -1,3 +1,4 @@
+```k
 require "dynamic-abstract-beacon-chain-syntax.k"
 
 module DYNAMIC-ABSTRACT-BEACON-CHAIN
@@ -599,3 +600,4 @@ rule dropLastActivationEligibleValidatorAux(ListItem(V:Validator) Vs, MaxV, AccV
 rule dropLastActivationEligibleValidatorAux(.List, _, Vs) => Vs
 
 endmodule
+```
