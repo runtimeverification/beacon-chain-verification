@@ -7,7 +7,6 @@ imports INT
 imports MAP
 imports LIST
 
-// TODO: add slashings
 // eth1_* and randao_mixes are omitted
 configuration <T>
   <k> init ~> $PGM:Cmds </k>
@@ -17,6 +16,7 @@ configuration <T>
     <state multiplicity="*" type="Map">
       <slot> 0 </slot>
       <validators> .Map </validators> // ValidatorID -> ValidatorState
+      <slashings> 0 </slashings> // slashed balance
       <attested> .Map </attested> // Epoch -> Attestations
       <justified> .Map </justified> // Epoch -> Block option
       <finalized> .Map </finalized> // Epoch -> Block option
@@ -43,14 +43,15 @@ rule <k> init => . ... </k>
        <state>
          <slot> 0 </slot>
          <validators>
-           90000 |-> #Validator(90000,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
-           90001 |-> #Validator(90001,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
-           90002 |-> #Validator(90002,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
-           90003 |-> #Validator(90003,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
-           90004 |-> #Validator(90004,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
-           90005 |-> #Validator(90005,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
-           90006 |-> #Validator(90006,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
+           90000 |-> #Validator(90000,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
+           90001 |-> #Validator(90001,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
+           90002 |-> #Validator(90002,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
+           90003 |-> #Validator(90003,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
+           90004 |-> #Validator(90004,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
+           90005 |-> #Validator(90005,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
+           90006 |-> #Validator(90006,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
          </validators>
+         <slashings> 0 </slashings>
          <attested> 0 |-> .Attestations </attested>
          <justified> 0 |-> some 0 </justified>
          <finalized> 0 |-> some 0 </finalized>
@@ -98,9 +99,9 @@ rule <k> processSlots(TargetSlot) => . ... </k>
 
 rule <k> processSlot() => . ... </k>
 
-// TODO: add process_proposer_slashing, process_attester_slashing
-rule <k> processBlock(#Block((Slot, ID), Parent, Attestations, Deposits, VoluntaryExits))
-      => processAttestations(Attestations)
+rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits))
+      => processSlashings(Slashings)
+      ~> processAttestations(Attestations)
       ~> processDeposits(Deposits) 
       ~> processVoluntaryExits(VoluntaryExits) ... </k>
      <currentSlot> Slot </currentSlot>
@@ -124,6 +125,58 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Attestations, Deposits, Volunta
      // TODO: check if the block proposer is valid (assigned, not slashed)
 
 //
+// Slashings
+//
+
+// capturing both proposer slashings and attester slahsings
+
+syntax KItem ::= processSlashings(Slashings)
+rule processSlashings(S Slashings) => processSlashing(S) ~> processSlashings(Slashings)
+rule processSlashings(.Slashings) => .
+
+syntax KItem ::= processSlashing(Slashing)
+rule <k> processSlashing(#Slashing(A1, A2))
+      => initiateValidatorExit(V)
+      ~> slashValidator(V) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators>
+         A.attester |-> V:Validator
+         ...
+       </validators>
+       ...
+     </state>
+     requires isSlashableAttestation(A1, A2) // assertion
+      andBool A1.attester ==Int A2.attester
+
+syntax KItem ::= slashValidator(Validator)
+rule <k> slashValidator(V) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <slashings> S => S +Int V.effective_balance </slashings>
+       <validators>
+         V.id |-> (V => V with slashed = true
+                          with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
+                          with effective_balance = V.effective_balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT)
+                  )
+         ...
+       </validators>
+       ...
+     </state>
+     // TODO: proposer and whistleblower rewards
+
+syntax Bool ::= isSlashableAttestation(Attestation, Attestation) [function]
+rule isSlashableAttestation(A1, A2)
+  => ( A1 =/=K A2 andBool A1.target_epoch ==Int A2.target_epoch )
+     orBool
+     ( A1.source_epoch <Int A2.source_epoch andBool A2.target_epoch <Int A1.target_epoch )
+  // TODO: the following case not needed?
+  // orBool
+  // ( A2.source_epoch <Int A1.source_epoch andBool A1.target_epoch <Int A2.target_epoch )
+
+//
 // Attestations
 //
 
@@ -136,6 +189,10 @@ rule <k> processAttestations(A Attestations => Attestations) ... </k>
          A.target_epoch |-> (As:Attestations => A As)
          ...
        </attested>
+       <validators>
+         A.attester |-> V:Validator
+         ...
+       </validators>
        ...
      </state>
      <state>
@@ -147,7 +204,8 @@ rule <k> processAttestations(A Attestations => Attestations) ... </k>
       andBool A.source_block ==Int JBlock
       andBool A.slot +Int MIN_ATTESTATION_INCLUSION_DELAY <=Int Slot andBool Slot <=Int A.slot +Int MAX_ATTESTATION_INCLUSION_DELAY
       andBool epochOf(A.slot) ==Int A.target_epoch
-      // TODO: check if A.attester is assigned to A.slot, and not slashed
+      andBool notBool V.slashed // TODO: is this checked in spec?
+      // TODO: check if A.attester is assigned to A.slot
 rule processAttestations(.Attestations) => .
 
 //
@@ -171,7 +229,7 @@ rule <k> processDeposits(D Deposits => Deposits) ... </k>
        <slot> Slot </slot>
        <validators>
          Validators => Validators[
-           D.sender <- #Validator(D.sender,
+           D.sender <- #Validator(D.sender, false,
                                   (D.amount, minInt(D.amount, MAX_EFFECTIVE_BALANCE)), // effective_balance cap
                                   (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH),
                                   (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH))

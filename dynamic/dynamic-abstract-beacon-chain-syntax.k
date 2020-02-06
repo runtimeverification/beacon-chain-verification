@@ -19,21 +19,30 @@ rule C:Cmd Cs:Cmds => C ~> Cs
 syntax Pair ::= "(" Int "," Int ")"
 syntax Option ::= "none" | "some" Int
 
-// TODO: add slashings
 // randao_reveal and eth1_data are omitted
-syntax Block ::= #Block(Pair,Pair,Attestations,Deposits,VoluntaryExits) // (slot,id), parent, attestations, deposits, voluntary exits
+syntax Block ::= #Block(Pair,Pair,Slashings,Attestations,Deposits,VoluntaryExits) // (slot,id), parent, slashings, attestations, deposits, voluntary exits
 syntax Int            ::= Block ".slot"            [function]
 syntax Int            ::= Block ".id"              [function]
 syntax Pair           ::= Block ".parent"          [function]
+syntax Slashings      ::= Block ".slashings"       [function]
 syntax Attestations   ::= Block ".attestations"    [function]
 syntax Deposits       ::= Block ".deposits"        [function]
 syntax VoluntaryExits ::= Block ".voluntary_exits" [function]
-rule #Block((X,_),_,_,_,_).slot            => X
-rule #Block((_,X),_,_,_,_).id              => X
-rule #Block((_,_),X,_,_,_).parent          => X
-rule #Block((_,_),_,X,_,_).attestations    => X
-rule #Block((_,_),_,_,X,_).deposits        => X
-rule #Block((_,_),_,_,_,X).voluntary_exits => X
+rule #Block((X,_),_,_,_,_,_).slot            => X
+rule #Block((_,X),_,_,_,_,_).id              => X
+rule #Block((_,_),X,_,_,_,_).parent          => X
+rule #Block((_,_),_,X,_,_,_).slashings       => X
+rule #Block((_,_),_,_,X,_,_).attestations    => X
+rule #Block((_,_),_,_,_,X,_).deposits        => X
+rule #Block((_,_),_,_,_,_,X).voluntary_exits => X
+
+// abstract represention of both proposer slashings and attester slahsings
+syntax Slashings ::= List{Slashing,""}
+syntax Slashing  ::= #Slashing(Attestation,Attestation) // two conflict attestations
+syntax Attestation ::= Slashing ".attestation_1" [function]
+syntax Attestation ::= Slashing ".attestation_2" [function]
+rule #Slashing(X,_).attestation_1 => X
+rule #Slashing(_,X).attestation_2 => X
 
 // beacon_block_root (LMD GHOST vote) is omitted
 syntax Attestations ::= List{Attestation,""}
@@ -65,34 +74,37 @@ syntax Int ::= VoluntaryExit ".epoch"     [function]
 rule #VoluntaryExit(X,_).validator => X
 rule #VoluntaryExit(_,X).epoch     => X
 
-// TODO: add slashed info
-syntax Validator ::= #Validator(Int,Pair,Pair,Pair) // id, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
-syntax Int ::= Validator ".id"                           [function]
-syntax Int ::= Validator ".balance"                      [function]
-syntax Int ::= Validator ".effective_balance"            [function]
-syntax Int ::= Validator ".activation_eligibility_epoch" [function]
-syntax Int ::= Validator ".activation_epoch"             [function]
-syntax Int ::= Validator ".exit_epoch"                   [function]
-syntax Int ::= Validator ".withdrawable_epoch"           [function]
-rule #Validator(X,(_,_),(_,_),(_,_)).id                           => X
-rule #Validator(_,(X,_),(_,_),(_,_)).balance                      => X
-rule #Validator(_,(_,X),(_,_),(_,_)).effective_balance            => X
-rule #Validator(_,(_,_),(X,_),(_,_)).activation_eligibility_epoch => X
-rule #Validator(_,(_,_),(_,X),(_,_)).activation_epoch             => X
-rule #Validator(_,(_,_),(_,_),(X,_)).exit_epoch                   => X
-rule #Validator(_,(_,_),(_,_),(_,X)).withdrawable_epoch           => X
-syntax Validator ::= Validator "with" "balance"                      "=" Int [function]
-syntax Validator ::= Validator "with" "effective_balance"            "=" Int [function]
-syntax Validator ::= Validator "with" "activation_eligibility_epoch" "=" Int [function]
-syntax Validator ::= Validator "with" "activation_epoch"             "=" Int [function]
-syntax Validator ::= Validator "with" "exit_epoch"                   "=" Int [function]
-syntax Validator ::= Validator "with" "withdrawable_epoch"           "=" Int [function]
-rule #Validator(A,(B,C),(D,E),(F,G)) with balance                      = V => #Validator(A,(V,C),(D,E),(F,G))
-rule #Validator(A,(B,C),(D,E),(F,G)) with effective_balance            = V => #Validator(A,(B,V),(D,E),(F,G))
-rule #Validator(A,(B,C),(D,E),(F,G)) with activation_eligibility_epoch = V => #Validator(A,(B,C),(V,E),(F,G))
-rule #Validator(A,(B,C),(D,E),(F,G)) with activation_epoch             = V => #Validator(A,(B,C),(D,V),(F,G))
-rule #Validator(A,(B,C),(D,E),(F,G)) with exit_epoch                   = V => #Validator(A,(B,C),(D,E),(V,G))
-rule #Validator(A,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => #Validator(A,(B,C),(D,E),(F,V))
+syntax Validator ::= #Validator(Int,Bool,Pair,Pair,Pair) // id, slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
+syntax Int  ::= Validator ".id"                           [function]
+syntax Bool ::= Validator ".slashed"                      [function]
+syntax Int  ::= Validator ".balance"                      [function]
+syntax Int  ::= Validator ".effective_balance"            [function]
+syntax Int  ::= Validator ".activation_eligibility_epoch" [function]
+syntax Int  ::= Validator ".activation_epoch"             [function]
+syntax Int  ::= Validator ".exit_epoch"                   [function]
+syntax Int  ::= Validator ".withdrawable_epoch"           [function]
+rule #Validator(X,_,(_,_),(_,_),(_,_)).id                           => X
+rule #Validator(_,X,(_,_),(_,_),(_,_)).slashed                      => X
+rule #Validator(_,_,(X,_),(_,_),(_,_)).balance                      => X
+rule #Validator(_,_,(_,X),(_,_),(_,_)).effective_balance            => X
+rule #Validator(_,_,(_,_),(X,_),(_,_)).activation_eligibility_epoch => X
+rule #Validator(_,_,(_,_),(_,X),(_,_)).activation_epoch             => X
+rule #Validator(_,_,(_,_),(_,_),(X,_)).exit_epoch                   => X
+rule #Validator(_,_,(_,_),(_,_),(_,X)).withdrawable_epoch           => X
+syntax Validator ::= Validator "with" "slashed"                      "=" Bool [function]
+syntax Validator ::= Validator "with" "balance"                      "=" Int  [function]
+syntax Validator ::= Validator "with" "effective_balance"            "=" Int  [function]
+syntax Validator ::= Validator "with" "activation_eligibility_epoch" "=" Int  [function]
+syntax Validator ::= Validator "with" "activation_epoch"             "=" Int  [function]
+syntax Validator ::= Validator "with" "exit_epoch"                   "=" Int  [function]
+syntax Validator ::= Validator "with" "withdrawable_epoch"           "=" Int  [function]
+rule #Validator(A,S,(B,C),(D,E),(F,G)) with slashed                      = V => #Validator(A,V,(B,C),(D,E),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) with balance                      = V => #Validator(A,S,(V,C),(D,E),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) with effective_balance            = V => #Validator(A,S,(B,V),(D,E),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_eligibility_epoch = V => #Validator(A,S,(B,C),(V,E),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_epoch             = V => #Validator(A,S,(B,C),(D,V),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) with exit_epoch                   = V => #Validator(A,S,(B,C),(D,E),(V,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => #Validator(A,S,(B,C),(D,E),(F,V))
 
 // macros
 syntax Int ::= "SLOTS_PER_EPOCH"                        rule SLOTS_PER_EPOCH                     =>      4 /*    32 */    [macro]
@@ -108,6 +120,8 @@ syntax Int ::= "ACTIVATION_EXIT_DELAY"                  rule ACTIVATION_EXIT_DEL
 syntax Int ::= "MIN_VALIDATOR_WITHDRAWABILITY_DELAY"    rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>      1 /*   256 */    [macro]
 syntax Int ::= "MIN_PER_EPOCH_CHURN_LIMIT"              rule MIN_PER_EPOCH_CHURN_LIMIT           =>      1 /*     4 */    [macro]
 syntax Int ::= "CHURN_LIMIT_QUOTIENT"                   rule CHURN_LIMIT_QUOTIENT                =>      1 /* 65536 */    [macro]
+syntax Int ::= "EPOCHS_PER_SLASHINGS_VECTOR"            rule EPOCHS_PER_SLASHINGS_VECTOR         =>      1 /*  8192 */    [macro]
+syntax Int ::= "MIN_SLASHING_PENALTY_QUOTIENT"          rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1 /*    32 */    [macro]
 
 syntax Int  ::= epochOf(Int)            [function]
               | firstSlotOf(Int)        [function]
