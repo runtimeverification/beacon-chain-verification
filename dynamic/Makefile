@@ -121,7 +121,7 @@ $(java_kompiled): $(java_files)
 # ----
 
 test:
-	$(K_BIN)/krun test1.abc | diff - test1.abc.out
-	$(K_BIN)/krun test2.abc | diff - test2.abc.out
-	$(K_BIN)/krun test3.abc | diff - test3.abc.out
+	$(K_BIN)/krun -d $(haskell_dir) test1.abc | diff - test1.abc.out
+	$(K_BIN)/krun -d $(haskell_dir) test2.abc | diff - test2.abc.out
+	$(K_BIN)/krun -d $(haskell_dir) test3.abc | diff - test3.abc.out
 
