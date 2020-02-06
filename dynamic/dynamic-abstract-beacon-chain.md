@@ -1,3 +1,5 @@
+# Dynamic Abstract Model of Beacon Chain State Transition
+
 ```k
 require "dynamic-abstract-beacon-chain-syntax.k"
 

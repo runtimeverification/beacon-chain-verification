@@ -1,3 +1,5 @@
+# Data Types and Constants of Dynamic Abstract Model of Beacon Chain State Transition
+
 ```k
 module DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
@@ -19,7 +21,13 @@ rule C:Cmd Cs:Cmds => C ~> Cs
 // data structures
 syntax Pair ::= "(" Int "," Int ")"
 syntax Option ::= "none" | "some" Int
+```
 
+## Abstract Block
+
+An abstract block consists of an assigned slot number, an abstract unique ID, its parent block's ID, the list of slashing evidences, the list of 
+
+```k
 // randao_reveal and eth1_data are omitted
 syntax Block ::= #Block(Pair,Pair,Slashings,Attestations,Deposits,VoluntaryExits) // (slot,id), parent, slashings, attestations, deposits, voluntary exits
 syntax Int            ::= Block ".slot"            [function]
@@ -36,7 +44,11 @@ rule #Block((_,_),_,X,_,_,_).slashings       => X
 rule #Block((_,_),_,_,X,_,_).attestations    => X
 rule #Block((_,_),_,_,_,X,_).deposits        => X
 rule #Block((_,_),_,_,_,_,X).voluntary_exits => X
+```
 
+## Slashings
+
+```k
 // abstract represention of both proposer slashings and attester slahsings
 syntax Slashings ::= List{Slashing,""}
 syntax Slashing  ::= #Slashing(Attestation,Attestation) // two conflict attestations
@@ -44,7 +56,11 @@ syntax Attestation ::= Slashing ".attestation_1" [function]
 syntax Attestation ::= Slashing ".attestation_2" [function]
 rule #Slashing(X,_).attestation_1 => X
 rule #Slashing(_,X).attestation_2 => X
+```
 
+## Attestations
+
+```k
 // beacon_block_root (LMD GHOST vote) is omitted
 syntax Attestations ::= List{Attestation,""}
 syntax Attestation  ::= #Attestation(Int,Int,Pair,Pair) // attester, assigned slot, source epoch/block, target epoch/block
@@ -60,21 +76,33 @@ rule #Attestation(_,_,(X,_),(_,_)).source_epoch => X
 rule #Attestation(_,_,(_,X),(_,_)).source_block => X
 rule #Attestation(_,_,(_,_),(X,_)).target_epoch => X
 rule #Attestation(_,_,(_,_),(_,X)).target_block => X
+```
 
+## Deposits
+
+```k
 syntax Deposits ::= List{Deposit,""}
 syntax Deposit  ::= #Deposit(Int,Int) // sender, amount
 syntax Int ::= Deposit ".sender" [function]
 syntax Int ::= Deposit ".amount" [function]
 rule #Deposit(X,_).sender => X
 rule #Deposit(_,X).amount => X
+```
 
+## VoluntaryExits
+
+```k
 syntax VoluntaryExits ::= List{VoluntaryExit,""}
 syntax VoluntaryExit  ::= #VoluntaryExit(Int,Int) // validator id, epoch to exit
 syntax Int ::= VoluntaryExit ".validator" [function]
 syntax Int ::= VoluntaryExit ".epoch"     [function]
 rule #VoluntaryExit(X,_).validator => X
 rule #VoluntaryExit(_,X).epoch     => X
+```
 
+## Validator
+
+```k
 syntax Validator ::= #Validator(Int,Bool,Pair,Pair,Pair) // id, slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
 syntax Int  ::= Validator ".id"                           [function]
 syntax Bool ::= Validator ".slashed"                      [function]
@@ -106,7 +134,11 @@ rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_eligibility_epoch = V => 
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_epoch             = V => #Validator(A,S,(B,C),(D,V),(F,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with exit_epoch                   = V => #Validator(A,S,(B,C),(D,E),(V,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => #Validator(A,S,(B,C),(D,E),(F,V))
+```
 
+## Constants
+
+```k
 // macros
 syntax Int ::= "SLOTS_PER_EPOCH"                        rule SLOTS_PER_EPOCH                     =>      4 /*    32 */    [macro]
 syntax Int ::= "MIN_ATTESTATION_INCLUSION_DELAY"        rule MIN_ATTESTATION_INCLUSION_DELAY     =>      1 /*     1 */    [macro]
@@ -123,7 +155,11 @@ syntax Int ::= "MIN_PER_EPOCH_CHURN_LIMIT"              rule MIN_PER_EPOCH_CHURN
 syntax Int ::= "CHURN_LIMIT_QUOTIENT"                   rule CHURN_LIMIT_QUOTIENT                =>      1 /* 65536 */    [macro]
 syntax Int ::= "EPOCHS_PER_SLASHINGS_VECTOR"            rule EPOCHS_PER_SLASHINGS_VECTOR         =>      1 /*  8192 */    [macro]
 syntax Int ::= "MIN_SLASHING_PENALTY_QUOTIENT"          rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1 /*    32 */    [macro]
+```
 
+## Macros
+
+```k
 syntax Int  ::= epochOf(Int)            [function]
               | firstSlotOf(Int)        [function]
               | lastSlotOf(Int)         [function]
