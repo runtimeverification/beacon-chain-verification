@@ -1,4 +1,4 @@
-# Data Types and Constants of Dynamic Abstract Model of Beacon Chain State Transition
+# Data Types of Dynamic Abstract Model
 
 ```k
 module DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
@@ -25,10 +25,18 @@ syntax Option ::= "none" | "some" Int
 
 ## Abstract Block
 
-An abstract block consists of an assigned slot number, an abstract unique ID, its parent block's ID, the list of slashing evidences, the list of 
+An abstract block consists of:
+- `slot`: the slot number of the block
+- `id`: an abstract unique ID
+- `parent`: the link to the parent block, corresponding to `parent_root` of the concrete model
+- `slashings`: the list of slashing evidences, capturing both `proposer_slashings` and `attester_slashings` of the concrete model
+- `attestations`: the list of attestations
+- `deposits`: the list of deposits
+- `voluntary_exits`: the list of voluntary exits
+
+The RANDAO reveal (`randao_reveal`) and Eth1 data vote (`eth1_data`) are omitted in the abstract model.
 
 ```k
-// randao_reveal and eth1_data are omitted
 syntax Block ::= #Block(Pair,Pair,Slashings,Attestations,Deposits,VoluntaryExits) // (slot,id), parent, slashings, attestations, deposits, voluntary exits
 syntax Int            ::= Block ".slot"            [function]
 syntax Int            ::= Block ".id"              [function]
@@ -48,6 +56,12 @@ rule #Block((_,_),_,_,_,_,X).voluntary_exits => X
 
 ## Slashings
 
+An abstract slashing evidence is a pair of two conflict attestations.
+
+This captures both proposer and attester slashings of the concrete model.
+- The proposer slashing can be abstracted as a pair of two attestations where their attester is the proposer, and their target block is the proposed block.
+- The attester slashing that represents two *set* of attestations, can be abstracted as a set of pairs of two conflict attestations, i.e., a set of abstract slashings.
+
 ```k
 // abstract represention of both proposer slashings and attester slahsings
 syntax Slashings ::= List{Slashing,""}
@@ -59,6 +73,10 @@ rule #Slashing(_,X).attestation_2 => X
 ```
 
 ## Attestations
+
+An abstract attestation denotes a single attestation, consisting of an attester, an assigned slot, a source, and a target.
+
+The `Attestation` of the concrete model can be represented as a set of abstract attestations whose slot, source, and target are the same.
 
 ```k
 // beacon_block_root (LMD GHOST vote) is omitted
@@ -80,6 +98,10 @@ rule #Attestation(_,_,(_,_),(_,X)).target_block => X
 
 ## Deposits
 
+An abstract deposit is simply a pair of the deposit owner and the deposit amount.
+
+The extra data (e.g., signatures and Merkle proofs) for validating the deposit information is omitted in the abstract model.
+
 ```k
 syntax Deposits ::= List{Deposit,""}
 syntax Deposit  ::= #Deposit(Int,Int) // sender, amount
@@ -91,6 +113,10 @@ rule #Deposit(_,X).amount => X
 
 ## VoluntaryExits
 
+This is a pair of a validator ID and an epoch to exit requested.
+
+This is the same with the concrete model.
+
 ```k
 syntax VoluntaryExits ::= List{VoluntaryExit,""}
 syntax VoluntaryExit  ::= #VoluntaryExit(Int,Int) // validator id, epoch to exit
@@ -101,6 +127,20 @@ rule #VoluntaryExit(_,X).epoch     => X
 ```
 
 ## Validator
+
+An abstract validator consists of:
+- `id`: a unique ID, corresponding to `pubkey` of the concrete model
+- `slashed`: whether the validator has been slashed or not
+- `balance`: actual balance that the validator holds, corresponding to the entry of the `balances` map of `BeaconState` of the concrete model
+- `effective_balance`: effective balance at stake
+- join status epochs:
+  - `activation_eligibility_epoch`: when the validator becomes eligible to join
+  - `activation_epoch`: when the validator actually joins
+- exit status epochs:
+  - `exit_epoch`: when the validator actually exists
+  - `withdrawable_epoch`: when the validator can withdraw funds
+
+The cryptographic data (`pubkey` and `withdrawal_credentials`) is omitted in the abstract model.
 
 ```k
 syntax Validator ::= #Validator(Int,Bool,Pair,Pair,Pair) // id, slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
