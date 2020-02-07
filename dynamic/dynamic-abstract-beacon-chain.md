@@ -1,5 +1,15 @@
 # Dynamic Abstract Model of Beacon Chain State Transition
 
+This presents an abstract model of the Beacon chain state transition system.
+
+This model is designed for the safety and liveness proofs of the Beacon chain finality mechanism. It abstracts aways certain unnecessary details of the system, including the cached history mechanism for the space efficiency, validation of cryptographic data (public keys, signatures, commitments, etc.), and the committee assignment mechanism.
+
+The reward and penalty mechanism is not yet modeled here.
+
+## Data Types
+
+The data types used in this model are defiend [here](dynamic-abstract-beacon-chain-syntax.md).
+
 ```k
 require "dynamic-abstract-beacon-chain-syntax.k"
 
@@ -9,7 +19,17 @@ imports DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
 imports MAP
 imports LIST
+```
 
+## Abstract Beacon Chain States
+
+This configuration stores the history of all abstract Beacon chain states from the genesis block to the latest block.
+
+For each slot, an abstract Beacon chain state represents the post-state of a (possibly empty) block associated with the slot. The abstract state records the current status of validators, and the full history of attestations and justified/finalized blocks. While the `BeaconState` of the concrete model stores the history of only the most recent `k` blocks for space efficiency, the abstract model records the full history for the simplicity of representation.
+
+The Eth1 data and RANDAO mixes are omitted in this abstract model.
+
+```k
 // eth1_* and randao_mixes are omitted
 configuration <T>
   <k> init ~> $PGM:Cmds </k>
@@ -38,7 +58,11 @@ configuration <T>
     </state>
   </states>
 </T>
+```
 
+A dummy initialization for testing purposes.
+
+```k
 syntax KItem ::= "init"
 rule <k> init => . ... </k>
      <currentSlot> 0 </currentSlot>
@@ -70,11 +94,15 @@ rule <k> init => . ... </k>
          <lastFinalized> (0,0) </lastFinalized>
        </state>
      </states>
+```
 
-//
-// State Transition
-//
+## State Transition
 
+The Beacon chain state transition function takes as input a state at slot `N` and a new proposed block, and produces a new state at slot `N+1` if the block is valid.
+
+Validation of block signatures and state roots is omitted in the abstract model.
+
+```k
 rule <k> stateTransition(NewBlock)
       => processSlots(NewBlock.slot)
       ~> processBlock(NewBlock) ... </k>
@@ -99,9 +127,17 @@ rule <k> (. => processSlot()
 rule <k> processSlots(TargetSlot) => . ... </k>
      <currentSlot> Slot </currentSlot>
      requires Slot ==Int TargetSlot
+```
 
+Updating the cached history is not required here since the full history is recorded in the abstract model.
+
+```k
 rule <k> processSlot() => . ... </k>
+```
 
+## Block Processing
+
+```k
 rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits))
       => processSlashings(Slashings)
       ~> processAttestations(Attestations)
@@ -126,12 +162,12 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposi
        ...
      </state>
      // TODO: check if the block proposer is valid (assigned, not slashed)
+```
 
-//
-// Slashings
-//
+### Slashings
 
-// capturing both proposer slashings and attester slahsings
+```k
+// capturing both proposer slashings and attester slashings
 
 syntax KItem ::= processSlashings(Slashings)
 rule processSlashings(S Slashings) => processSlashing(S) ~> processSlashings(Slashings)
@@ -178,11 +214,11 @@ rule isSlashableAttestation(A1, A2)
   // TODO: the following case not needed?
   // orBool
   // ( A2.source_epoch <Int A1.source_epoch andBool A1.target_epoch <Int A2.target_epoch )
+```
 
-//
-// Attestations
-//
+### Attestations
 
+```k
 syntax KItem ::= processAttestations(Attestations)
 rule <k> processAttestations(A Attestations => Attestations) ... </k>
      <currentSlot> Slot </currentSlot>
@@ -210,11 +246,11 @@ rule <k> processAttestations(A Attestations => Attestations) ... </k>
       andBool notBool V.slashed // TODO: is this checked in spec?
       // TODO: check if A.attester is assigned to A.slot
 rule processAttestations(.Attestations) => .
+```
 
-//
-// Deposits
-//
+### Deposits
 
+```k
 syntax KItem ::= processDeposits(Deposits)
 rule <k> processDeposits(D Deposits => Deposits) ... </k>
      <currentSlot> Slot </currentSlot>
@@ -242,11 +278,11 @@ rule <k> processDeposits(D Deposits => Deposits) ... </k>
      </state>
      requires notBool D.sender in keys(Validators)
 rule processDeposits(.Deposits) => .
+```
 
-//
-// Voluntary Exits
-//
+### Voluntary Exits
 
+```k
 syntax KItem ::= processVoluntaryExits(VoluntaryExits)
 rule <k> processVoluntaryExits(E Exits)
       => initiateValidatorExit(V)
@@ -328,11 +364,11 @@ rule delayedActivationExitEpoch(Epoch) => Epoch +Int 1 +Int ACTIVATION_EXIT_DELA
 syntax Int ::= churnLimit(Int) [function]
 rule churnLimit(ActiveValidatorSize)
   => maxInt(MIN_PER_EPOCH_CHURN_LIMIT, ActiveValidatorSize /Int CHURN_LIMIT_QUOTIENT)
+```
 
-//
-// Epoch Processing
-//
+## Epoch Processing
 
+```k
 // TODO: add process_rewards_and_penalties, process_slashings, process_final_updates (?)
 rule <k> processEpoch()
       => processJustification(epochOf(Slot) -Int 2)
@@ -353,11 +389,11 @@ rule <k> processEpoch()
 rule <k> processEpoch() => . ... </k>
      <currentSlot> Slot </currentSlot>
      requires notBool isFirstSlotOfEpoch(Slot)
+```
 
-//
-// Justification
-//
+### Justification
 
+```k
 syntax KItem ::= processJustification(Int)
 rule <k> processJustification(Epoch)
       => isJustifiable(EpochBoundaryBlock, Attestations, Validators)
@@ -425,11 +461,11 @@ rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
        ...
      </state>
 rule <k> false ~> justify(_,_) => . ... </k>
+```
 
-//
-// Finalization
-//
+### Finalization
 
+```k
 syntax KItem ::= processFinalization(Int)
 rule <k> processFinalization(TargetEpoch)
       => isFinalizable(SourceEpoch, TargetEpoch, Justified)
@@ -482,11 +518,11 @@ rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
        ...
      </state>
 rule <k> false ~> finalize(_, _) => . ... </k>
+```
 
-//
-// Validator Updates
-//
+### Validator Updates
 
+```k
 // TODO: check if no mistake was made as this process is associated with the previous epoch
 syntax KItem ::= processValidatorUpdates()
 rule <k> processValidatorUpdates()
