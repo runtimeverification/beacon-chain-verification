@@ -4,7 +4,7 @@
 BUILD_DIR:=.build
 DEFN_DIR:=$(BUILD_DIR)/defn
 
-DEPS_DIR:=../../deps
+DEPS_DIR:=../deps
 K_SUBMODULE:=$(abspath $(DEPS_DIR)/k)
 PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
 
@@ -29,7 +29,8 @@ export LUA_PATH
 .PHONY: all clean                                 \
         deps deps-k deps-tangle deps-media        \
         defn defn-haskell defn-java               \
-        build build-haskell build-java
+        build build-haskell build-java            \
+        test
 
 .SECONDARY:
 
@@ -39,7 +40,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 clean-submodules:
-	rm -rf $(DEPS_DIR)/k/submodule.timestamp $(DEPS_DIR)/k/mvn.timestamp $(DEPS_DIR)/pandoc-tangle/submodule.timestamp tests/eth2.0-specs/submodule.timestamp
+	rm -rf $(DEPS_DIR)/k/submodule.timestamp $(DEPS_DIR)/k/mvn.timestamp $(DEPS_DIR)/pandoc-tangle/submodule.timestamp
 
 # Dependencies
 # ------------
@@ -59,31 +60,14 @@ $(K_SUBMODULE)/mvn.timestamp: $(K_SUBMODULE)/submodule.timestamp
 # Building
 # --------
 
-MAIN_MODULE    := CASPER
-SYNTAX_MODULE  := $(MAIN_MODULE)
-MAIN_DEFN_FILE := casper
+MAIN_MODULE    := DYNAMIC-ABSTRACT-BEACON-CHAIN
+SYNTAX_MODULE  := $(MAIN_MODULE)-SYNTAX
+MAIN_DEFN_FILE := dynamic-abstract-beacon-chain
 
 KOMPILE_OPTS      :=
 
-k_files := $(MAIN_DEFN_FILE).k     \
-           proof-script.k          \
-           hash.k                  \
-           hash_parent.k           \
-           hash_ancestor.k         \
-           hash_ancestor_ext.k     \
-           hash_nth_ancestor.k     \
-           hash_nth_ancestor_ext.k \
-           validator.k             \
-           vote.k                  \
-           slashing.k              \
-           justification.k         \
-           justification_ext.k     \
-           justification_epoch.k   \
-           justification_ext2.k    \
-           zero-ancestor-spec.k    \
-           ancestor-parent-base1-spec.k \
-           ancestor-parent-base2-spec.k \
-           ancestor-parent-ind-spec.k
+k_files := $(MAIN_DEFN_FILE).k          \
+           $(MAIN_DEFN_FILE)-syntax.k
 
 haskell_dir       := $(DEFN_DIR)/haskell
 java_dir          := $(DEFN_DIR)/java
@@ -135,4 +119,9 @@ $(java_kompiled): $(java_files)
 
 # Test
 # ----
+
+test:
+	$(K_BIN)/krun -d $(haskell_dir) test1.abc | diff - test1.abc.out
+	$(K_BIN)/krun -d $(haskell_dir) test2.abc | diff - test2.abc.out
+	$(K_BIN)/krun -d $(haskell_dir) test3.abc | diff - test3.abc.out
 

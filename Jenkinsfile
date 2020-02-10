@@ -19,7 +19,7 @@ pipeline {
             stage('Dependencies') {
               steps {
                 sh '''
-                  cd casper/k
+                  cd dynamic
                   make deps -j3
                 '''
               }
@@ -27,8 +27,16 @@ pipeline {
             stage('Build') {
               steps {
                 sh '''
-                  cd casper/k
-                  make build -j4
+                  cd dynamic
+                  make build -j2
+                '''
+              }
+            }
+            stage('Test') {
+              steps {
+                sh '''
+                  cd dynamic
+                  make test -j4
                 '''
               }
             }
