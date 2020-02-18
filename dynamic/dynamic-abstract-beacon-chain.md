@@ -638,6 +638,6 @@ rule churnLimit(ActiveValidatorSize)
   => maxInt(MIN_PER_EPOCH_CHURN_LIMIT, ActiveValidatorSize /Int CHURN_LIMIT_QUOTIENT)
 ```
 
-```
+```k
 endmodule
 ```
