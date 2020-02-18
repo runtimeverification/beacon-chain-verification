@@ -19,9 +19,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
       </attested>
@@ -53,9 +53,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
       </attested>
@@ -87,9 +87,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
       </attested>
@@ -121,9 +121,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
       </attested>
@@ -155,9 +155,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
         1 |-> .Attestations
@@ -192,9 +192,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
         1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
@@ -229,9 +229,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
         1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
@@ -266,9 +266,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
         1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
@@ -303,9 +303,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
         1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
@@ -343,9 +343,18 @@
       <parent>
         ( -1 , -1 )
       </parent>
+      <slashings>
+        .Slashings
+      </slashings>
       <attestations>
         .Attestations
       </attestations>
+      <deposits>
+        .Deposits
+      </deposits>
+      <exits>
+        .VoluntaryExits
+      </exits>
     </block> <block>
       <bSlot>
         1
@@ -356,9 +365,18 @@
       <parent>
         ( 0 , 0 )
       </parent>
+      <slashings>
+        .Slashings
+      </slashings>
       <attestations>
         .Attestations
       </attestations>
+      <deposits>
+        .Deposits
+      </deposits>
+      <exits>
+        .VoluntaryExits
+      </exits>
     </block> <block>
       <bSlot>
         4
@@ -369,9 +387,18 @@
       <parent>
         ( 1 , 10001 )
       </parent>
+      <slashings>
+        .Slashings
+      </slashings>
       <attestations>
         .Attestations
       </attestations>
+      <deposits>
+        .Deposits
+      </deposits>
+      <exits>
+        .VoluntaryExits
+      </exits>
     </block> <block>
       <bSlot>
         5
@@ -382,9 +409,18 @@
       <parent>
         ( 4 , 10004 )
       </parent>
+      <slashings>
+        .Slashings
+      </slashings>
       <attestations>
         #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
       </attestations>
+      <deposits>
+        .Deposits
+      </deposits>
+      <exits>
+        .VoluntaryExits
+      </exits>
     </block>
   </blocks>
 </T>

@@ -39,7 +39,7 @@ configuration <T>
     <state multiplicity="*" type="Map">
       <slot> 0 </slot>
       <validators> .Map </validators> // ValidatorID -> ValidatorState
-      <slashings> 0 </slashings> // slashed balance
+      <slashedBalance> 0 </slashedBalance> // slashed balance
       <attested> .Map </attested> // Epoch -> Attestations
       <justified> .Map </justified> // Epoch -> Block option
       <finalized> .Map </finalized> // Epoch -> Block option
@@ -54,7 +54,10 @@ configuration <T>
     <block multiplicity="*" type="Map">
       <bSlot> 0 </bSlot> <bID> 0 </bID> // unique block id (e.g., hash)
       <parent> (0,0) </parent> // parent block id
+      <slashings> .Slashings </slashings>
       <attestations> .Attestations </attestations>
+      <deposits> .Deposits </deposits>
+      <exits> .VoluntaryExits </exits>
     </block>
   </blocks>
 </T>
@@ -78,7 +81,7 @@ rule <k> init => . ... </k>
            90005 |-> #Validator(90005,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
            90006 |-> #Validator(90006,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
          </validators>
-         <slashings> 0 </slashings>
+         <slashedBalance> 0 </slashedBalance>
          <attested> 0 |-> .Attestations </attested>
          <justified> 0 |-> some 0 </justified>
          <finalized> 0 |-> some 0 </finalized>
@@ -91,7 +94,10 @@ rule <k> init => . ... </k>
        <block>
          <bSlot> 0 </bSlot> <bID> 0 </bID>
          <parent> (-1,-1) </parent>
+         <slashings> .Slashings </slashings>
          <attestations> .Attestations </attestations>
+         <deposits> .Deposits </deposits>
+         <exits> .VoluntaryExits </exits>
        </block>
      </blocks>
 ```
@@ -428,7 +434,10 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposi
        <block>
          <bSlot> Slot </bSlot> <bID> ID </bID>
          <parent> Parent </parent>
+         <slashings> Slashings </slashings>
          <attestations> Attestations </attestations>
+         <deposits> Deposits </deposits>
+         <exits> VoluntaryExits </exits>
        </block>
      )
        ...
@@ -466,7 +475,7 @@ rule <k> slashValidator(V) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <slashings> S => S +Int V.effective_balance </slashings>
+       <slashedBalance> S => S +Int V.effective_balance </slashedBalance>
        <validators>
          V.id |-> (V => V with slashed = true
                           with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)

@@ -19,9 +19,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> .Attestations
       </attested>
@@ -53,9 +53,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
       </attested>
@@ -87,9 +87,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
       </attested>
@@ -121,9 +121,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
       </attested>
@@ -155,9 +155,9 @@
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
       </validators>
-      <slashings>
+      <slashedBalance>
         0
-      </slashings>
+      </slashedBalance>
       <attested>
         0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
         1 |-> .Attestations
@@ -192,9 +192,18 @@
       <parent>
         ( -1 , -1 )
       </parent>
+      <slashings>
+        .Slashings
+      </slashings>
       <attestations>
         .Attestations
       </attestations>
+      <deposits>
+        .Deposits
+      </deposits>
+      <exits>
+        .VoluntaryExits
+      </exits>
     </block> <block>
       <bSlot>
         1
@@ -205,9 +214,18 @@
       <parent>
         ( 0 , 0 )
       </parent>
+      <slashings>
+        .Slashings
+      </slashings>
       <attestations>
         #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
       </attestations>
+      <deposits>
+        .Deposits
+      </deposits>
+      <exits>
+        .VoluntaryExits
+      </exits>
     </block> <block>
       <bSlot>
         3
@@ -218,9 +236,18 @@
       <parent>
         ( 1 , 10001 )
       </parent>
+      <slashings>
+        .Slashings
+      </slashings>
       <attestations>
         .Attestations
       </attestations>
+      <deposits>
+        .Deposits
+      </deposits>
+      <exits>
+        .VoluntaryExits
+      </exits>
     </block>
   </blocks>
 </T>
