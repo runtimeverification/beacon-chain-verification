@@ -31,22 +31,6 @@
       <finalized>
         0 |-> some 0
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 0 , 0 )
       </lastBlock>
@@ -81,35 +65,6 @@
       <finalized>
         0 |-> some 0
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 1 , 10001 )
       </lastBlock>
@@ -144,35 +99,6 @@
       <finalized>
         0 |-> some 0
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 1 , 10001 )
       </lastBlock>
@@ -207,35 +133,6 @@
       <finalized>
         0 |-> some 0
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 1 , 10001 )
       </lastBlock>
@@ -273,48 +170,6 @@
         0 |-> some 0
         1 |-> none
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            4
-          </bSlot>
-          <bID>
-            10004
-          </bID>
-          <parent>
-            ( 1 , 10001 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 4 , 10004 )
       </lastBlock>
@@ -352,61 +207,6 @@
         0 |-> some 0
         1 |-> none
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            4
-          </bSlot>
-          <bID>
-            10004
-          </bID>
-          <parent>
-            ( 1 , 10001 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            5
-          </bSlot>
-          <bID>
-            10005
-          </bID>
-          <parent>
-            ( 4 , 10004 )
-          </parent>
-          <attestations>
-            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 5 , 10005 )
       </lastBlock>
@@ -444,61 +244,6 @@
         0 |-> some 0
         1 |-> none
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            4
-          </bSlot>
-          <bID>
-            10004
-          </bID>
-          <parent>
-            ( 1 , 10001 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            5
-          </bSlot>
-          <bID>
-            10005
-          </bID>
-          <parent>
-            ( 4 , 10004 )
-          </parent>
-          <attestations>
-            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 5 , 10005 )
       </lastBlock>
@@ -536,61 +281,6 @@
         0 |-> some 0
         1 |-> none
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            4
-          </bSlot>
-          <bID>
-            10004
-          </bID>
-          <parent>
-            ( 1 , 10001 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            5
-          </bSlot>
-          <bID>
-            10005
-          </bID>
-          <parent>
-            ( 4 , 10004 )
-          </parent>
-          <attestations>
-            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 5 , 10005 )
       </lastBlock>
@@ -631,61 +321,6 @@
         1 |-> none
         2 |-> none
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            4
-          </bSlot>
-          <bID>
-            10004
-          </bID>
-          <parent>
-            ( 1 , 10001 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            5
-          </bSlot>
-          <bID>
-            10005
-          </bID>
-          <parent>
-            ( 4 , 10004 )
-          </parent>
-          <attestations>
-            #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 5 , 10005 )
       </lastBlock>
@@ -697,4 +332,59 @@
       </lastFinalized>
     </state>
   </states>
+  <blocks>
+    <block>
+      <bSlot>
+        0
+      </bSlot>
+      <bID>
+        0
+      </bID>
+      <parent>
+        ( -1 , -1 )
+      </parent>
+      <attestations>
+        .Attestations
+      </attestations>
+    </block> <block>
+      <bSlot>
+        1
+      </bSlot>
+      <bID>
+        10001
+      </bID>
+      <parent>
+        ( 0 , 0 )
+      </parent>
+      <attestations>
+        .Attestations
+      </attestations>
+    </block> <block>
+      <bSlot>
+        4
+      </bSlot>
+      <bID>
+        10004
+      </bID>
+      <parent>
+        ( 1 , 10001 )
+      </parent>
+      <attestations>
+        .Attestations
+      </attestations>
+    </block> <block>
+      <bSlot>
+        5
+      </bSlot>
+      <bID>
+        10005
+      </bID>
+      <parent>
+        ( 4 , 10004 )
+      </parent>
+      <attestations>
+        #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
+      </attestations>
+    </block>
+  </blocks>
 </T>

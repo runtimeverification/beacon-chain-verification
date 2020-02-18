@@ -43,20 +43,20 @@ configuration <T>
       <attested> .Map </attested> // Epoch -> Attestations
       <justified> .Map </justified> // Epoch -> Block option
       <finalized> .Map </finalized> // Epoch -> Block option
-      // blockchain
-      <blocks>
-        <block multiplicity="*" type="Map">
-          <bSlot> 0 </bSlot> <bID> 0 </bID> // unique block id (e.g., hash)
-          <parent> (0,0) </parent> // parent block id
-          <attestations> .Attestations </attestations>
-        </block>
-      </blocks>
       // derived info
       <lastBlock> (0,0) </lastBlock> // last block (slot, id)
       <lastJustified> (0,0) </lastJustified> // last justified (epoch, block id)
       <lastFinalized> (0,0) </lastFinalized> // last finalized (epoch, block id)
     </state>
   </states>
+  // blockchain
+  <blocks>
+    <block multiplicity="*" type="Map">
+      <bSlot> 0 </bSlot> <bID> 0 </bID> // unique block id (e.g., hash)
+      <parent> (0,0) </parent> // parent block id
+      <attestations> .Attestations </attestations>
+    </block>
+  </blocks>
 </T>
 ```
 
@@ -82,18 +82,18 @@ rule <k> init => . ... </k>
          <attested> 0 |-> .Attestations </attested>
          <justified> 0 |-> some 0 </justified>
          <finalized> 0 |-> some 0 </finalized>
-         <blocks>
-           <block>
-             <bSlot> 0 </bSlot> <bID> 0 </bID>
-             <parent> (-1,-1) </parent>
-             <attestations> .Attestations </attestations>
-           </block>
-         </blocks>
          <lastBlock> (0,0) </lastBlock>
          <lastJustified> (0,0) </lastJustified>
          <lastFinalized> (0,0) </lastFinalized>
        </state>
      </states>
+     <blocks> .Bag =>
+       <block>
+         <bSlot> 0 </bSlot> <bID> 0 </bID>
+         <parent> (-1,-1) </parent>
+         <attestations> .Attestations </attestations>
+       </block>
+     </blocks>
 ```
 
 ## State Transition
@@ -418,21 +418,21 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposi
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <blocks>
-       (
-         .Bag
-       =>
-         <block>
-           <bSlot> Slot </bSlot> <bID> ID </bID>
-           <parent> Parent </parent>
-           <attestations> Attestations </attestations>
-         </block>
-       )
-         ...
-       </blocks>
        <lastBlock> Parent => (Slot, ID) </lastBlock>
        ...
      </state>
+     <blocks>
+     (
+       .Bag
+     =>
+       <block>
+         <bSlot> Slot </bSlot> <bID> ID </bID>
+         <parent> Parent </parent>
+         <attestations> Attestations </attestations>
+       </block>
+     )
+       ...
+     </blocks>
      // TODO: check if the block proposer is valid (assigned, not slashed)
 ```
 

@@ -31,22 +31,6 @@
       <finalized>
         0 |-> some 0
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 0 , 0 )
       </lastBlock>
@@ -81,35 +65,6 @@
       <finalized>
         0 |-> some 0
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 1 , 10001 )
       </lastBlock>
@@ -144,35 +99,6 @@
       <finalized>
         0 |-> some 0
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 1 , 10001 )
       </lastBlock>
@@ -207,48 +133,6 @@
       <finalized>
         0 |-> some 0
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            3
-          </bSlot>
-          <bID>
-            10003
-          </bID>
-          <parent>
-            ( 1 , 10001 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 3 , 10003 )
       </lastBlock>
@@ -286,48 +170,6 @@
         0 |-> some 0
         1 |-> none
       </finalized>
-      <blocks>
-        <block>
-          <bSlot>
-            0
-          </bSlot>
-          <bID>
-            0
-          </bID>
-          <parent>
-            ( -1 , -1 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            1
-          </bSlot>
-          <bID>
-            10001
-          </bID>
-          <parent>
-            ( 0 , 0 )
-          </parent>
-          <attestations>
-            #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
-          </attestations>
-        </block> <block>
-          <bSlot>
-            3
-          </bSlot>
-          <bID>
-            10003
-          </bID>
-          <parent>
-            ( 1 , 10001 )
-          </parent>
-          <attestations>
-            .Attestations
-          </attestations>
-        </block>
-      </blocks>
       <lastBlock>
         ( 3 , 10003 )
       </lastBlock>
@@ -339,4 +181,46 @@
       </lastFinalized>
     </state>
   </states>
+  <blocks>
+    <block>
+      <bSlot>
+        0
+      </bSlot>
+      <bID>
+        0
+      </bID>
+      <parent>
+        ( -1 , -1 )
+      </parent>
+      <attestations>
+        .Attestations
+      </attestations>
+    </block> <block>
+      <bSlot>
+        1
+      </bSlot>
+      <bID>
+        10001
+      </bID>
+      <parent>
+        ( 0 , 0 )
+      </parent>
+      <attestations>
+        #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
+      </attestations>
+    </block> <block>
+      <bSlot>
+        3
+      </bSlot>
+      <bID>
+        10003
+      </bID>
+      <parent>
+        ( 1 , 10001 )
+      </parent>
+      <attestations>
+        .Attestations
+      </attestations>
+    </block>
+  </blocks>
 </T>
