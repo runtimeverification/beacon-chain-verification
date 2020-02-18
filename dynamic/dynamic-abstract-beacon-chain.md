@@ -187,6 +187,26 @@ rule <k> processJustification(Epoch)
 rule <k> processJustification(Epoch) => . ... </k>
      requires Epoch <Int 1
 
+syntax KItem ::= justify(Int, Int)
+rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <justified> Epoch |-> (none => some BlockID) ... </justified>
+       <lastJustified> _ => (Epoch, BlockID) </lastJustified>
+       ...
+     </state>
+// can be justified multiple times
+rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <justified> Epoch |-> some BlockID ... </justified>
+       <lastJustified> (Epoch, BlockID) </lastJustified>
+       ...
+     </state>
+rule <k> false ~> justify(_,_) => . ... </k>
+
 syntax Bool ::= isJustifiable(Int, Attestations, Map) [function]
 rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
   => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values(Validators)))
@@ -210,26 +230,6 @@ rule balanceOf(V:Validator) => V.effective_balance
 syntax Int ::= totalBalance(List) [function]
 rule totalBalance(ListItem(V:Validator) Vs:List) => V.effective_balance +Int totalBalance(Vs)
 rule totalBalance(.List) => 0
-
-syntax KItem ::= justify(Int, Int)
-rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <justified> Epoch |-> (none => some BlockID) ... </justified>
-       <lastJustified> _ => (Epoch, BlockID) </lastJustified>
-       ...
-     </state>
-// can be justified multiple times
-rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <justified> Epoch |-> some BlockID ... </justified>
-       <lastJustified> (Epoch, BlockID) </lastJustified>
-       ...
-     </state>
-rule <k> false ~> justify(_,_) => . ... </k>
 ```
 
 ### Finalization
@@ -254,20 +254,6 @@ rule <k> processFinalization(TargetEpoch)
 rule <k> processFinalization(TargetEpoch) => . ... </k>
      requires TargetEpoch <Int 1
 
-// source : source+1 = target justified
-// source : source+1 : source+2 = target justified
-syntax Bool ::= isFinalizable(Int, Int, Map) [function]
-rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
-  => isJustified(SourceEpoch, Justified) andBool isJustified(TargetEpoch, Justified)
-     andBool (
-                SourceEpoch +Int 1 ==Int TargetEpoch
-       orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool isJustified(SourceEpoch +Int 1, Justified) )
-     )
-
-syntax Bool ::= isJustified(Int, Map) [function]
-rule isJustified(Epoch, Epoch |-> (some _) _:Map) => true
-rule isJustified(Epoch, Epoch |-> none     _:Map) => false
-
 syntax KItem ::= finalize(Int, Int)
 rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
@@ -287,6 +273,20 @@ rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
        ...
      </state>
 rule <k> false ~> finalize(_, _) => . ... </k>
+
+// source : source+1 = target justified
+// source : source+1 : source+2 = target justified
+syntax Bool ::= isFinalizable(Int, Int, Map) [function]
+rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
+  => isJustified(SourceEpoch, Justified) andBool isJustified(TargetEpoch, Justified)
+     andBool (
+                SourceEpoch +Int 1 ==Int TargetEpoch
+       orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool isJustified(SourceEpoch +Int 1, Justified) )
+     )
+
+syntax Bool ::= isJustified(Int, Map) [function]
+rule isJustified(Epoch, Epoch |-> (some _) _:Map) => true
+rule isJustified(Epoch, Epoch |-> none     _:Map) => false
 ```
 
 ### Validator Updates
