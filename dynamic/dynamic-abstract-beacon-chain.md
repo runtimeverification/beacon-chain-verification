@@ -53,7 +53,7 @@ configuration <T>
   <blocks>
     <block multiplicity="*" type="Map">
       <bSlot> 0 </bSlot> <bID> 0 </bID> // unique block id (e.g., hash)
-      <parent> (0,0) </parent> // parent block id
+      <parent> (0,0) </parent> // parent block (slot, id)
       <slashings> .Slashings </slashings>
       <attestations> .Attestations </attestations>
       <deposits> .Deposits </deposits>
