@@ -69,59 +69,66 @@ KOMPILE_OPTS      :=
 k_files := $(MAIN_DEFN_FILE).k          \
            $(MAIN_DEFN_FILE)-syntax.k
 
-haskell_dir       := $(DEFN_DIR)/haskell
-java_dir          := $(DEFN_DIR)/java
+static_dir  := $(DEFN_DIR)/static
+dynamic_dir := $(DEFN_DIR)/dynamic
 
-haskell_files := $(patsubst %,$(haskell_dir)/%,$(k_files))
-java_files    := $(patsubst %,$(java_dir)/%,$(k_files))
+static_files  := $(patsubst %,$(static_dir)/%,$(k_files))
+dynamic_files := $(patsubst %,$(dynamic_dir)/%,$(k_files))
 
-haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
+static_kompiled  := $(static_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+dynamic_kompiled := $(dynamic_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 
-build: build-haskell build-java
-build-haskell: $(haskell_kompiled)
-build-java:    $(java_kompiled)
+build: build-static build-dynamic
+build-static:  $(static_kompiled)
+build-dynamic: $(dynamic_kompiled)
 
 # Generate definitions from source files
 
-defn: defn-haskell defn-java
-defn-haskell: $(haskell_files)
-defn-java:    $(java_files)
+defn: defn-static defn-dynamic
+defn-static:  $(static_files)
+defn-dynamic: $(dynamic_files)
 
-concrete_tangle := .k:not(.symbolic),.concrete
-symbolic_tangle := .k:not(.concrete),.symbolic
+static_tangle  := .k:not(.dynamic)
+dynamic_tangle := .k
 
-$(haskell_dir)/%.k: %.md
-	@mkdir -p $(haskell_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
+$(static_dir)/%.k: %.md
+	@mkdir -p $(static_dir)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(static_tangle)" $< > $@
 
-$(java_dir)/%.k: %.md
-	@mkdir -p $(java_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
+$(dynamic_dir)/%.k: %.md
+	@mkdir -p $(dynamic_dir)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(dynamic_tangle)" $< > $@
 
-# Haskell Backend
+# Static validators model
 
-$(haskell_kompiled): $(haskell_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell              \
-	                 --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(haskell_dir) -I $(haskell_dir)                        \
-	                 --emit-json                                                         \
+$(static_kompiled): $(static_files)
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell             \
+	                 --syntax-module $(SYNTAX_MODULE) $(static_dir)/$(MAIN_DEFN_FILE).k \
+	                 --directory $(static_dir) -I $(static_dir)                         \
+	                 --emit-json                                                        \
 	                 $(KOMPILE_OPTS)
 
-# Java Backend
+# Dynamic validators model
 
-$(java_kompiled): $(java_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java              \
-	                 --syntax-module $(SYNTAX_MODULE) $(java_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(java_dir) -I $(java_dir)							  \
-	                 --emit-json                                                      \
+$(dynamic_kompiled): $(dynamic_files)
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell              \
+	                 --syntax-module $(SYNTAX_MODULE) $(dynamic_dir)/$(MAIN_DEFN_FILE).k \
+	                 --directory $(dynamic_dir) -I $(dynamic_dir)                        \
+	                 --emit-json                                                         \
 	                 $(KOMPILE_OPTS)
 
 # Test
 # ----
 
-test:
-	$(K_BIN)/krun -d $(haskell_dir) test1.abc | diff - test1.abc.out
-	$(K_BIN)/krun -d $(haskell_dir) test2.abc | diff - test2.abc.out
-	$(K_BIN)/krun -d $(haskell_dir) test3.abc | diff - test3.abc.out
+test: test_static test_dynamic
+
+test_static:
+	$(K_BIN)/krun -d $(static_dir) test1.abc | diff - test1.abc.out
+	$(K_BIN)/krun -d $(static_dir) test2.abc | diff - test2.abc.out
+	$(K_BIN)/krun -d $(static_dir) test3.abc | diff - test3.abc.out
+
+test_dynamic:
+	$(K_BIN)/krun -d $(dynamic_dir) test1.abc | diff - test1.abc.out
+	$(K_BIN)/krun -d $(dynamic_dir) test2.abc | diff - test2.abc.out
+	$(K_BIN)/krun -d $(dynamic_dir) test3.abc | diff - test3.abc.out
 
