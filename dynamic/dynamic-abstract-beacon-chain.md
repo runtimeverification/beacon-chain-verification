@@ -39,24 +39,27 @@ configuration <T>
     <state multiplicity="*" type="Map">
       <slot> 0 </slot>
       <validators> .Map </validators> // ValidatorID -> ValidatorState
-      <slashings> 0 </slashings> // slashed balance
+      <slashedBalance> 0 </slashedBalance> // slashed balance
       <attested> .Map </attested> // Epoch -> Attestations
       <justified> .Map </justified> // Epoch -> Block option
       <finalized> .Map </finalized> // Epoch -> Block option
-      // blockchain
-      <blocks>
-        <block multiplicity="*" type="Map">
-          <bSlot> 0 </bSlot> <bID> 0 </bID> // unique block id (e.g., hash)
-          <parent> (0,0) </parent> // parent block id
-          <attestations> .Attestations </attestations>
-        </block>
-      </blocks>
       // derived info
       <lastBlock> (0,0) </lastBlock> // last block (slot, id)
       <lastJustified> (0,0) </lastJustified> // last justified (epoch, block id)
       <lastFinalized> (0,0) </lastFinalized> // last finalized (epoch, block id)
     </state>
   </states>
+  // blockchain
+  <blocks>
+    <block multiplicity="*" type="Map">
+      <bSlot> 0 </bSlot> <bID> 0 </bID> // unique block id (e.g., hash)
+      <parent> (0,0) </parent> // parent block (slot, id)
+      <slashings> .Slashings </slashings>
+      <attestations> .Attestations </attestations>
+      <deposits> .Deposits </deposits>
+      <exits> .VoluntaryExits </exits>
+    </block>
+  </blocks>
 </T>
 ```
 
@@ -78,22 +81,25 @@ rule <k> init => . ... </k>
            90005 |-> #Validator(90005,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
            90006 |-> #Validator(90006,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
          </validators>
-         <slashings> 0 </slashings>
+         <slashedBalance> 0 </slashedBalance>
          <attested> 0 |-> .Attestations </attested>
          <justified> 0 |-> some 0 </justified>
          <finalized> 0 |-> some 0 </finalized>
-         <blocks>
-           <block>
-             <bSlot> 0 </bSlot> <bID> 0 </bID>
-             <parent> (-1,-1) </parent>
-             <attestations> .Attestations </attestations>
-           </block>
-         </blocks>
          <lastBlock> (0,0) </lastBlock>
          <lastJustified> (0,0) </lastJustified>
          <lastFinalized> (0,0) </lastFinalized>
        </state>
      </states>
+     <blocks> .Bag =>
+       <block>
+         <bSlot> 0 </bSlot> <bID> 0 </bID>
+         <parent> (-1,-1) </parent>
+         <slashings> .Slashings </slashings>
+         <attestations> .Attestations </attestations>
+         <deposits> .Deposits </deposits>
+         <exits> .VoluntaryExits </exits>
+       </block>
+     </blocks>
 ```
 
 ## State Transition
@@ -135,237 +141,6 @@ Updating the cached history is not required here since the full history is recor
 rule <k> processSlot() => . ... </k>
 ```
 
-## Block Processing
-
-```k
-rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits))
-      => processSlashings(Slashings)
-      ~> processAttestations(Attestations)
-      ~> processDeposits(Deposits) 
-      ~> processVoluntaryExits(VoluntaryExits) ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <blocks>
-       (
-         .Bag
-       =>
-         <block>
-           <bSlot> Slot </bSlot> <bID> ID </bID>
-           <parent> Parent </parent>
-           <attestations> Attestations </attestations>
-         </block>
-       )
-         ...
-       </blocks>
-       <lastBlock> Parent => (Slot, ID) </lastBlock>
-       ...
-     </state>
-     // TODO: check if the block proposer is valid (assigned, not slashed)
-```
-
-### Slashings
-
-```k
-// capturing both proposer slashings and attester slashings
-
-syntax KItem ::= processSlashings(Slashings)
-rule processSlashings(S Slashings) => processSlashing(S) ~> processSlashings(Slashings)
-rule processSlashings(.Slashings) => .
-
-syntax KItem ::= processSlashing(Slashing)
-rule <k> processSlashing(#Slashing(A1, A2))
-      => initiateValidatorExit(V)
-      ~> slashValidator(V) ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <validators>
-         A.attester |-> V:Validator
-         ...
-       </validators>
-       ...
-     </state>
-     requires isSlashableAttestation(A1, A2) // assertion
-      andBool A1.attester ==Int A2.attester
-
-syntax KItem ::= slashValidator(Validator)
-rule <k> slashValidator(V) => . ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <slashings> S => S +Int V.effective_balance </slashings>
-       <validators>
-         V.id |-> (V => V with slashed = true
-                          with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
-                          with effective_balance = V.effective_balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT)
-                  )
-         ...
-       </validators>
-       ...
-     </state>
-     // TODO: proposer and whistleblower rewards
-
-syntax Bool ::= isSlashableAttestation(Attestation, Attestation) [function]
-rule isSlashableAttestation(A1, A2)
-  => ( A1 =/=K A2 andBool A1.target_epoch ==Int A2.target_epoch )
-     orBool
-     ( A1.source_epoch <Int A2.source_epoch andBool A2.target_epoch <Int A1.target_epoch )
-  // TODO: the following case not needed?
-  // orBool
-  // ( A2.source_epoch <Int A1.source_epoch andBool A1.target_epoch <Int A2.target_epoch )
-```
-
-### Attestations
-
-```k
-syntax KItem ::= processAttestations(Attestations)
-rule <k> processAttestations(A Attestations => Attestations) ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <attested>
-         A.target_epoch |-> (As:Attestations => A As)
-         ...
-       </attested>
-       <validators>
-         A.attester |-> V:Validator
-         ...
-       </validators>
-       ...
-     </state>
-     <state>
-       <slot> firstSlotOf(A.target_epoch) </slot>
-       <lastJustified> (JEpoch, JBlock) </lastJustified>
-       ...
-     </state>
-     requires A.source_epoch ==Int JEpoch
-      andBool A.source_block ==Int JBlock
-      andBool A.slot +Int MIN_ATTESTATION_INCLUSION_DELAY <=Int Slot andBool Slot <=Int A.slot +Int MAX_ATTESTATION_INCLUSION_DELAY
-      andBool epochOf(A.slot) ==Int A.target_epoch
-      andBool notBool V.slashed // TODO: is this checked in spec?
-      // TODO: check if A.attester is assigned to A.slot
-rule processAttestations(.Attestations) => .
-```
-
-### Deposits
-
-```k
-syntax KItem ::= processDeposits(Deposits)
-rule <k> processDeposits(D Deposits => Deposits) ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <validators>
-         D.sender |-> (V:Validator => V with balance = V.balance +Int D.amount) // no change to effective_balance
-         ...
-       </validators>
-       ...
-     </state>
-rule <k> processDeposits(D Deposits => Deposits) ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <validators>
-         Validators => Validators[
-           D.sender <- #Validator(D.sender, false,
-                                  (D.amount, minInt(D.amount, MAX_EFFECTIVE_BALANCE)), // effective_balance cap
-                                  (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH),
-                                  (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH))
-         ]
-       </validators>
-       ...
-     </state>
-     requires notBool D.sender in keys(Validators)
-rule processDeposits(.Deposits) => .
-```
-
-### Voluntary Exits
-
-```k
-syntax KItem ::= processVoluntaryExits(VoluntaryExits)
-rule <k> processVoluntaryExits(E Exits)
-      => initiateValidatorExit(V)
-      ~> processVoluntaryExits(  Exits) ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <validators> E.validator |-> V:Validator ... </validators>
-       ...
-     </state>
-     requires isActiveValidator(V, epochOf(Slot))
-      andBool V.exit_epoch ==Int FAR_FUTURE_EPOCH
-      andBool epochOf(Slot) >=Int E.epoch
-      andBool epochOf(Slot) >=Int V.activation_epoch +Int PERSISTENT_COMMITTEE_PERIOD
-rule processVoluntaryExits(.VoluntaryExits) => .
-
-syntax Bool ::= isActiveValidator(Validator, Int) [function]
-rule isActiveValidator(V, Epoch)
-  => V.activation_epoch <=Int Epoch andBool Epoch <Int V.exit_epoch
-
-syntax KItem ::= initiateValidatorExit(Validator)
-rule <k> initiateValidatorExit(V)
-      => setExitEpoch(V, computeExitEpoch(values(Validators), epochOf(Slot))) ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <validators> Validators </validators>
-       ...
-     </state>
-     requires V.exit_epoch =/=Int FAR_FUTURE_EPOCH
-
-syntax KItem ::= setExitEpoch(Validator, Int)
-rule <k> setExitEpoch(V, ExitEpoch) => . ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <validators>
-         V.id |-> (V => V with exit_epoch         = ExitEpoch
-                          with withdrawable_epoch = ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
-         ...
-       </validators>
-       ...
-     </state>
-
-syntax Int ::= computeExitEpoch(List, Int) [function]
-             | computeExitEpochAux(List, Int, Int) [function]
-rule computeExitEpoch(Validators, CurrentEpoch)
-  => computeExitEpochAux(
-       Validators,
-       maxInt(maxExitEpoch(Validators), delayedActivationExitEpoch(CurrentEpoch)),
-       size(activeValidators(Validators, CurrentEpoch))
-     )
-rule computeExitEpochAux(Validators, ExitEpoch, ActiveValidatorSize)
-  => #if countValidatorsToExit(Validators, ExitEpoch) >=Int churnLimit(ActiveValidatorSize)
-     #then ExitEpoch +Int 1
-     #else ExitEpoch
-     #fi
-
-syntax Int ::= maxExitEpoch(List) [function]
-rule maxExitEpoch(ListItem(V:Validator) Vs:List) => maxInt(V.exit_epoch, maxExitEpoch(Vs))
-rule maxExitEpoch(.List) => 0
-
-syntax Int ::= countValidatorsToExit(List, Int) [function]
-rule countValidatorsToExit(ListItem(V:Validator) Vs:List, ExitEpoch)
-  => #if V.exit_epoch ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(Vs, ExitEpoch)
-rule countValidatorsToExit(.List, _) => 0
-
-syntax Map ::= activeValidators(List, Int) [function]
-rule activeValidators(ListItem(V:Validator) Vs:List, Epoch)
-  => #if isActiveValidator(V, Epoch)
-     #then V.id |-> V activeValidators(Vs, Epoch)
-     #else            activeValidators(Vs, Epoch)
-     #fi
-rule activeValidators(.List, _) => .Map
-
-syntax Int ::= delayedActivationExitEpoch(Int) [function]
-rule delayedActivationExitEpoch(Epoch) => Epoch +Int 1 +Int ACTIVATION_EXIT_DELAY
-
-syntax Int ::= churnLimit(Int) [function]
-rule churnLimit(ActiveValidatorSize)
-  => maxInt(MIN_PER_EPOCH_CHURN_LIMIT, ActiveValidatorSize /Int CHURN_LIMIT_QUOTIENT)
-```
-
 ## Epoch Processing
 
 ```k
@@ -375,7 +150,12 @@ rule <k> processEpoch()
       ~> processJustification(epochOf(Slot) -Int 1)
       ~> processFinalization(epochOf(Slot) -Int 2)
       ~> processFinalization(epochOf(Slot) -Int 1)
-      ~> processValidatorUpdates() ... </k>
+```
+```{.k .dynamic}
+      ~> processValidatorUpdates()
+```
+```k
+      ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -418,32 +198,8 @@ rule <k> processJustification(Epoch)
 rule <k> processJustification(Epoch) => . ... </k>
      requires Epoch <Int 1
 
-syntax Bool ::= isJustifiable(Int, Attestations, Map) [function]
-rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
-  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values(Validators)))
-
-syntax Bool ::= isMajority(Int, Int) [function]
-rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
-
-syntax Int ::= attestationsBalance(Int, Attestations, Map) [function]
-rule attestationsBalance(Target, A Attestations, Validators)
-  => #if A.target_block ==Int Target
-     #then balanceOf(A, Validators)
-     #else 0
-     #fi +Int attestationsBalance(Target, Attestations, Validators)
-rule attestationsBalance(_, .Attestations, _) => 0
-
-syntax Int ::= balanceOf(Attestation, Map) [function]
-             | balanceOf(K) [function]
-rule balanceOf(A:Attestation, M) => balanceOf(M[A.attester])
-rule balanceOf(V:Validator) => V.effective_balance
-
-syntax Int ::= totalBalance(List) [function]
-rule totalBalance(ListItem(V:Validator) Vs:List) => V.effective_balance +Int totalBalance(Vs)
-rule totalBalance(.List) => 0
-
 syntax KItem ::= justify(Int, Int)
-rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
+rule <k> true ~> justify(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -452,7 +208,7 @@ rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
        ...
      </state>
 // can be justified multiple times
-rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
+rule <k> true ~> justify(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -460,7 +216,31 @@ rule <k> true ~> justify(Epoch,BlockID) => . ... </k>
        <lastJustified> (Epoch, BlockID) </lastJustified>
        ...
      </state>
-rule <k> false ~> justify(_,_) => . ... </k>
+rule <k> false ~> justify(_, _) => . ... </k>
+
+syntax Bool ::= isJustifiable(Int, Attestations, Map) [function] // functional only for Validators map
+rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
+  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values(Validators)))
+
+syntax Bool ::= isMajority(Int, Int) [function, functional]
+rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
+
+syntax Int ::= attestationsBalance(Int, Attestations, Map) [function] // functional only for Validators map
+rule attestationsBalance(Target, A Attestations, Validators)
+  => #if A.target_block ==Int Target
+     #then balanceOf(A, Validators)
+     #else 0
+     #fi +Int attestationsBalance(Target, Attestations, Validators)
+rule attestationsBalance(_, .Attestations, _) => 0
+
+syntax Int ::= balanceOf(Attestation, Map) [function] // functional only for Validatiors map
+             | balanceOf(K) [function] // functional only for Validator
+rule balanceOf(A:Attestation, M) => balanceOf(M[A.attester])
+rule balanceOf(V:Validator) => V.effective_balance
+
+syntax Int ::= totalBalance(List) [function] // functional only for Validators
+rule totalBalance(ListItem(V:Validator) Vs:List) => V.effective_balance +Int totalBalance(Vs)
+rule totalBalance(.List) => 0
 ```
 
 ### Finalization
@@ -485,20 +265,6 @@ rule <k> processFinalization(TargetEpoch)
 rule <k> processFinalization(TargetEpoch) => . ... </k>
      requires TargetEpoch <Int 1
 
-// source : source+1 = target justified
-// source : source+1 : source+2 = target justified
-syntax Bool ::= isFinalizable(Int, Int, Map) [function]
-rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
-  => isJustified(SourceEpoch, Justified) andBool isJustified(TargetEpoch, Justified)
-     andBool (
-                SourceEpoch +Int 1 ==Int TargetEpoch
-       orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool isJustified(SourceEpoch +Int 1, Justified) )
-     )
-
-syntax Bool ::= isJustified(Int, Map) [function]
-rule isJustified(Epoch, Epoch |-> (some _) _:Map) => true
-rule isJustified(Epoch, Epoch |-> none     _:Map) => false
-
 syntax KItem ::= finalize(Int, Int)
 rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
@@ -518,11 +284,25 @@ rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
        ...
      </state>
 rule <k> false ~> finalize(_, _) => . ... </k>
+
+// source : source+1 = target justified
+// source : source+1 : source+2 = target justified
+syntax Bool ::= isFinalizable(Int, Int, Map) [function] // not functional
+rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
+  => isJustified(SourceEpoch, Justified) andBool isJustified(TargetEpoch, Justified)
+     andBool (
+                SourceEpoch +Int 1 ==Int TargetEpoch
+       orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool isJustified(SourceEpoch +Int 1, Justified) )
+     )
+
+syntax Bool ::= isJustified(Int, Map) [function] // not functional
+rule isJustified(Epoch, Epoch |-> (some _) _:Map) => true
+rule isJustified(Epoch, Epoch |-> none     _:Map) => false
 ```
 
 ### Validator Updates
 
-```k
+```{.k .dynamic}
 // TODO: check if no mistake was made as this process is associated with the previous epoch
 syntax KItem ::= processValidatorUpdates()
 rule <k> processValidatorUpdates()
@@ -568,7 +348,7 @@ rule <k> updateActivationEligibility(ListItem(VID) VIDS:List)
      </state>
 rule updateActivationEligibility(.List) => .
 
-syntax Bool ::= isActivationEligible(Validator) [function]
+syntax Bool ::= isActivationEligible(Validator) [function, functional]
 rule isActivationEligible(V)
   => V.activation_eligibility_epoch ==Int FAR_FUTURE_EPOCH andBool
      V.effective_balance >=Int MAX_EFFECTIVE_BALANCE
@@ -604,14 +384,14 @@ rule <k> activateValidators(ListItem(V:Validator) Vs)
      </state>
 rule activateValidators(.List) => .
 
-syntax List ::= activationQueueUptoChurnLimit(List, Int, Int) [function]
+syntax List ::= activationQueueUptoChurnLimit(List, Int, Int) [function] // functional only for Validators
 rule activationQueueUptoChurnLimit(Validators, FinalizedEpoch, CurrentEpoch)
   => dropBeyondLimit(
        activationQueue(Validators, FinalizedEpoch),
        churnLimit(size(activeValidators(Validators, CurrentEpoch)))
      )
 
-syntax List ::= activationQueue(List, Int) [function]
+syntax List ::= activationQueue(List, Int) [function] // functional only for Validators
 rule activationQueue(ListItem(V:Validator) Vs:List, FinalizedEpoch)
   => #if V.activation_eligibility_epoch =/=Int FAR_FUTURE_EPOCH andBool
          V.activation_epoch >=Int delayedActivationExitEpoch(FinalizedEpoch) // TODO: why is this needed?
@@ -620,14 +400,14 @@ rule activationQueue(ListItem(V:Validator) Vs:List, FinalizedEpoch)
      #fi
 rule activationQueue(.List, _) => .List
 
-syntax List ::= dropBeyondLimit(List, Int) [function]
+syntax List ::= dropBeyondLimit(List, Int) [function] // functional only for Validators
 rule dropBeyondLimit(Vs, Limit) => Vs requires size(Vs) <=Int Limit
 rule dropBeyondLimit(Vs, Limit)
   => dropBeyondLimit(dropLastActivationEligibleValidator(Vs), Limit)
      requires size(Vs) >Int Limit
 
-syntax List ::= dropLastActivationEligibleValidator(List)                     [function]
-              | dropLastActivationEligibleValidatorAux(List, Validator, List) [function]
+syntax List ::= dropLastActivationEligibleValidator(List)                     [function] // functional only for Validators
+              | dropLastActivationEligibleValidatorAux(List, Validator, List) [function] // functional only for Validators
 rule dropLastActivationEligibleValidator(ListItem(V:Validator) Vs)
   => dropLastActivationEligibleValidatorAux(Vs, V, .List)
 rule dropLastActivationEligibleValidatorAux(ListItem(V:Validator) Vs, MaxV, AccVs)
@@ -636,6 +416,260 @@ rule dropLastActivationEligibleValidatorAux(ListItem(V:Validator) Vs, MaxV, AccV
      #else dropLastActivationEligibleValidatorAux(Vs, MaxV, ListItem(   V) AccVs)
      #fi
 rule dropLastActivationEligibleValidatorAux(.List, _, Vs) => Vs
+```
 
+## Block Processing
+
+```k
+rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits))
+      => processSlashings(Slashings)
+      ~> processAttestations(Attestations)
+```
+```{.k .dynamic}
+      ~> processDeposits(Deposits)
+      ~> processVoluntaryExits(VoluntaryExits)
+```
+```k
+      ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <lastBlock> Parent => (Slot, ID) </lastBlock>
+       ...
+     </state>
+     <blocks>
+     (
+       .Bag
+     =>
+       <block>
+         <bSlot> Slot </bSlot> <bID> ID </bID>
+         <parent> Parent </parent>
+         <slashings> Slashings </slashings>
+         <attestations> Attestations </attestations>
+         <deposits> Deposits </deposits>
+         <exits> VoluntaryExits </exits>
+       </block>
+     )
+       ...
+     </blocks>
+     // TODO: check if the block proposer is valid (assigned, not slashed)
+```
+
+### Slashings
+
+```k
+// capturing both proposer slashings and attester slashings
+
+syntax KItem ::= processSlashings(Slashings)
+rule processSlashings(S Slashings) => processSlashing(S) ~> processSlashings(Slashings)
+rule processSlashings(.Slashings) => .
+
+syntax KItem ::= processSlashing(Slashing)
+rule <k> processSlashing(#Slashing(A1, A2))
+      =>
+```
+```{.k .dynamic}
+         initiateValidatorExit(V) ~>
+```
+```k
+         slashValidator(V) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators>
+         A.attester |-> V:Validator
+         ...
+       </validators>
+       ...
+     </state>
+     requires isSlashableAttestation(A1, A2) // assertion
+      andBool A1.attester ==Int A2.attester
+
+syntax KItem ::= slashValidator(Validator)
+rule <k> slashValidator(V) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <slashedBalance> S => S +Int V.effective_balance </slashedBalance>
+       <validators>
+         V.id |-> (V => V with slashed = true
+                          with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
+                          with effective_balance = V.effective_balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT)
+                  )
+         ...
+       </validators>
+       ...
+     </state>
+     // TODO: proposer and whistleblower rewards
+
+syntax Bool ::= isSlashableAttestation(Attestation, Attestation) [function, functional]
+rule isSlashableAttestation(A1, A2)
+  => ( A1 =/=K A2 andBool A1.target_epoch ==Int A2.target_epoch )
+     orBool
+     ( A1.source_epoch <Int A2.source_epoch andBool A2.target_epoch <Int A1.target_epoch )
+  // TODO: the following case not needed?
+  // orBool
+  // ( A2.source_epoch <Int A1.source_epoch andBool A1.target_epoch <Int A2.target_epoch )
+```
+
+### Attestations
+
+```k
+syntax KItem ::= processAttestations(Attestations)
+rule processAttestations(A Attestations) => processAttestation(A) ~> processAttestations(Attestations)
+rule processAttestations(.Attestations) => .
+
+syntax KItem ::= processAttestation(Attestation)
+rule <k> processAttestation(A) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <attested>
+         A.target_epoch |-> (As:Attestations => A As)
+         ...
+       </attested>
+       <validators>
+         A.attester |-> V:Validator
+         ...
+       </validators>
+       ...
+     </state>
+     <state>
+       <slot> firstSlotOf(A.target_epoch) </slot>
+       <lastJustified> (JEpoch, JBlock) </lastJustified>
+       ...
+     </state>
+     requires A.source_epoch ==Int JEpoch
+      andBool A.source_block ==Int JBlock
+      andBool A.slot +Int MIN_ATTESTATION_INCLUSION_DELAY <=Int Slot andBool Slot <=Int A.slot +Int MAX_ATTESTATION_INCLUSION_DELAY
+      andBool epochOf(A.slot) ==Int A.target_epoch
+      andBool notBool V.slashed // TODO: is this checked in spec?
+      // TODO: check if A.attester is assigned to A.slot
+```
+
+### Deposits
+
+```{.k .dynamic}
+syntax KItem ::= processDeposits(Deposits)
+rule processDeposits(D Deposits) => processDeposit(D) ~> processDeposits(Deposits)
+rule processDeposits(.Deposits) => .
+
+syntax KItem ::= processDeposit(Deposit)
+rule <k> processDeposit(D) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators>
+         D.sender |-> (V:Validator => V with balance = V.balance +Int D.amount) // no change to effective_balance
+         ...
+       </validators>
+       ...
+     </state>
+rule <k> processDeposit(D) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators>
+         Validators => Validators[
+           D.sender <- #Validator(D.sender, false,
+                                  (D.amount, minInt(D.amount, MAX_EFFECTIVE_BALANCE)), // effective_balance cap
+                                  (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH),
+                                  (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH))
+         ]
+       </validators>
+       ...
+     </state>
+     requires notBool D.sender in keys(Validators)
+```
+
+### Voluntary Exits
+
+```{.k .dynamic}
+syntax KItem ::= processVoluntaryExits(VoluntaryExits)
+rule processVoluntaryExits(E Exits) => processVoluntaryExit(E) ~> processVoluntaryExits(Exits)
+rule processVoluntaryExits(.VoluntaryExits) => .
+
+syntax KItem ::= processVoluntaryExit(VoluntaryExit)
+rule <k> processVoluntaryExit(E)
+      => initiateValidatorExit(V) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> E.validator |-> V:Validator ... </validators>
+       ...
+     </state>
+     requires isActiveValidator(V, epochOf(Slot))
+      andBool V.exit_epoch ==Int FAR_FUTURE_EPOCH
+      andBool epochOf(Slot) >=Int E.epoch
+      andBool epochOf(Slot) >=Int V.activation_epoch +Int PERSISTENT_COMMITTEE_PERIOD
+
+syntax Bool ::= isActiveValidator(Validator, Int) [function, functional]
+rule isActiveValidator(V, Epoch)
+  => V.activation_epoch <=Int Epoch andBool Epoch <Int V.exit_epoch
+
+syntax KItem ::= initiateValidatorExit(Validator)
+rule <k> initiateValidatorExit(V)
+      => setExitEpoch(V, computeExitEpoch(values(Validators), epochOf(Slot))) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> Validators </validators>
+       ...
+     </state>
+     requires V.exit_epoch =/=Int FAR_FUTURE_EPOCH
+
+syntax KItem ::= setExitEpoch(Validator, Int)
+rule <k> setExitEpoch(V, ExitEpoch) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators>
+         V.id |-> (V => V with exit_epoch         = ExitEpoch
+                          with withdrawable_epoch = ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
+         ...
+       </validators>
+       ...
+     </state>
+
+syntax Int ::= computeExitEpoch(List, Int) [function] // functional only for Validators
+             | computeExitEpochAux(List, Int, Int) [function] // functional only for Validators
+rule computeExitEpoch(Validators, CurrentEpoch)
+  => computeExitEpochAux(
+       Validators,
+       maxInt(maxExitEpoch(Validators), delayedActivationExitEpoch(CurrentEpoch)),
+       size(activeValidators(Validators, CurrentEpoch))
+     )
+rule computeExitEpochAux(Validators, ExitEpoch, ActiveValidatorSize)
+  => #if countValidatorsToExit(Validators, ExitEpoch) >=Int churnLimit(ActiveValidatorSize)
+     #then ExitEpoch +Int 1
+     #else ExitEpoch
+     #fi
+
+syntax Int ::= maxExitEpoch(List) [function] // functional only for Validators
+rule maxExitEpoch(ListItem(V:Validator) Vs:List) => maxInt(V.exit_epoch, maxExitEpoch(Vs))
+rule maxExitEpoch(.List) => 0
+
+syntax Int ::= countValidatorsToExit(List, Int) [function] // functional only for Validators
+rule countValidatorsToExit(ListItem(V:Validator) Vs:List, ExitEpoch)
+  => #if V.exit_epoch ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(Vs, ExitEpoch)
+rule countValidatorsToExit(.List, _) => 0
+
+syntax Map ::= activeValidators(List, Int) [function] // functional only for Validators
+rule activeValidators(ListItem(V:Validator) Vs:List, Epoch)
+  => #if isActiveValidator(V, Epoch)
+     #then V.id |-> V activeValidators(Vs, Epoch)
+     #else            activeValidators(Vs, Epoch)
+     #fi
+rule activeValidators(.List, _) => .Map
+
+syntax Int ::= delayedActivationExitEpoch(Int) [function, functional]
+rule delayedActivationExitEpoch(Epoch) => Epoch +Int 1 +Int ACTIVATION_EXIT_DELAY
+
+syntax Int ::= churnLimit(Int) [function, functional]
+rule churnLimit(ActiveValidatorSize)
+  => maxInt(MIN_PER_EPOCH_CHURN_LIMIT, ActiveValidatorSize /Int CHURN_LIMIT_QUOTIENT)
+```
+
+```k
 endmodule
 ```
