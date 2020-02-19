@@ -150,7 +150,12 @@ rule <k> processEpoch()
       ~> processJustification(epochOf(Slot) -Int 1)
       ~> processFinalization(epochOf(Slot) -Int 2)
       ~> processFinalization(epochOf(Slot) -Int 1)
-      ~> processValidatorUpdates() ... </k>
+```
+```{.k .dynamic}
+      ~> processValidatorUpdates()
+```
+```k
+      ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -297,7 +302,7 @@ rule isJustified(Epoch, Epoch |-> none     _:Map) => false
 
 ### Validator Updates
 
-```k
+```{.k .dynamic}
 // TODO: check if no mistake was made as this process is associated with the previous epoch
 syntax KItem ::= processValidatorUpdates()
 rule <k> processValidatorUpdates()
@@ -419,8 +424,13 @@ rule dropLastActivationEligibleValidatorAux(.List, _, Vs) => Vs
 rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits))
       => processSlashings(Slashings)
       ~> processAttestations(Attestations)
+```
+```{.k .dynamic}
       ~> processDeposits(Deposits)
-      ~> processVoluntaryExits(VoluntaryExits) ... </k>
+      ~> processVoluntaryExits(VoluntaryExits)
+```
+```k
+      ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -456,8 +466,13 @@ rule processSlashings(.Slashings) => .
 
 syntax KItem ::= processSlashing(Slashing)
 rule <k> processSlashing(#Slashing(A1, A2))
-      => initiateValidatorExit(V)
-      ~> slashValidator(V) ... </k>
+      =>
+```
+```{.k .dynamic}
+         initiateValidatorExit(V) ~>
+```
+```k
+         slashValidator(V) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -534,7 +549,7 @@ rule <k> processAttestation(A) => . ... </k>
 
 ### Deposits
 
-```k
+```{.k .dynamic}
 syntax KItem ::= processDeposits(Deposits)
 rule processDeposits(D Deposits) => processDeposit(D) ~> processDeposits(Deposits)
 rule processDeposits(.Deposits) => .
@@ -569,7 +584,7 @@ rule <k> processDeposit(D) => . ... </k>
 
 ### Voluntary Exits
 
-```k
+```{.k .dynamic}
 syntax KItem ::= processVoluntaryExits(VoluntaryExits)
 rule processVoluntaryExits(E Exits) => processVoluntaryExit(E) ~> processVoluntaryExits(Exits)
 rule processVoluntaryExits(.VoluntaryExits) => .
