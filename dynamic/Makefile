@@ -154,7 +154,7 @@ test-static-java:
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION a-spec.k | diff - success.out
 
 test-dynamic:
-	$(K_BIN)/krun -d $(dynamic_dir) test1.abc | diff - test1.abc.out
-	$(K_BIN)/krun -d $(dynamic_dir) test2.abc | diff - test2.abc.out
-	$(K_BIN)/krun -d $(dynamic_dir) test3.abc | diff - test3.abc.out
+	$(K_BIN)/krun   -d $(dynamic_dir) test1.abc | diff - test1.abc.out
+	$(K_BIN)/krun   -d $(dynamic_dir) test2.abc | diff - test2.abc.out
+	$(K_BIN)/krun   -d $(dynamic_dir) test3.abc | diff - test3.abc.out
 
