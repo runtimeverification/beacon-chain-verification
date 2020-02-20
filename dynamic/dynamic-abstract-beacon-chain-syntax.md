@@ -5,7 +5,7 @@ module DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
 
 // libraries
-syntax Int ::= hash(Int) [function, smtlib(hash)]
+syntax Int ::= hash(Int) [function, functional, smtlib(hash)]
 
 // functions
 syntax Cmd ::= stateTransition(Block)
@@ -38,13 +38,13 @@ The RANDAO reveal (`randao_reveal`) and Eth1 data vote (`eth1_data`) are omitted
 
 ```k
 syntax Block ::= #Block(Pair,Pair,Slashings,Attestations,Deposits,VoluntaryExits) // (slot,id), parent, slashings, attestations, deposits, voluntary exits
-syntax Int            ::= Block ".slot"            [function]
-syntax Int            ::= Block ".id"              [function]
-syntax Pair           ::= Block ".parent"          [function]
-syntax Slashings      ::= Block ".slashings"       [function]
-syntax Attestations   ::= Block ".attestations"    [function]
-syntax Deposits       ::= Block ".deposits"        [function]
-syntax VoluntaryExits ::= Block ".voluntary_exits" [function]
+syntax Int            ::= Block ".slot"            [function, functional]
+syntax Int            ::= Block ".id"              [function, functional]
+syntax Pair           ::= Block ".parent"          [function, functional]
+syntax Slashings      ::= Block ".slashings"       [function, functional]
+syntax Attestations   ::= Block ".attestations"    [function, functional]
+syntax Deposits       ::= Block ".deposits"        [function, functional]
+syntax VoluntaryExits ::= Block ".voluntary_exits" [function, functional]
 rule #Block((X,_),_,_,_,_,_).slot            => X
 rule #Block((_,X),_,_,_,_,_).id              => X
 rule #Block((_,_),X,_,_,_,_).parent          => X
@@ -66,8 +66,8 @@ This captures both proposer and attester slashings of the concrete model.
 // abstract represention of both proposer slashings and attester slahsings
 syntax Slashings ::= List{Slashing,""}
 syntax Slashing  ::= #Slashing(Attestation,Attestation) // two conflict attestations
-syntax Attestation ::= Slashing ".attestation_1" [function]
-syntax Attestation ::= Slashing ".attestation_2" [function]
+syntax Attestation ::= Slashing ".attestation_1" [function, functional]
+syntax Attestation ::= Slashing ".attestation_2" [function, functional]
 rule #Slashing(X,_).attestation_1 => X
 rule #Slashing(_,X).attestation_2 => X
 ```
@@ -82,12 +82,12 @@ The `Attestation` of the concrete model can be represented as a set of abstract 
 // beacon_block_root (LMD GHOST vote) is omitted
 syntax Attestations ::= List{Attestation,""}
 syntax Attestation  ::= #Attestation(Int,Int,Pair,Pair) // attester, assigned slot, source epoch/block, target epoch/block
-syntax Int ::= Attestation ".attester"     [function]
-syntax Int ::= Attestation ".slot"         [function]
-syntax Int ::= Attestation ".source_epoch" [function]
-syntax Int ::= Attestation ".source_block" [function]
-syntax Int ::= Attestation ".target_epoch" [function]
-syntax Int ::= Attestation ".target_block" [function]
+syntax Int ::= Attestation ".attester"     [function, functional]
+syntax Int ::= Attestation ".slot"         [function, functional]
+syntax Int ::= Attestation ".source_epoch" [function, functional]
+syntax Int ::= Attestation ".source_block" [function, functional]
+syntax Int ::= Attestation ".target_epoch" [function, functional]
+syntax Int ::= Attestation ".target_block" [function, functional]
 rule #Attestation(X,_,(_,_),(_,_)).attester     => X
 rule #Attestation(_,X,(_,_),(_,_)).slot         => X
 rule #Attestation(_,_,(X,_),(_,_)).source_epoch => X
@@ -105,8 +105,8 @@ The extra data (e.g., signatures and Merkle proofs) for validating the deposit i
 ```k
 syntax Deposits ::= List{Deposit,""}
 syntax Deposit  ::= #Deposit(Int,Int) // sender, amount
-syntax Int ::= Deposit ".sender" [function]
-syntax Int ::= Deposit ".amount" [function]
+syntax Int ::= Deposit ".sender" [function, functional]
+syntax Int ::= Deposit ".amount" [function, functional]
 rule #Deposit(X,_).sender => X
 rule #Deposit(_,X).amount => X
 ```
@@ -120,8 +120,8 @@ This is the same with the concrete model.
 ```k
 syntax VoluntaryExits ::= List{VoluntaryExit,""}
 syntax VoluntaryExit  ::= #VoluntaryExit(Int,Int) // validator id, epoch to exit
-syntax Int ::= VoluntaryExit ".validator" [function]
-syntax Int ::= VoluntaryExit ".epoch"     [function]
+syntax Int ::= VoluntaryExit ".validator" [function, functional]
+syntax Int ::= VoluntaryExit ".epoch"     [function, functional]
 rule #VoluntaryExit(X,_).validator => X
 rule #VoluntaryExit(_,X).epoch     => X
 ```
@@ -144,14 +144,14 @@ The cryptographic data (`pubkey` and `withdrawal_credentials`) is omitted in the
 
 ```k
 syntax Validator ::= #Validator(Int,Bool,Pair,Pair,Pair) // id, slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
-syntax Int  ::= Validator ".id"                           [function]
-syntax Bool ::= Validator ".slashed"                      [function]
-syntax Int  ::= Validator ".balance"                      [function]
-syntax Int  ::= Validator ".effective_balance"            [function]
-syntax Int  ::= Validator ".activation_eligibility_epoch" [function]
-syntax Int  ::= Validator ".activation_epoch"             [function]
-syntax Int  ::= Validator ".exit_epoch"                   [function]
-syntax Int  ::= Validator ".withdrawable_epoch"           [function]
+syntax Int  ::= Validator ".id"                           [function, functional]
+syntax Bool ::= Validator ".slashed"                      [function, functional]
+syntax Int  ::= Validator ".balance"                      [function, functional]
+syntax Int  ::= Validator ".effective_balance"            [function, functional]
+syntax Int  ::= Validator ".activation_eligibility_epoch" [function, functional]
+syntax Int  ::= Validator ".activation_epoch"             [function, functional]
+syntax Int  ::= Validator ".exit_epoch"                   [function, functional]
+syntax Int  ::= Validator ".withdrawable_epoch"           [function, functional]
 rule #Validator(X,_,(_,_),(_,_),(_,_)).id                           => X
 rule #Validator(_,X,(_,_),(_,_),(_,_)).slashed                      => X
 rule #Validator(_,_,(X,_),(_,_),(_,_)).balance                      => X
@@ -160,13 +160,13 @@ rule #Validator(_,_,(_,_),(X,_),(_,_)).activation_eligibility_epoch => X
 rule #Validator(_,_,(_,_),(_,X),(_,_)).activation_epoch             => X
 rule #Validator(_,_,(_,_),(_,_),(X,_)).exit_epoch                   => X
 rule #Validator(_,_,(_,_),(_,_),(_,X)).withdrawable_epoch           => X
-syntax Validator ::= Validator "with" "slashed"                      "=" Bool [function]
-syntax Validator ::= Validator "with" "balance"                      "=" Int  [function]
-syntax Validator ::= Validator "with" "effective_balance"            "=" Int  [function]
-syntax Validator ::= Validator "with" "activation_eligibility_epoch" "=" Int  [function]
-syntax Validator ::= Validator "with" "activation_epoch"             "=" Int  [function]
-syntax Validator ::= Validator "with" "exit_epoch"                   "=" Int  [function]
-syntax Validator ::= Validator "with" "withdrawable_epoch"           "=" Int  [function]
+syntax Validator ::= Validator "with" "slashed"                      "=" Bool [function, functional]
+syntax Validator ::= Validator "with" "balance"                      "=" Int  [function, functional]
+syntax Validator ::= Validator "with" "effective_balance"            "=" Int  [function, functional]
+syntax Validator ::= Validator "with" "activation_eligibility_epoch" "=" Int  [function, functional]
+syntax Validator ::= Validator "with" "activation_epoch"             "=" Int  [function, functional]
+syntax Validator ::= Validator "with" "exit_epoch"                   "=" Int  [function, functional]
+syntax Validator ::= Validator "with" "withdrawable_epoch"           "=" Int  [function, functional]
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with slashed                      = V => #Validator(A,V,(B,C),(D,E),(F,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with balance                      = V => #Validator(A,S,(V,C),(D,E),(F,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with effective_balance            = V => #Validator(A,S,(B,V),(D,E),(F,G))
