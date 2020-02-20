@@ -224,6 +224,7 @@ rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
 
 syntax Bool ::= isMajority(Int, Int) [function, functional]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
+                             andBool Total >Int 0
 
 syntax Int ::= attestationsBalance(Int, Attestations, Map) [function] // functional only for Validators map
 rule attestationsBalance(Target, A Attestations, Validators)
