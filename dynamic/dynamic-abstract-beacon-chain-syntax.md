@@ -200,14 +200,14 @@ syntax Int ::= "MIN_SLASHING_PENALTY_QUOTIENT"          rule MIN_SLASHING_PENALT
 ## Macros
 
 ```k
-syntax Int  ::= epochOf(Int)            [function]
-              | firstSlotOf(Int)        [function]
-              | lastSlotOf(Int)         [function]
-syntax Bool ::= isFirstSlotOfEpoch(Int) [function]
-rule epochOf(Slot)            => Slot /Int SLOTS_PER_EPOCH
-rule firstSlotOf(Epoch)       => Epoch *Int SLOTS_PER_EPOCH
-rule lastSlotOf(Epoch)        => firstSlotOf(Epoch) +Int SLOTS_PER_EPOCH -Int 1
-rule isFirstSlotOfEpoch(Slot) => Slot %Int SLOTS_PER_EPOCH ==Int 0 // Slot is the first slot of an epoch?
+syntax Int  ::= epochOf(Int)
+              | firstSlotOf(Int)
+              | lastSlotOf(Int)
+syntax Bool ::= isFirstSlotOfEpoch(Int) // Slot is the first slot of an epoch?
+rule epochOf(Slot)            => Slot /Int SLOTS_PER_EPOCH                      [macro]
+rule firstSlotOf(Epoch)       => Epoch *Int SLOTS_PER_EPOCH                     [macro]
+rule lastSlotOf(Epoch)        => firstSlotOf(Epoch) +Int SLOTS_PER_EPOCH -Int 1 [macro]
+rule isFirstSlotOfEpoch(Slot) => Slot %Int SLOTS_PER_EPOCH ==Int 0              [macro]
 
 endmodule
 ```
