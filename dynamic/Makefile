@@ -28,8 +28,8 @@ export LUA_PATH
 
 .PHONY: all clean                                 \
         deps deps-k deps-tangle deps-media        \
-        defn defn-haskell defn-java               \
-        build build-haskell build-java            \
+        defn defn-static defn-dynamic             \
+        build build-static build-dynamic          \
         test
 
 .SECONDARY:
