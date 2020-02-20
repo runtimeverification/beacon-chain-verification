@@ -1,0 +1,822 @@
+kore-exec: [2020-02-19 19:15:17.407564467] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.409644751] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.411607304] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.413681005] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.424394141] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.427775001] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.462413141] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.464286525] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.466245721] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.482348127] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.486504567] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.489850011] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.49125808] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.492763082] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.494646245] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.802044521] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.816830179] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.839206909] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+kore-exec: [2020-02-19 19:15:17.854054003] Warning (WarnFunctionWithoutEvaluators): No evaluators for function symbol:
+    LblisValidators'LParUndsRParUnds'DYNAMIC-ABSTRACT-BEACON-CHAIN'Unds'Bool'Unds'Map{}
+  ( {
+      isValidators ( Vs )
+    #Equals
+      true
+    }
+  #Implies
+    {
+      true
+    #Equals
+      Epoch >=Int 1 andBool isValidators ( Vs ) andBool ( attestationsBalance ( EpochBoundaryBlock , Attestations , Vs ) *Int 3 >=Int totalBalance ( values ( Vs ) ) *Int 2 andBool totalBalance ( values ( Vs ) ) >Int 0 )
+    } )
+#And
+  #Ceil ( <state>
+    <slot>
+      ( Epoch +Int 1 ) *Int 4
+    </slot>
+    <validators>
+      Vs
+    </validators>
+    <slashedBalance>
+      _20
+    </slashedBalance>
+    <attested>
+      DotVar4
+      Epoch:Int |-> Attestations:Attestations
+    </attested>
+    <justified>
+      DotVar5
+      Epoch:Int |-> none
+    </justified>
+    <finalized>
+      _30
+    </finalized>
+    <lastBlock>
+      ( _41 , _40 )
+    </lastBlock>
+    <lastJustified>
+      ( _01 , _00 )
+    </lastJustified>
+    <lastFinalized>
+      ( _51 , _50 )
+    </lastFinalized>
+  </state> <state>
+    <slot>
+      Epoch *Int 4
+    </slot>
+    <validators>
+      Vs
+    </validators>
+    <slashedBalance>
+      _60
+    </slashedBalance>
+    <attested>
+      _70
+    </attested>
+    <justified>
+      _80
+    </justified>
+    <finalized>
+      _90
+    </finalized>
+    <lastBlock>
+      ( _1 , EpochBoundaryBlock )
+    </lastBlock>
+    <lastJustified>
+      ( _101 , _100 )
+    </lastJustified>
+    <lastFinalized>
+      ( _111 , _110 )
+    </lastFinalized>
+  </state> DotVar2 )
+#And
+  #Ceil ( DotVar4
+  Epoch:Int |-> Attestations:Attestations )
+#And
+  #Ceil ( DotVar5
+  Epoch:Int |-> none )
+#And
+  #Not ( #Ceil ( <state>
+      <slot>
+        ( Epoch +Int 1 ) *Int 4
+      </slot>
+      <validators>
+        Vs
+      </validators>
+      <slashedBalance>
+        _20
+      </slashedBalance>
+      <attested>
+        DotVar4
+        Epoch:Int |-> Attestations:Attestations
+      </attested>
+      <justified>
+        DotVar5
+        Epoch:Int |-> none
+      </justified>
+      <finalized>
+        _30
+      </finalized>
+      <lastBlock>
+        ( _41 , _40 )
+      </lastBlock>
+      <lastJustified>
+        ( _01 , _00 )
+      </lastJustified>
+      <lastFinalized>
+        ( _51 , _50 )
+      </lastFinalized>
+    </state> <state>
+      <slot>
+        Epoch *Int 4
+      </slot>
+      <validators>
+        Vs
+      </validators>
+      <slashedBalance>
+        _60
+      </slashedBalance>
+      <attested>
+        _70
+      </attested>
+      <justified>
+        _80
+      </justified>
+      <finalized>
+        _90
+      </finalized>
+      <lastBlock>
+        ( _1 , EpochBoundaryBlock )
+      </lastBlock>
+      <lastJustified>
+        ( _101 , _100 )
+      </lastJustified>
+      <lastFinalized>
+        ( _111 , _110 )
+      </lastFinalized>
+    </state> DotVar2 )
+  #And
+    #Ceil ( <state>
+      <slot>
+        Epoch *Int 4
+      </slot>
+      <validators>
+        Vs
+      </validators>
+      <slashedBalance>
+        _60
+      </slashedBalance>
+      <attested>
+        _70
+      </attested>
+      <justified>
+        _80
+      </justified>
+      <finalized>
+        _90
+      </finalized>
+      <lastBlock>
+        ( _1 , EpochBoundaryBlock )
+      </lastBlock>
+      <lastJustified>
+        ( _101 , _100 )
+      </lastJustified>
+      <lastFinalized>
+        ( _111 , _110 )
+      </lastFinalized>
+    </state> DotVar2 )
+  #And
+    #Ceil ( DotVar4
+    Epoch:Int |-> Attestations:Attestations )
+  #And
+    #Ceil ( DotVar5
+    Epoch:Int |-> none )
+  #And
+    {
+      true
+    #Equals
+      attestationsBalance ( EpochBoundaryBlock , Attestations , Vs ) *Int 3 >=Int totalBalance ( values ( Vs ) ) *Int 2 andBool totalBalance ( values ( Vs ) ) >Int 0
+    } )
+#And
+  #Not ( #Ceil ( <state>
+      <slot>
+        ( Epoch +Int 1 ) *Int 4
+      </slot>
+      <validators>
+        Vs
+      </validators>
+      <slashedBalance>
+        _20
+      </slashedBalance>
+      <attested>
+        DotVar4
+        Epoch:Int |-> Attestations:Attestations
+      </attested>
+      <justified>
+        DotVar5
+        Epoch:Int |-> none
+      </justified>
+      <finalized>
+        _30
+      </finalized>
+      <lastBlock>
+        ( _41 , _40 )
+      </lastBlock>
+      <lastJustified>
+        ( _01 , _00 )
+      </lastJustified>
+      <lastFinalized>
+        ( _51 , _50 )
+      </lastFinalized>
+    </state> <state>
+      <slot>
+        Epoch *Int 4
+      </slot>
+      <validators>
+        Vs
+      </validators>
+      <slashedBalance>
+        _60
+      </slashedBalance>
+      <attested>
+        _70
+      </attested>
+      <justified>
+        _80
+      </justified>
+      <finalized>
+        _90
+      </finalized>
+      <lastBlock>
+        ( _1 , EpochBoundaryBlock )
+      </lastBlock>
+      <lastJustified>
+        ( _101 , _100 )
+      </lastJustified>
+      <lastFinalized>
+        ( _111 , _110 )
+      </lastFinalized>
+    </state> DotVar2 )
+  #And
+    #Ceil ( DotVar4
+    Epoch:Int |-> Attestations:Attestations )
+  #And
+    #Ceil ( DotVar5
+    Epoch:Int |-> none )
+  #And
+    {
+      Epoch <Int 1
+    #Equals
+      true
+    } )
+#And
+  #Not ( #Ceil ( <state>
+      <slot>
+        ( Epoch +Int 1 ) *Int 4
+      </slot>
+      <validators>
+        Vs
+      </validators>
+      <slashedBalance>
+        _20
+      </slashedBalance>
+      <attested>
+        DotVar4
+        Epoch:Int |-> Attestations:Attestations
+      </attested>
+      <justified>
+        DotVar5
+        Epoch:Int |-> none
+      </justified>
+      <finalized>
+        _30
+      </finalized>
+      <lastBlock>
+        ( _41 , _40 )
+      </lastBlock>
+      <lastJustified>
+        ( _01 , _00 )
+      </lastJustified>
+      <lastFinalized>
+        ( _51 , _50 )
+      </lastFinalized>
+    </state> <state>
+      <slot>
+        Epoch *Int 4
+      </slot>
+      <validators>
+        Vs
+      </validators>
+      <slashedBalance>
+        _60
+      </slashedBalance>
+      <attested>
+        _70
+      </attested>
+      <justified>
+        _80
+      </justified>
+      <finalized>
+        _90
+      </finalized>
+      <lastBlock>
+        ( _1 , EpochBoundaryBlock )
+      </lastBlock>
+      <lastJustified>
+        ( _101 , _100 )
+      </lastJustified>
+      <lastFinalized>
+        ( _111 , _110 )
+      </lastFinalized>
+    </state> DotVar2 )
+  #And
+    #Ceil ( DotVar4
+    Epoch:Int |-> Attestations:Attestations )
+  #And
+    #Ceil ( DotVar5
+    Epoch:Int |-> none )
+  #And
+    {
+      false
+    #Equals
+      attestationsBalance ( EpochBoundaryBlock , Attestations , Vs ) *Int 3 >=Int totalBalance ( values ( Vs ) ) *Int 2 andBool totalBalance ( values ( Vs ) ) >Int 0
+    } )
+#And
+  #Not ( #Exists _02 . #Exists _10 . #Exists _21 . #Exists _31 . #Exists _42 . #Exists _52 . #Exists DotVar3 . #Exists DotVar50 . #Ceil ( <state>
+      <slot>
+        ( Epoch +Int 1 ) *Int 4
+      </slot>
+      _02
+      _10
+      _21
+      <justified>
+        DotVar50
+        Epoch:Int |-> some EpochBoundaryBlock
+      </justified>
+      _31
+      _42
+      <lastJustified>
+        ( Epoch , EpochBoundaryBlock )
+      </lastJustified>
+      _52
+    </state> DotVar3 )
+  #And
+    #Ceil ( DotVar50
+    Epoch:Int |-> some EpochBoundaryBlock )
+  #And
+    #Not ( #Ceil ( <state>
+        <slot>
+          ( Epoch +Int 1 ) *Int 4
+        </slot>
+        <validators>
+          Vs
+        </validators>
+        <slashedBalance>
+          _20
+        </slashedBalance>
+        <attested>
+          DotVar4
+          Epoch:Int |-> Attestations:Attestations
+        </attested>
+        <justified>
+          DotVar5
+          Epoch:Int |-> none
+        </justified>
+        <finalized>
+          _30
+        </finalized>
+        <lastBlock>
+          ( _41 , _40 )
+        </lastBlock>
+        <lastJustified>
+          ( _01 , _00 )
+        </lastJustified>
+        <lastFinalized>
+          ( _51 , _50 )
+        </lastFinalized>
+      </state> <state>
+        <slot>
+          Epoch *Int 4
+        </slot>
+        <validators>
+          Vs
+        </validators>
+        <slashedBalance>
+          _60
+        </slashedBalance>
+        <attested>
+          _70
+        </attested>
+        <justified>
+          _80
+        </justified>
+        <finalized>
+          _90
+        </finalized>
+        <lastBlock>
+          ( _1 , EpochBoundaryBlock )
+        </lastBlock>
+        <lastJustified>
+          ( _101 , _100 )
+        </lastJustified>
+        <lastFinalized>
+          ( _111 , _110 )
+        </lastFinalized>
+      </state> DotVar2 )
+    #And
+      #Ceil ( DotVar4
+      Epoch:Int |-> Attestations:Attestations )
+    #And
+      #Ceil ( DotVar5
+      Epoch:Int |-> none ) )
+  #And
+    #Not ( #Ceil ( <state>
+        <slot>
+          ( Epoch +Int 1 ) *Int 4
+        </slot>
+        _02
+        _10
+        _21
+        <justified>
+          DotVar50
+          Epoch:Int |-> some EpochBoundaryBlock
+        </justified>
+        _31
+        _42
+        <lastJustified>
+          ( Epoch , EpochBoundaryBlock )
+        </lastJustified>
+        _52
+      </state> DotVar3 )
+    #And
+      #Ceil ( DotVar50
+      Epoch:Int |-> some EpochBoundaryBlock ) )
+  #And
+    {
+      true
+    #Equals
+      attestationsBalance ( EpochBoundaryBlock , Attestations , Vs ) *Int 3 >=Int totalBalance ( values ( Vs ) ) *Int 2 andBool totalBalance ( values ( Vs ) ) >Int 0
+    } )
+#And
+  #Not ( #Exists _02 . #Exists _10 . #Exists _21 . #Exists _31 . #Exists _42 . #Exists _52 . #Exists _61 . #Exists DotVar3 . #Exists DotVar50 . #Ceil ( <state>
+      <slot>
+        ( Epoch +Int 1 ) *Int 4
+      </slot>
+      _10
+      _21
+      _31
+      <justified>
+        DotVar50
+        Epoch:Int |-> none
+      </justified>
+      _42
+      _52
+      <lastJustified>
+        _02
+      </lastJustified>
+      _61
+    </state> DotVar3 )
+  #And
+    #Ceil ( DotVar50
+    Epoch:Int |-> none )
+  #And
+    #Not ( #Ceil ( <state>
+        <slot>
+          ( Epoch +Int 1 ) *Int 4
+        </slot>
+        <validators>
+          Vs
+        </validators>
+        <slashedBalance>
+          _20
+        </slashedBalance>
+        <attested>
+          DotVar4
+          Epoch:Int |-> Attestations:Attestations
+        </attested>
+        <justified>
+          DotVar5
+          Epoch:Int |-> none
+        </justified>
+        <finalized>
+          _30
+        </finalized>
+        <lastBlock>
+          ( _41 , _40 )
+        </lastBlock>
+        <lastJustified>
+          ( _01 , _00 )
+        </lastJustified>
+        <lastFinalized>
+          ( _51 , _50 )
+        </lastFinalized>
+      </state> <state>
+        <slot>
+          Epoch *Int 4
+        </slot>
+        <validators>
+          Vs
+        </validators>
+        <slashedBalance>
+          _60
+        </slashedBalance>
+        <attested>
+          _70
+        </attested>
+        <justified>
+          _80
+        </justified>
+        <finalized>
+          _90
+        </finalized>
+        <lastBlock>
+          ( _1 , EpochBoundaryBlock )
+        </lastBlock>
+        <lastJustified>
+          ( _101 , _100 )
+        </lastJustified>
+        <lastFinalized>
+          ( _111 , _110 )
+        </lastFinalized>
+      </state> DotVar2 )
+    #And
+      #Ceil ( DotVar4
+      Epoch:Int |-> Attestations:Attestations )
+    #And
+      #Ceil ( DotVar5
+      Epoch:Int |-> none ) )
+  #And
+    #Not ( #Ceil ( <state>
+        <slot>
+          ( Epoch +Int 1 ) *Int 4
+        </slot>
+        _10
+        _21
+        _31
+        <justified>
+          DotVar50
+          Epoch:Int |-> none
+        </justified>
+        _42
+        _52
+        <lastJustified>
+          _02
+        </lastJustified>
+        _61
+      </state> DotVar3 )
+    #And
+      #Ceil ( DotVar50
+      Epoch:Int |-> none ) )
+  #And
+    {
+      true
+    #Equals
+      attestationsBalance ( EpochBoundaryBlock , Attestations , Vs ) *Int 3 >=Int totalBalance ( values ( Vs ) ) *Int 2 andBool totalBalance ( values ( Vs ) ) >Int 0
+    } )
+#And
+  #Not ( #Exists _02 . #Exists _10 . #Exists _102 . #Exists _112 . #Exists _12 . #Exists _13 . #Exists _21 . #Exists _31 . #Exists _42 . #Exists _52 . #Exists _61 . #Exists _71 . #Exists _81 . #Exists _91 . #Exists Attestations0 . #Exists DotVar3 . #Exists DotVar50 . #Exists EpochBoundaryBlock0 . #Exists Validators . #Ceil ( <state>
+      <slot>
+        ( Epoch +Int 1 ) *Int 4
+      </slot>
+      _10
+      _21
+      <attested>
+        DotVar50
+        Epoch:Int |-> Attestations0:Attestations
+      </attested>
+      _31
+      _42
+      _52
+      _61
+      _71
+    </state> <state>
+      <slot>
+        Epoch *Int 4
+      </slot>
+      <validators>
+        Validators
+      </validators>
+      _81
+      _91
+      _102
+      _112
+      <lastBlock>
+        ( _02 , EpochBoundaryBlock0 )
+      </lastBlock>
+      _12
+      _13
+    </state> DotVar3 )
+  #And
+    #Ceil ( DotVar50
+    Epoch:Int |-> Attestations0:Attestations )
+  #And
+    #Not ( #Ceil ( <state>
+        <slot>
+          ( Epoch +Int 1 ) *Int 4
+        </slot>
+        <validators>
+          Vs
+        </validators>
+        <slashedBalance>
+          _20
+        </slashedBalance>
+        <attested>
+          DotVar4
+          Epoch:Int |-> Attestations:Attestations
+        </attested>
+        <justified>
+          DotVar5
+          Epoch:Int |-> none
+        </justified>
+        <finalized>
+          _30
+        </finalized>
+        <lastBlock>
+          ( _41 , _40 )
+        </lastBlock>
+        <lastJustified>
+          ( _01 , _00 )
+        </lastJustified>
+        <lastFinalized>
+          ( _51 , _50 )
+        </lastFinalized>
+      </state> <state>
+        <slot>
+          Epoch *Int 4
+        </slot>
+        <validators>
+          Vs
+        </validators>
+        <slashedBalance>
+          _60
+        </slashedBalance>
+        <attested>
+          _70
+        </attested>
+        <justified>
+          _80
+        </justified>
+        <finalized>
+          _90
+        </finalized>
+        <lastBlock>
+          ( _1 , EpochBoundaryBlock )
+        </lastBlock>
+        <lastJustified>
+          ( _101 , _100 )
+        </lastJustified>
+        <lastFinalized>
+          ( _111 , _110 )
+        </lastFinalized>
+      </state> DotVar2 )
+    #And
+      #Ceil ( DotVar4
+      Epoch:Int |-> Attestations:Attestations )
+    #And
+      #Ceil ( DotVar5
+      Epoch:Int |-> none ) )
+  #And
+    #Not ( #Ceil ( <state>
+        <slot>
+          ( Epoch +Int 1 ) *Int 4
+        </slot>
+        _10
+        _21
+        <attested>
+          DotVar50
+          Epoch:Int |-> Attestations0:Attestations
+        </attested>
+        _31
+        _42
+        _52
+        _61
+        _71
+      </state> <state>
+        <slot>
+          Epoch *Int 4
+        </slot>
+        <validators>
+          Validators
+        </validators>
+        _81
+        _91
+        _102
+        _112
+        <lastBlock>
+          ( _02 , EpochBoundaryBlock0 )
+        </lastBlock>
+        _12
+        _13
+      </state> DotVar3 )
+    #And
+      #Ceil ( DotVar50
+      Epoch:Int |-> Attestations0:Attestations ) )
+  #And
+    {
+      Epoch >=Int 1
+    #Equals
+      true
+    } )
+#And
+  <T>
+    <k>
+      attestationsBalance ( EpochBoundaryBlock , Attestations , Vs ) *Int 3 >=Int totalBalance ( values ( Vs ) ) *Int 2 andBool totalBalance ( values ( Vs ) ) >Int 0 ~> justify ( Epoch , EpochBoundaryBlock )
+    </k>
+    <currentSlot>
+      ( Epoch +Int 1 ) *Int 4
+    </currentSlot>
+    <states>
+      <state>
+        <slot>
+          ( Epoch +Int 1 ) *Int 4
+        </slot>
+        <validators>
+          Vs
+        </validators>
+        <slashedBalance>
+          _20
+        </slashedBalance>
+        <attested>
+          DotVar4
+          Epoch:Int |-> Attestations:Attestations
+        </attested>
+        <justified>
+          DotVar5
+          Epoch:Int |-> none
+        </justified>
+        <finalized>
+          _30
+        </finalized>
+        <lastBlock>
+          ( _41 , _40 )
+        </lastBlock>
+        <lastJustified>
+          ( _01 , _00 )
+        </lastJustified>
+        <lastFinalized>
+          ( _51 , _50 )
+        </lastFinalized>
+      </state> <state>
+        <slot>
+          Epoch *Int 4
+        </slot>
+        <validators>
+          Vs
+        </validators>
+        <slashedBalance>
+          _60
+        </slashedBalance>
+        <attested>
+          _70
+        </attested>
+        <justified>
+          _80
+        </justified>
+        <finalized>
+          _90
+        </finalized>
+        <lastBlock>
+          ( _1 , EpochBoundaryBlock )
+        </lastBlock>
+        <lastJustified>
+          ( _101 , _100 )
+        </lastJustified>
+        <lastFinalized>
+          ( _111 , _110 )
+        </lastFinalized>
+      </state> DotVar2
+    </states>
+    <blocks>
+      DotVar10
+    </blocks>
+  </T>
+#And
+  {
+    Epoch >=Int 1
+  #Equals
+    true
+  }
+#And
+  {
+    isValidators ( Vs )
+  #Equals
+    true
+  }
