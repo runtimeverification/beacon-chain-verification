@@ -242,6 +242,23 @@ rule balanceOf(V:Validator) => V.effective_balance
 syntax Int ::= totalBalance(List) [function] // functional only for Validators
 rule totalBalance(ListItem(V:Validator) Vs:List) => V.effective_balance +Int totalBalance(Vs)
 rule totalBalance(.List) => 0
+
+// definedness
+rule #Ceil(isJustifiable(_, _, Validators))       => {isValidators(Validators) #Equals true} [anywhere]
+
+rule #Ceil(attestationsBalance(_, _, Validators)) => {isValidators(Validators) #Equals true} [anywhere]
+
+rule #Ceil(balanceOf(_, Validators))              => {isValidators(Validators) #Equals true} [anywhere]
+
+rule #Ceil(totalBalance(Validators))              => {isValidators(Validators) #Equals true} [anywhere]
+
+rule #Ceil(values(_:Map)) => #True [anywhere]
+
+// abstract predicate
+syntax Bool ::= isValidators(Map) [function, functional]
+
+syntax Bool ::= isValidators(List) [function, functional]
+rule isValidators(values(M:Map)) => isValidators(M)
 ```
 
 ### Finalization
