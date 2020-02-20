@@ -224,6 +224,7 @@ rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
 
 syntax Bool ::= isMajority(Int, Int) [function, functional]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
+                             andBool Total >Int 0
 
 syntax Int ::= attestationsBalance(Int, Attestations, Map) [function] // functional only for Validators map
 rule attestationsBalance(Target, A Attestations, Validators)
@@ -241,6 +242,27 @@ rule balanceOf(V:Validator) => V.effective_balance
 syntax Int ::= totalBalance(List) [function] // functional only for Validators
 rule totalBalance(ListItem(V:Validator) Vs:List) => V.effective_balance +Int totalBalance(Vs)
 rule totalBalance(.List) => 0
+```
+
+```{.k .kore}
+// definedness
+rule #Ceil(isJustifiable(_, _, Validators))       => {isValidators(Validators) #Equals true} [anywhere]
+
+rule #Ceil(attestationsBalance(_, _, Validators)) => {isValidators(Validators) #Equals true} [anywhere]
+
+rule #Ceil(balanceOf(_, Validators))              => {isValidators(Validators) #Equals true} [anywhere]
+
+rule #Ceil(totalBalance(Validators))              => {isValidators(Validators) #Equals true} [anywhere]
+
+rule #Ceil(values(_:Map)) => #True [anywhere]
+```
+
+```k
+// abstract predicate
+syntax Bool ::= isValidators(Map) [function, functional]
+
+syntax Bool ::= isValidators(List) [function, functional]
+rule isValidators(values(M:Map)) => isValidators(M)
 ```
 
 ### Finalization
