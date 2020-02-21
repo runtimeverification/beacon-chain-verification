@@ -9,4 +9,8 @@ syntax KItem ::= case2(Bool, Bool)
 rule case2(C, _) => . requires C [trusted]
 rule case2(_, C) => . requires C [trusted]
 
+syntax Attestations ::= super(Attestations) [function]
+rule isJustifiable(B, super(As), Vs) => true
+    requires isJustifiable(B, As, Vs)
+
 endmodule

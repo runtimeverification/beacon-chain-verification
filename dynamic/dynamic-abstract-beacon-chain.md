@@ -20,6 +20,9 @@ imports INT
 imports MAP
 imports LIST
 ```
+```{.k .kast}
+imports K-REFLECTION
+```
 
 ## Abstract Beacon Chain States
 
@@ -221,7 +224,12 @@ rule <k> false ~> justify(_, _) => . ... </k>
 syntax Bool ::= isJustifiable(Int, Attestations, Map) [function] // functional only for Validators map
 rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
   => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values(Validators)))
+```
+```{.k .kast}
+  requires #isConcrete(Attestations) // TODO: drop this
+```
 
+```k
 syntax Bool ::= isMajority(Int, Int) [function, functional]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
                              andBool Total >Int 0
