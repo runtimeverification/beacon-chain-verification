@@ -143,18 +143,21 @@ $(dynamic_kompiled): $(dynamic_files)
 
 test: test-static test-static-java test-dynamic
 
-test-static:
+test-static: build-static
 	$(K_BIN)/krun   -d $(static_dir) test1.abc | diff - test1.abc.out
 	$(K_BIN)/krun   -d $(static_dir) test2.abc | diff - test2.abc.out
 	$(K_BIN)/krun   -d $(static_dir) test3.abc | diff - test3.abc.out
 	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION simple-spec.k | diff - success.out
 
-test-static-java:
+test-static-java: build-static-java
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION simple-spec.k | diff - success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION a-spec.k | diff - success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION b-spec.k | diff - success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION c-spec.k | diff - success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION d-spec.k | diff - success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION e-spec.k | diff - success.out
 
-test-dynamic:
+test-dynamic: build-dynamic
 	$(K_BIN)/krun   -d $(dynamic_dir) test1.abc | diff - test1.abc.out
 	$(K_BIN)/krun   -d $(dynamic_dir) test2.abc | diff - test2.abc.out
 	$(K_BIN)/krun   -d $(dynamic_dir) test3.abc | diff - test3.abc.out
