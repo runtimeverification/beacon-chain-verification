@@ -1,0 +1,7 @@
+main theorem
+- for a given good state, stateTransition() returns another good state
+
+misc
+- no attestations are missed
+- once justified/finalized, never change 
+- last justified/finalized blocks are maintained correctly

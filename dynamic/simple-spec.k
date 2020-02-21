@@ -4,7 +4,7 @@ module SIMPLE-SPEC
 
 imports VERIFICATION
 
-// processSlot
+// processSlot() does nothing.
 rule
 <T>
   <k> processSlot() => . </k>
@@ -36,7 +36,7 @@ rule
   </blocks>
 </T>
 
-// processSlots base case
+// processSlots(s) does nothing if s is the current slot.
 rule
 <T>
   <k> processSlots(Slot) => . </k>
@@ -68,7 +68,7 @@ rule
   </blocks>
 </T>
 
-// processJustification empty
+// processJustification(e) does nothing if no validator exist.
 rule
 <T>
   <k> processJustification(Epoch) => . </k>
