@@ -29,3 +29,28 @@ Definition State := {fset Vote}.
 Definition vote_msg (st:State) v s t (s_h t_h:nat) : bool
   := (v,s,t,s_h,t_h) \in st .
 
+Definition vote_val (v:Vote) : Validator :=
+  match v with
+    (x,_,_,_,_) => x
+  end.
+
+Definition vote_source (v:Vote) : Hash :=
+  match v with
+    (_,s,_,_,_) => s
+  end.
+
+Definition vote_target (v:Vote) : Hash :=
+  match v with
+    (_,_,t,_,_) => t
+  end.
+
+Definition vote_source_height (v:Vote) : nat :=
+  match v with
+    (_,_,_,s_h,_) => s_h
+  end.
+
+Definition vote_target_height (v:Vote) : nat :=
+  match v with
+    (_,_,_,_,t_h) => t_h
+  end.
+

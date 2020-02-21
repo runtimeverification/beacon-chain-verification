@@ -6,6 +6,8 @@ Set Warnings "parsing".
 From mathcomp.finmap
 Require Import finmap.
 
+Require Import Classical.
+
 From Casper
 Require Import StrongInductionLtn.
 
@@ -20,7 +22,7 @@ Unset Printing Implicit Defensive.
 
 (* The liveness theorem will assume that 2/3 of validators
    have not behaved badly. For liveness it is not sufficient to merely
-   say they are unslashed.
+   say that a 1/3 quorum is unslashed.
    Votes with unjustified sources do not violate any slashing conditions
    themselves, but can prevent a validator from contributing to progress,
    because votes spanning over the unjustified vote would violate
@@ -28,53 +30,7 @@ Unset Printing Implicit Defensive.
    No correct validator should ever make such a vote.
  *)
 
-(* All votes have justified sources *)
-Definition sources_justified st v :=
-  forall s t s_h t_h,
-    vote_msg st v s t s_h t_h -> justified st s s_h.
-
-(* 2/3 of the validators have behaved well *)
-Definition two_thirds_good (st : State) :=
-  exists q2, q2 \in quorum_2 /\
-  forall v, v \in q2 -> (~ slashed st v /\ sources_justified st v).
-
-(* We also need to assume block proposals continue.
-   In particular, our proof requires that blocks exist
-   sufficiently high over the highest justified block *)
-Definition blocks_exist_high_over (base : Hash) : Prop :=
-  forall n, exists block, nth_ancestor n base block /\ n > 1.
-
-(* We also define the property of being the highest justified block *)
-Definition highest_justified st b b_h : Prop :=
-  forall b' b_h', b_h' >= b_h
-  -> justified st b' b_h'
-  -> b' = b /\ b_h' = b_h.
-
-(* We assume a highest justified block exists.
-   This is left as an unproved assumption for now,
-   becasue proving there is only one justified block
-   of maximum height would require depending on
-   the accountable safety theorem and assumptions of
-   good behavior. *)
-Lemma highest_exists: forall st,
-    exists b b_h,
-      justified st b b_h /\
-      highest_justified st b b_h.
-Admitted.
-
-(** Now we have some defintions used to state the conclusion of the theorem **)
-(* First, the solution only calls for votes from unslashed validators. *)
-Definition unslashed_can_extend st st' : Prop :=
-  forall v s t s_h t_h,
-    vote_msg st' v s t s_h t_h = true ->
-    vote_msg st v s t s_h t_h = true \/ ~ slashed st v.
-
-(* Second, making the new votes does not cause any previously unslashed
-   validator to be slashed *)
-Definition no_new_slashed st st' :=
-  forall v, slashed st' v -> slashed st v.
-
-(** Now a few minor lemmas and definitions used in the proof **)
+(** A few minor lemmas and definitions used in the proof **)
 Definition highest (A : {fset nat}) : nat :=
   \max_(i : A) (val i).
 
@@ -92,14 +48,185 @@ Proof.
 by move => n; apply/negP/negP; rewrite leqNgt; apply/negP; case/negP.
 Qed.
 
-Definition vote_target_height (v:Vote) : nat :=
-  match v with
-    (_,_,_,_,t_h) => t_h
-  end.
+(* All votes have justified sources *)
+Definition valid_votes st v :=
+  forall s t s_h t_h,
+    vote_msg st v s t s_h t_h -> justified st s s_h.
+
+(* 2/3 of the validators have behaved well *)
+(* This is now split into two *)
+Definition two_thirds_good (st : State) :=
+  exists q2, q2 \in quorum_2 /\
+    forall v, v \in q2 -> ~ slashed st v.
+    
+Definition sources_justified (st : State) :=
+  forall q2, q2 \in quorum_2 ->
+    forall v, v \in q2 ->  valid_votes st v.
+
+(* We also need to assume block proposals continue.
+   In particular, our proof requires that blocks exist
+   sufficiently high over the highest justified block *)
+Definition blocks_exist_high_over (base : Hash) : Prop :=
+  forall n, exists block, nth_ancestor n base block /\ n > 1.
+
+(* We also define the property of being the highest justified block *)
+Definition highest_justified st b b_h : Prop :=
+  forall b' b_h', b_h' >= b_h
+  -> justified st b' b_h'
+  -> b' = b /\ b_h' = b_h.
+
+Definition has_justification_link (st : State) : Prop :=
+  exists s t s_h t_h, justified st s s_h /\ justification_link st s t s_h t_h.
+
+Definition maximal_justification_link st s t s_h t_h : Prop :=
+  justification_link st s t s_h t_h /\
+  forall s' t' s_h' t_h', justification_link st s' t' s_h' t_h' -> t_h' <= t_h.
+
+Lemma source_justified : forall st s t s_h t_h,
+  sources_justified st -> 
+  justification_link st s t s_h t_h -> 
+  justified st s s_h.
+Proof.
+  intros st s t s_h t_h Hgood Hjlink.
+  unfold sources_justified in Hgood.
+  destruct Hjlink as [Hh [Hnth Hsm]].
+  unfold supermajority_link in Hsm.
+  specialize Hgood with (q2 := link_supporters st s t s_h t_h).
+  have Hstgood := (Hgood Hsm). clear Hgood.
+  destruct (quorum_2_nonempty Hsm) as [v Hv].
+  specialize Hstgood with v.
+  have H := (Hstgood Hv). clear Hstgood.
+  unfold valid_votes in H.
+  specialize H with s t s_h t_h.
+  rewrite in_set in Hv.
+  by apply H in Hv.
+Qed.
+
+(*
+Lemma maximal_link_unique: forall st,
+  two_thirds_good st -> 
+  has_justification_link st ->
+  forall s t s_h t_h s' t' s_h' t_h',
+    maximal_justification_link st s t s_h t_h ->
+    maximal_justification_link st s' t' s_h' t_h' ->
+    s = s' /\ t = t' /\ s_h = s_h' /\ t_h = t_h'.
+Admitted.
+*)
+
+Lemma not_and_impl_not : forall P Q : Prop, ~ (P /\ Q) <-> (P -> ~ Q).
+Proof. tauto. Qed.
+
+
+Lemma maximal_link_exists: forall st,
+  sources_justified st ->
+  has_justification_link st ->
+  exists s t s_h t_h, maximal_justification_link st s t s_h t_h.
+Proof.
+  intros st Hgood Hjust.
+  pose sm_votes := [ fset vote | 
+                            vote in st & 
+                            supermajority_link st (vote_source vote)
+                                                   (vote_target vote)
+                                                   (vote_source_height vote)
+                                                   (vote_target_height vote) ]%fset;
+                    change {fset Vote} in (type of sm_votes).
+  pose sm_votes_targets := [ fset vote_target_height vote | vote in sm_votes]%fset;
+                    change {fset nat} in (type of sm_votes_targets).
+  pose highest_sm_target := highest sm_votes_targets.
+  pose maximal_sm_votes := [ fset vote in sm_votes | (vote_target_height vote) >= highest_sm_target]%fset;
+                    change {fset Vote} in (type of maximal_sm_votes).
+Admitted.
+
+Lemma maximal_link_highest_block: forall st s t s_h t_h b b_h,
+   ~ quorum_slashed st ->
+   sources_justified st ->
+   maximal_justification_link st s t s_h t_h ->
+   justified st b b_h -> 
+   b_h >= t_h ->
+   b = t /\ b_h = t_h.
+Proof.
+  intros st s t s_h t_h b b_h Hunslashed Hsources Hmaxjl Hbj Hbh.
+  destruct Hmaxjl as [Hjl Hmaxjl].
+  have Hsj := (source_justified Hsources Hjl).
+  have Htj := (justified_link Hsj Hjl).
+  case Heqh: (b_h == t_h).
+    move/eqP: Heqh => Heqh.
+    subst.
+    split;[|reflexivity].
+    have Hsafe := (no_two_justified_same_height Hbj Htj Hunslashed).
+    have Ho: b = t \/ ~ b = t by apply classic.
+    case: Ho => // Ho;first last.
+    apply Hsafe in Ho.
+    by contradiction.
+  move/eqP: Heqh => Heqh.
+  destruct Hbj.
+    rewrite leqn0 in Hbh. 
+    move/eqP: Hbh => Hbh. subst.
+    contradict Heqh. reflexivity.
+  apply Hmaxjl in H.
+  contradict Heqh.
+  have Heq: (t_h0 <= t_h) /\ (t_h <= t_h0) by auto.
+  move/andP: Heq => Heq. 
+  rewrite <- eqn_leq in Heq. 
+  move/eqP: Heq => Heq. assumption.
+Qed.
+
+(* We assume a highest justified block exists.
+   This is left as an unproved assumption for now,
+   becasue proving there is only one justified block
+   of maximum height would require depending on
+   the accountable safety theorem and assumptions of
+   good behavior. *)
+Lemma highest_exists: forall st,
+    ~ quorum_slashed st ->
+    sources_justified st ->
+    exists b b_h,
+      justified st b b_h /\
+      highest_justified st b b_h.
+Proof.
+intros st Hq Hsources.
+have Hj: has_justification_link st \/ ~ has_justification_link st by apply classic.
+case: Hj => // Hj;first last.
+  exists genesis, 0.
+  split;[apply justified_genesis|].
+  unfold highest_justified.
+  intros b' b_h' Hb_h' Hb'justified.
+  unfold not, has_justification_link in Hj.
+  inversion Hb'justified;auto.
+  subst.
+  contradict Hj.
+  exists s, b', s_h, b_h'. split;[assumption|assumption].
+have Hmax_exists := (maximal_link_exists Hsources Hj).
+destruct Hmax_exists as [max_s [max_t [max_s_h [max_t_h Hmax_jlink]]]].
+exists max_t, max_t_h.
+destruct (Hmax_jlink) as [Hmaxj Hmaximal_link].
+split.
+  apply (@justified_link st max_s max_s_h max_t max_t_h).
+  apply (source_justified Hsources Hmaxj).
+  assumption.
+unfold highest_justified.
+intros b b_h Hbmax Hbj.
+by apply (maximal_link_highest_block Hq Hsources Hmax_jlink Hbj Hbmax).
+Qed.
+
+(** Now we have some defintions used to state the conclusion of the theorem **)
+(* First, the solution only calls for votes from unslashed validators. *)
+Definition unslashed_can_extend st st' : Prop :=
+  forall v s t s_h t_h,
+    vote_msg st' v s t s_h t_h = true ->
+    vote_msg st v s t s_h t_h = true \/ ~ slashed st v.
+
+(* Second, making the new votes does not cause any previously unslashed
+   validator to be slashed *)
+Definition no_new_slashed st st' :=
+  forall v, slashed st' v -> slashed st v.
 
 (** And finally, the overall plausible liveness theorem **)
 Theorem plausible_liveness :
-  forall st, two_thirds_good st ->
+  forall st, 
+    two_thirds_good st ->
+    ~ quorum_slashed st ->
+    sources_justified st ->
   (forall b b_h, highest_justified st b b_h -> blocks_exist_high_over b) ->
   exists st', unslashed_can_extend st st'
    /\ no_new_slashed st st'
@@ -110,8 +237,8 @@ Theorem plausible_liveness :
          /\ supermajority_link st' new_finalized new_final_child
                                    new_height new_height.+1.
 Proof.
-  intros st Hgood Hheight.
-  destruct (highest_exists st) as (just_max & just_max_h & [Hjust_max_just Hjust_max_max]).
+  intros st Hgood Hunslashed Hsources_justified Hheight.
+  destruct (highest_exists Hunslashed Hsources_justified) as (just_max & just_max_h & [Hjust_max_just Hjust_max_max]).
   specialize (Hheight _ _ Hjust_max_max).
 
   destruct Hgood as (good_quorum & Hgood_is_quorum & Hgood).
@@ -256,8 +383,8 @@ Proof.
   new_vote_mem_tac Houter.
   change (is_true (badV \in good_quorum)) in x_good.
 
-  apply Hgood in x_good. destruct x_good as [Hnot_slashed Hsources_justified].
-  apply Hsources_justified in Hinner as Hst2_justified.
+  have Hnot_slashed := (Hgood badV x_good).
+  apply (Hsources_justified good_quorum) in Hinner as Hst2_justified;try (repeat assumption).
   clear -Hjust_max_max Hst2_justified Hstarts.
   apply Hjust_max_max in Hst2_justified;[|apply ltnW;assumption].
   destruct Hst2_justified.
@@ -277,7 +404,8 @@ Proof.
   split;[|assumption].
 
   new_vote_mem_tac Houter.
-  apply Hgood in x_good. destruct x_good as [_ x_good].
+  apply (Hsources_justified good_quorum) in x_good; last by assumption.
+  unfold valid_votes in x_good.
   apply x_good in Hinner as Hs2_justified.
   apply Hjust_le_target in Hs2_justified.
   clear -Hstarts Hs2_justified.

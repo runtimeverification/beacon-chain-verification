@@ -20,7 +20,7 @@ Definition link_supporters st s t s_h t_h : {set Validator} :=
   [set v | vote_msg st v s t s_h t_h ].
 
 (* The voter set for a link constitute a supermajority *)
-Definition supermajority_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
+Definition supermajority_link (st:State) (s t : Hash) (s_h t_h : nat) : bool :=
   link_supporters st s t s_h t_h \in quorum_2.
 
 (* Adding more votes to a state preserves supermajority links *)
