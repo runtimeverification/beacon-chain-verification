@@ -102,21 +102,6 @@ Proof.
   by apply H in Hv.
 Qed.
 
-(*
-Lemma maximal_link_unique: forall st,
-  two_thirds_good st -> 
-  has_justification_link st ->
-  forall s t s_h t_h s' t' s_h' t_h',
-    maximal_justification_link st s t s_h t_h ->
-    maximal_justification_link st s' t' s_h' t_h' ->
-    s = s' /\ t = t' /\ s_h = s_h' /\ t_h = t_h'.
-Admitted.
-*)
-
-Lemma not_and_impl_not : forall P Q : Prop, ~ (P /\ Q) <-> (P -> ~ Q).
-Proof. tauto. Qed.
-
-
 Lemma maximal_link_exists: forall st,
   sources_justified st ->
   has_justification_link st ->
@@ -135,6 +120,13 @@ Proof.
   pose highest_sm_target := highest sm_votes_targets.
   pose maximal_sm_votes := [ fset vote in sm_votes | (vote_target_height vote) >= highest_sm_target]%fset;
                     change {fset Vote} in (type of maximal_sm_votes).
+
+  (* By has_justification_link (and non-empty-quorum assumption), sm_votes is non-empty.
+     => sm_votes_targets is non-empty
+     => highest_sm_target \in sm_votes_targets
+     => maximal_sm_votes is non-empty
+     => exists maximal supermajority link
+   *)
 Admitted.
 
 Lemma maximal_link_highest_block: forall st s t s_h t_h b b_h,
@@ -171,12 +163,9 @@ Proof.
   move/eqP: Heq => Heq. assumption.
 Qed.
 
-(* We assume a highest justified block exists.
-   This is left as an unproved assumption for now,
-   becasue proving there is only one justified block
-   of maximum height would require depending on
-   the accountable safety theorem and assumptions of
-   good behavior. *)
+(* The highest justified block exists.
+   This depends on the assumptions of no quorum having been slashed 
+   and that sources in votes are justified. *)
 Lemma highest_exists: forall st,
     ~ quorum_slashed st ->
     sources_justified st ->
@@ -245,10 +234,6 @@ Proof.
 
   pose targets := (0 |` [ fset vote_target_height vote | vote in st])%fset;
                     change {fset nat} in (type of targets).
-
-  (* perhaps *)
-  (* pose targets := ([ fset vote_target_height vote | vote in st])%fset;
-                    change {fset nat} in (type of targets). *)
 
   pose highest_target := highest targets.
   destruct (Hheight ((highest_target.+1 - just_max_h)).+1) as [new_final_child [Hpath Hdist]].
