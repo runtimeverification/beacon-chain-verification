@@ -157,6 +157,7 @@ test-static-java: build-static-java
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION d-spec.k | diff - success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION e-spec.k | diff - success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION f-spec.k | diff - success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION g-spec.k | diff - success.out
 
 test-dynamic: build-dynamic
 	$(K_BIN)/krun   -d $(dynamic_dir) test1.abc | diff - test1.abc.out

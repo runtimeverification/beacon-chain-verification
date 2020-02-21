@@ -260,7 +260,7 @@ rule #Ceil(attestationsBalance(_, _, Validators)) => {isValidators(Validators) #
 
 rule #Ceil(balanceOf(_, Validators))              => {isValidators(Validators) #Equals true} [anywhere]
 
-rule #Ceil(totalBalance(Validators))              => {isValidators(Validators) #Equals true} [anywhere]
+rule #Ceil(totalBalance(Validators))              => {isValidatorsList(Validators) #Equals true} [anywhere]
 
 rule #Ceil(values(_:Map)) => #True [anywhere]
 ```
@@ -269,8 +269,8 @@ rule #Ceil(values(_:Map)) => #True [anywhere]
 // abstract predicate
 syntax Bool ::= isValidators(Map) [function, functional]
 
-syntax Bool ::= isValidators(List) [function, functional]
-rule isValidators(values(M:Map)) => isValidators(M)
+syntax Bool ::= isValidatorsList(List) [function, functional]
+rule isValidatorsList(values(M:Map)) => isValidators(M)
 ```
 
 ### Finalization
