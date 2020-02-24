@@ -9,30 +9,9 @@ imports VERIFICATION
 // where e is the current epoch.
 rule
 <T>
-  <k> split3(isValidState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3JustifiedBlock,
-                         Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2JustifiedBlock,
-                         PrevLastJustifiedEpoch, PrevLastJustifiedBlock))
-      /*
-      case3(
-                notBool isJustifiable(Epoch3BoundaryBlock, PrevAttestations3, Vs)
-        andBool notBool isJustifiable(Epoch2BoundaryBlock, PrevAttestations2, Vs)
-        andBool PrevLastJustifiedEpoch <Int Epoch3
-        andBool PrevEpoch3JustifiedBlock ==K none
-        andBool PrevEpoch2JustifiedBlock ==K none
-      ,
-                        isJustifiable(Epoch3BoundaryBlock, PrevAttestations3, Vs)
-        andBool notBool isJustifiable(Epoch2BoundaryBlock, PrevAttestations2, Vs)
-        andBool PrevLastJustifiedEpoch ==Int Epoch3
-        andBool PrevLastJustifiedBlock ==Int Epoch3BoundaryBlock
-        andBool PrevEpoch3JustifiedBlock ==K some Epoch3BoundaryBlock
-        andBool PrevEpoch2JustifiedBlock ==K none
-      ,
-                        isJustifiable(Epoch2BoundaryBlock, PrevAttestations2, Vs)
-        andBool PrevLastJustifiedEpoch ==Int Epoch2
-        andBool PrevLastJustifiedBlock ==Int Epoch2BoundaryBlock
-        andBool PrevEpoch2JustifiedBlock ==K some Epoch2BoundaryBlock
-      )
-      */
+  <k> case(isValidState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3JustifiedBlock,
+                        Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2JustifiedBlock,
+                        PrevLastJustifiedEpoch, PrevLastJustifiedBlock))
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1) => . </k>
   <currentSlot> firstSlotOf(Epoch) </currentSlot>
@@ -96,44 +75,20 @@ requires isValidators(Vs)
  andBool Epoch1 ==Int Epoch -Int 1
  andBool Epoch2 ==Int Epoch -Int 2
  andBool Epoch3 ==Int Epoch -Int 3
- //
+ // invariant
  andBool Epoch2JustifiedBlock ==K PrevEpoch2JustifiedBlock
  andBool LastJustifiedEpoch ==Int PrevLastJustifiedEpoch
  andBool LastJustifiedBlock ==Int PrevLastJustifiedBlock
+ andBool Attestations2 ==K super(PrevAttestations2)
  // ranges
  andBool Epoch >=Int 0
  andBool Epoch1 >=Int 0
  andBool Epoch2 >=Int 0
  andBool Epoch3 >=Int 0
  andBool PrevLastJustifiedEpoch >=Int 0
- andBool Attestations2 ==K super(PrevAttestations2)
 ensures  ?NewLastJustifiedEpoch >=Int 0
- andBool isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2JustifiedBlock,
-                      Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1JustifiedBlock,
-                      ?NewLastJustifiedEpoch, ?NewLastJustifiedBlock)
-
-/*
-(
-      (
-                notBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
-        andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
-        andBool ?NewLastJustifiedEpoch <Int Epoch2
-        andBool ?NewEpoch2JustifiedBlock ==K none
-        andBool ?NewEpoch1JustifiedBlock ==K none
-      ) orBool (
-                        isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
-        andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
-        andBool ?NewLastJustifiedEpoch ==Int Epoch2
-        andBool ?NewLastJustifiedBlock ==Int Epoch2BoundaryBlock
-        andBool ?NewEpoch2JustifiedBlock ==K some Epoch2BoundaryBlock
-        andBool ?NewEpoch1JustifiedBlock ==K none
-      ) orBool (
-                        isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
-        andBool ?NewLastJustifiedEpoch ==Int Epoch1
-        andBool ?NewLastJustifiedBlock ==Int Epoch1BoundaryBlock
-        andBool ?NewEpoch1JustifiedBlock ==K some Epoch1BoundaryBlock
-      )
-)
-*/
+ andBool bool(isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2JustifiedBlock,
+                           Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1JustifiedBlock,
+                           ?NewLastJustifiedEpoch, ?NewLastJustifiedBlock))
 
 endmodule

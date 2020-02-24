@@ -9,7 +9,7 @@ imports VERIFICATION
 // where e is the current epoch.
 rule
 <T>
-  <k> case2(
+  <k> case(xor2(
                 LastJustifiedEpoch <Int Epoch2
         andBool OldEpoch2JustifiedBlock ==K none
       ,
@@ -17,7 +17,7 @@ rule
         andBool LastJustifiedBlock ==Int Epoch2BoundaryBlock
         andBool OldEpoch2JustifiedBlock ==K some Epoch2BoundaryBlock
         andBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs) // TODO: add relaxation lemma
-      )
+      ))
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1) => . </k>
   <currentSlot> Slot </currentSlot>

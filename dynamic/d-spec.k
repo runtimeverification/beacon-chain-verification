@@ -8,14 +8,14 @@ imports VERIFICATION
 // even when e has been already justified.
 rule
 <T>
-  <k> case2(
+  <k> case(xor2(
                 LastJustifiedEpoch <Int Epoch
         andBool OldEpochJustifiedBlock ==K none
       ,
                 LastJustifiedEpoch ==Int Epoch
         andBool OldEpochJustifiedBlock ==K some EpochBoundaryBlock
         andBool LastJustifiedBlock ==K EpochBoundaryBlock
-      )
+      ))
    ~> processJustification(Epoch) => . </k>
   <currentSlot> Slot </currentSlot>
   <states>
