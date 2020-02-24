@@ -108,25 +108,41 @@ Lemma maximal_link_exists: forall st,
   exists s t s_h t_h, maximal_justification_link st s t s_h t_h.
 Proof.
   intros st Hgood Hjust.
-  pose sm_votes := [ fset vote | 
-                            vote in st & 
-                            supermajority_link st (vote_source vote)
-                                                   (vote_target vote)
-                                                   (vote_source_height vote)
-                                                   (vote_target_height vote) ]%fset;
-                    change {fset Vote} in (type of sm_votes).
-  pose sm_votes_targets := [ fset vote_target_height vote | vote in sm_votes]%fset;
-                    change {fset nat} in (type of sm_votes_targets).
+  pose sm_votes : {fset Vote} :=
+    [ fset vote:Vote in st |
+      supermajority_link st (vote_source vote)
+                            (vote_target vote)
+                            (vote_source_height vote)
+                            (vote_target_height vote) ]%fset.
+  pose sm_votes_targets := [ fset vote_target_height vote | vote in sm_votes]%fset.
   pose highest_sm_target := highest sm_votes_targets.
-  pose maximal_sm_votes := [ fset vote in sm_votes | (vote_target_height vote) >= highest_sm_target]%fset;
-                    change {fset Vote} in (type of maximal_sm_votes).
+  pose maximal_sm_votes : {fset Vote} :=
+    [ fset vote:Vote in sm_votes | (vote_target_height vote) >= highest_sm_target]%fset.
 
-  (* By has_justification_link (and non-empty-quorum assumption), sm_votes is non-empty.
-     => sm_votes_targets is non-empty
-     => highest_sm_target \in sm_votes_targets
-     => maximal_sm_votes is non-empty
-     => exists maximal supermajority link
-   *)
+  (* By has_justification_link (and non-empty-quorum assumption), sm_votes is non-empty. *)
+  move:(Hjust) =>[s [t [s_h [t_h [_]]]]]>[_ [_ Hlink]].
+  move:(Hlink) => /quorum_2_nonempty [v].
+  rewrite inE => Hvote.
+  exists s, t, s_h, t_h.
+  assert ((v,s,t,s_h,t_h) \in sm_votes).
+   by rewrite inE /= inE /= unfold_in;apply/andP.
+
+  (* => sm_votes_targets is non-empty *)
+  assert (vote_target_height (v,s,t,s_h,t_h) \in sm_votes_targets).
+    by apply in_imfset.
+
+    (* => highest_sm_target \in sm_votes_targets *)
+  lapply (eq_bigmax (val: sm_votes_targets -> nat));
+    [|by rewrite -cardfE cardfs_gt0;apply /fset0Pn;eexists].
+  move => [i Hmax].
+  match type of Hmax with (?L = _) => assert (L = highest_sm_target) by reflexivity end.
+  assert (highest_sm_target \in sm_votes_targets).
+  rewrite -H1 Hmax. apply fsvalP.
+  (* => maximal_sm_votes is non-empty *)
+  move:(H2) => /imfsetP /= [maximal_vote Hin Hval].
+  assert (maximal_vote \in maximal_sm_votes).
+  by rewrite inE /= inE Hval leqnn Bool.andb_true_r.
+  (* exists maximal supermajority link *)
 Admitted.
 
 Lemma maximal_link_highest_block: forall st s t s_h t_h b b_h,
