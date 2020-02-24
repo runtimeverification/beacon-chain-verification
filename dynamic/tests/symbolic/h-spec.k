@@ -1,4 +1,4 @@
-require "verification.k"
+require "../../verification.k"
 
 module H-SPEC
 

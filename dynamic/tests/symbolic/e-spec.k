@@ -1,6 +1,6 @@
-require "verification.k"
+require "../../verification.k"
 
-module F-SPEC
+module E-SPEC
 
 imports VERIFICATION
 
@@ -16,11 +16,11 @@ rule
                 LastJustifiedEpoch ==Int Epoch2
         andBool LastJustifiedBlock ==Int Epoch2BoundaryBlock
         andBool OldEpoch2JustifiedBlock ==K some Epoch2BoundaryBlock
-        andBool isJustifiable(Epoch2BoundaryBlock, PrevAttestations2, Vs)
+        andBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs) // TODO: add relaxation lemma
       ))
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1) => . </k>
-  <currentSlot> firstSlotOf(Epoch) </currentSlot>
+  <currentSlot> Slot </currentSlot>
   <states>
     <state>
       <slot> firstSlotOf(Epoch2) </slot>
@@ -32,18 +32,10 @@ rule
       <slot> firstSlotOf(Epoch1) </slot>
       <validators> Vs </validators>
       <lastBlock> (_, Epoch1BoundaryBlock) </lastBlock>
-      <attested>
-        Epoch2 |-> PrevAttestations2:Attestations
-        ...
-      </attested>
-      <justified>
-        Epoch2 |-> OldEpoch2JustifiedBlock:Option
-        ...
-      </justified>
       ...
     </state>
     <state>
-      <slot> firstSlotOf(Epoch) </slot>
+      <slot> Slot </slot>
       <validators> Vs </validators>
       <attested>
         Epoch2 |-> Attestations2:Attestations
@@ -52,7 +44,7 @@ rule
       </attested>
       <justified>
         Epoch2 |-> (OldEpoch2JustifiedBlock:Option => ?NewEpoch2JustifiedBlock:Option)
-        Epoch1 |-> (none                           => ?NewEpoch1JustifiedBlock:Option)
+        Epoch1 |-> (OldEpoch1JustifiedBlock:Option => ?NewEpoch1JustifiedBlock:Option)
         ...
       </justified>
       <lastJustified>
@@ -67,14 +59,15 @@ rule
   ...
 </T>
 requires isValidators(Vs)
- andBool Epoch1 ==Int Epoch -Int 1
- andBool Epoch2 ==Int Epoch -Int 2
+ andBool Epoch1 >=Int 1
+ andBool Epoch1 ==Int epochOf(Slot) -Int 1
+ andBool Epoch2 ==Int epochOf(Slot) -Int 2
+ andBool OldEpoch1JustifiedBlock ==K none
  // ranges
- andBool Epoch >=Int 0
+ andBool Slot >=Int 0
  andBool Epoch1 >=Int 0
  andBool Epoch2 >=Int 0
  andBool LastJustifiedEpoch >=Int 0
- andBool Attestations2 ==K super(PrevAttestations2)
 ensures ?NewJustifiedEpoch >=Int 0 andBool
 (
     (

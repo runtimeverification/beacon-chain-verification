@@ -1,4 +1,4 @@
-requires "verification.k"
+require "../../verification.k"
 
 module SIMPLE-SPEC
 
