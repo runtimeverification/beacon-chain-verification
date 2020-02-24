@@ -58,7 +58,7 @@ Definition valid_votes st v :=
 Definition two_thirds_good (st : State) :=
   exists q2, q2 \in quorum_2 /\
     forall v, v \in q2 -> ~ slashed st v.
-    
+
 Definition sources_justified (st : State) :=
   forall q2, q2 \in quorum_2 ->
     forall v, v \in q2 ->  valid_votes st v.
@@ -83,8 +83,8 @@ Definition maximal_justification_link st s t s_h t_h : Prop :=
   forall s' t' s_h' t_h', justification_link st s' t' s_h' t_h' -> t_h' <= t_h.
 
 Lemma source_justified : forall st s t s_h t_h,
-  sources_justified st -> 
-  justification_link st s t s_h t_h -> 
+  sources_justified st ->
+  justification_link st s t s_h t_h ->
   justified st s s_h.
 Proof.
   intros st s t s_h t_h Hgood Hjlink.
@@ -133,7 +133,7 @@ Lemma maximal_link_highest_block: forall st s t s_h t_h b b_h,
    ~ quorum_slashed st ->
    sources_justified st ->
    maximal_justification_link st s t s_h t_h ->
-   justified st b b_h -> 
+   justified st b b_h ->
    b_h >= t_h ->
    b = t /\ b_h = t_h.
 Proof.
@@ -152,19 +152,19 @@ Proof.
     by contradiction.
   move/eqP: Heqh => Heqh.
   destruct Hbj.
-    rewrite leqn0 in Hbh. 
+    rewrite leqn0 in Hbh.
     move/eqP: Hbh => Hbh. subst.
     contradict Heqh. reflexivity.
   apply Hmaxjl in H.
   contradict Heqh.
   have Heq: (t_h0 <= t_h) /\ (t_h <= t_h0) by auto.
-  move/andP: Heq => Heq. 
-  rewrite <- eqn_leq in Heq. 
+  move/andP: Heq => Heq.
+  rewrite <- eqn_leq in Heq.
   move/eqP: Heq => Heq. assumption.
 Qed.
 
 (* The highest justified block exists.
-   This depends on the assumptions of no quorum having been slashed 
+   This depends on the assumptions of no quorum having been slashed
    and that sources in votes are justified. *)
 Lemma highest_exists: forall st,
     ~ quorum_slashed st ->
@@ -212,7 +212,7 @@ Definition no_new_slashed st st' :=
 
 (** And finally, the overall plausible liveness theorem **)
 Theorem plausible_liveness :
-  forall st, 
+  forall st,
     two_thirds_good st ->
     ~ quorum_slashed st ->
     sources_justified st ->
