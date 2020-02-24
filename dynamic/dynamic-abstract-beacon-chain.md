@@ -20,6 +20,9 @@ imports INT
 imports MAP
 imports LIST
 ```
+```{.k .kast}
+imports K-REFLECTION
+```
 
 ## Abstract Beacon Chain States
 
@@ -221,7 +224,12 @@ rule <k> false ~> justify(_, _) => . ... </k>
 syntax Bool ::= isJustifiable(Int, Attestations, Map) [function] // functional only for Validators map
 rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
   => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values(Validators)))
+```
+```{.k .kast}
+  requires #isConcrete(Attestations) // TODO: drop this
+```
 
+```k
 syntax Bool ::= isMajority(Int, Int) [function, functional]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
                              andBool Total >Int 0
@@ -252,7 +260,7 @@ rule #Ceil(attestationsBalance(_, _, Validators)) => {isValidators(Validators) #
 
 rule #Ceil(balanceOf(_, Validators))              => {isValidators(Validators) #Equals true} [anywhere]
 
-rule #Ceil(totalBalance(Validators))              => {isValidators(Validators) #Equals true} [anywhere]
+rule #Ceil(totalBalance(Validators))              => {isValidatorsList(Validators) #Equals true} [anywhere]
 
 rule #Ceil(values(_:Map)) => #True [anywhere]
 ```
@@ -261,8 +269,8 @@ rule #Ceil(values(_:Map)) => #True [anywhere]
 // abstract predicate
 syntax Bool ::= isValidators(Map) [function, functional]
 
-syntax Bool ::= isValidators(List) [function, functional]
-rule isValidators(values(M:Map)) => isValidators(M)
+syntax Bool ::= isValidatorsList(List) [function, functional]
+rule isValidatorsList(values(M:Map)) => isValidators(M)
 ```
 
 ### Finalization

@@ -1,9 +1,10 @@
-require "verification.k"
+require "../../verification.k"
 
 module B-SPEC
 
 imports VERIFICATION
 
+// once processJustification(e) justifies e, then the subsequent processJustification(e) alters nothing.
 rule
 <T>
   <k> processJustification(Epoch) ~> processJustification(Epoch) => . </k>

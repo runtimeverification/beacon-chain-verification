@@ -1,9 +1,10 @@
-require "verification.k"
+require "../../verification.k"
 
 module A-SPEC
 
 imports VERIFICATION
 
+// processJustification(e) justifies e if e is justifiable.
 rule
 <T>
   <k> processJustification(Epoch) => . </k>

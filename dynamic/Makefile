@@ -95,9 +95,9 @@ defn-static:      $(static_files)
 defn-static-java: $(static_java_files)
 defn-dynamic:     $(dynamic_files)
 
-static_tangle      := .k:not(.dynamic)
+static_tangle      := .k:not(.dynamic):not(.kast)
 static_java_tangle := .k:not(.dynamic):not(.kore)
-dynamic_tangle     := .k
+dynamic_tangle     := .k:not(.kast)
 
 $(static_dir)/%.k: %.md
 	@mkdir -p $(static_dir)
@@ -143,19 +143,26 @@ $(dynamic_kompiled): $(dynamic_files)
 
 test: test-static test-static-java test-dynamic
 
-test-static:
-	$(K_BIN)/krun   -d $(static_dir) test1.abc | diff - test1.abc.out
-	$(K_BIN)/krun   -d $(static_dir) test2.abc | diff - test2.abc.out
-	$(K_BIN)/krun   -d $(static_dir) test3.abc | diff - test3.abc.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION simple-spec.k | diff - success.out
+test-static: build-static
+	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
+	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out
+	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/simple-spec.k | diff - tests/success.out
 
-test-static-java:
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION simple-spec.k | diff - success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION a-spec.k | diff - success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION b-spec.k | diff - success.out
+test-static-java: build-static-java
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/simple-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/process-justification-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/a-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/b-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/c-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/d-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/e-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/f-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/g-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION tests/symbolic/h-spec.k | diff - tests/success.out
 
-test-dynamic:
-	$(K_BIN)/krun   -d $(dynamic_dir) test1.abc | diff - test1.abc.out
-	$(K_BIN)/krun   -d $(dynamic_dir) test2.abc | diff - test2.abc.out
-	$(K_BIN)/krun   -d $(dynamic_dir) test3.abc | diff - test3.abc.out
+test-dynamic: build-dynamic
+	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
+	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out
+	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out
 
