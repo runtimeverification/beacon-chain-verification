@@ -3,6 +3,7 @@
 ```k
 module DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
+imports MAP
 
 // libraries
 syntax Int ::= hash(Int) [function, functional, smtlib(hash)]
@@ -208,6 +209,49 @@ rule epochOf(Slot)            => Slot /Int SLOTS_PER_EPOCH                      
 rule firstSlotOf(Epoch)       => Epoch *Int SLOTS_PER_EPOCH                     [macro]
 rule lastSlotOf(Epoch)        => firstSlotOf(Epoch) +Int SLOTS_PER_EPOCH -Int 1 [macro]
 rule isFirstSlotOfEpoch(Slot) => Slot %Int SLOTS_PER_EPOCH ==Int 0              [macro]
+```
 
+## Maps
+
+VMap: Map from Int to Validator:
+
+```k
+syntax VMap ::= v(Map)
+
+syntax VMap ::= ".VMap"
+rule .VMap => v(.Map) [macro]
+
+syntax Validator ::= selectVMap(VMap, Int) [function]
+rule selectVMap(v(M), K) => {M[K]}:>Validator
+
+syntax VMap ::= storeVMap(VMap, Int, Validator) [function]
+rule storeVMap(v(M), K, V) => v(M[K <- V])
+
+syntax List ::= valuesVMap(VMap) [function]
+rule valuesVMap(v(M)) => values(M)
+
+syntax List ::= keysListVMap(VMap) [function]
+rule keysListVMap(v(M)) => keys_list(M)
+
+syntax Set ::= keysVMap(VMap) [function]
+rule keysVMap(v(M)) => keys(M)
+```
+
+OMap: Map from Int to Option:
+
+```k
+syntax OMap ::= o(Map)
+
+syntax OMap ::= ".OMap"
+rule .OMap => o(.Map) [macro]
+
+syntax Option ::= selectOMap(OMap, Int) [function]
+rule selectOMap(o(M), K) => {M[K]}:>Option
+
+syntax OMap ::= storeOMap(OMap, Int, Option) [function]
+rule storeOMap(o(M), K, V) => o(M[K <- V])
+```
+
+```k
 endmodule
 ```

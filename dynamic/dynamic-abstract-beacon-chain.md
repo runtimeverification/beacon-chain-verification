@@ -41,11 +41,11 @@ configuration <T>
     // a state of slot N is the post-state of a (possibly empty) block at slot N
     <state multiplicity="*" type="Map">
       <slot> 0 </slot>
-      <validators> .Map </validators> // ValidatorID -> ValidatorState
+      <validators> .VMap </validators> // ValidatorID -> ValidatorState
       <slashedBalance> 0 </slashedBalance> // slashed balance
-      <attested> .Map </attested> // Epoch -> Attestations
-      <justified> .Map </justified> // Epoch -> Block option
-      <finalized> .Map </finalized> // Epoch -> Block option
+      <attested> .AMap </attested> // Epoch -> Attestations
+      <justified> .OMap </justified> // Epoch -> Block option
+      <finalized> .OMap </finalized> // Epoch -> Block option
       // derived info
       <lastBlock> (0,0) </lastBlock> // last block (slot, id)
       <lastJustified> (0,0) </lastJustified> // last justified (epoch, block id)
@@ -76,6 +76,7 @@ rule <k> init => . ... </k>
        <state>
          <slot> 0 </slot>
          <validators>
+         v(
            90000 |-> #Validator(90000,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
            90001 |-> #Validator(90001,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
            90002 |-> #Validator(90002,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
@@ -83,11 +84,12 @@ rule <k> init => . ... </k>
            90004 |-> #Validator(90004,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
            90005 |-> #Validator(90005,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
            90006 |-> #Validator(90006,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
+         )
          </validators>
          <slashedBalance> 0 </slashedBalance>
-         <attested> 0 |-> .Attestations </attested>
-         <justified> 0 |-> some 0 </justified>
-         <finalized> 0 |-> some 0 </finalized>
+         <attested> a(0 |-> .Attestations) </attested>
+         <justified> o(0 |-> some 0) </justified>
+         <finalized> o(0 |-> some 0) </finalized>
          <lastBlock> (0,0) </lastBlock>
          <lastJustified> (0,0) </lastJustified>
          <lastFinalized> (0,0) </lastFinalized>
@@ -162,9 +164,9 @@ rule <k> processEpoch()
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
-       <justified> J => J[epochOf(Slot) <- none] </justified>
-       <finalized> F => F[epochOf(Slot) <- none] </finalized>
+       <attested> A => storeAMap(A, epochOf(Slot), .Attestations) </attested>
+       <justified> J => storeOMap(J, epochOf(Slot), none) </justified>
+       <finalized> F => storeOMap(F, epochOf(Slot), none) </finalized>
        ...
      </state>
      requires isFirstSlotOfEpoch(Slot)
@@ -185,8 +187,10 @@ rule <k> processJustification(Epoch)
      <state>
        <slot> Slot </slot>
        <attested>
+       a(
          Epoch |-> Attestations:Attestations
-         ...
+         _:Map
+       )
        </attested>
      //<validators> Validators </validators> // TODO: which validators to be considered?
        ...
@@ -206,7 +210,7 @@ rule <k> true ~> justify(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <justified> Epoch |-> (none => some BlockID) ... </justified>
+       <justified> o(Epoch |-> (none => some BlockID) _:Map) </justified>
        <lastJustified> _ => (Epoch, BlockID) </lastJustified>
        ...
      </state>
@@ -215,15 +219,15 @@ rule <k> true ~> justify(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <justified> Epoch |-> some BlockID ... </justified>
+       <justified> o(Epoch |-> some BlockID _:Map) </justified>
        <lastJustified> (Epoch, BlockID) </lastJustified>
        ...
      </state>
 rule <k> false ~> justify(_, _) => . ... </k>
 
-syntax Bool ::= isJustifiable(Int, Attestations, Map) [function] // functional only for Validators map
+syntax Bool ::= isJustifiable(Int, Attestations, VMap) [function] // functional only for Validators map
 rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
-  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values(Validators)))
+  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(valuesVMap(Validators)))
 ```
 ```{.k .kast}
   requires #isConcrete(Attestations) // TODO: drop this
@@ -234,18 +238,13 @@ syntax Bool ::= isMajority(Int, Int) [function, functional]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
                              andBool Total >Int 0
 
-syntax Int ::= attestationsBalance(Int, Attestations, Map) [function] // functional only for Validators map
+syntax Int ::= attestationsBalance(Int, Attestations, VMap) [function] // functional only for Validators map
 rule attestationsBalance(Target, A Attestations, Validators)
   => #if A.target_block ==Int Target
-     #then balanceOf(A, Validators)
+     #then selectVMap(Validators, A.attester).effective_balance
      #else 0
      #fi +Int attestationsBalance(Target, Attestations, Validators)
 rule attestationsBalance(_, .Attestations, _) => 0
-
-syntax Int ::= balanceOf(Attestation, Map) [function] // functional only for Validatiors map
-             | balanceOf(K) [function] // functional only for Validator
-rule balanceOf(A:Attestation, M) => balanceOf(M[A.attester])
-rule balanceOf(V:Validator) => V.effective_balance
 
 syntax Int ::= totalBalance(List) [function] // functional only for Validators
 rule totalBalance(ListItem(V:Validator) Vs:List) => V.effective_balance +Int totalBalance(Vs)
@@ -258,19 +257,17 @@ rule #Ceil(isJustifiable(_, _, Validators))       => {isValidators(Validators) #
 
 rule #Ceil(attestationsBalance(_, _, Validators)) => {isValidators(Validators) #Equals true} [anywhere]
 
-rule #Ceil(balanceOf(_, Validators))              => {isValidators(Validators) #Equals true} [anywhere]
-
 rule #Ceil(totalBalance(Validators))              => {isValidatorsList(Validators) #Equals true} [anywhere]
 
-rule #Ceil(values(_:Map)) => #True [anywhere]
+rule #Ceil(valuesVMap(_:VMap)) => #True [anywhere]
 ```
 
 ```k
 // abstract predicate
-syntax Bool ::= isValidators(Map) [function, functional]
+syntax Bool ::= isValidators(VMap) [function, functional]
 
 syntax Bool ::= isValidatorsList(List) [function, functional]
-rule isValidatorsList(values(M:Map)) => isValidators(M)
+rule isValidatorsList(valuesVMap(M:VMap)) => isValidators(M)
 ```
 
 ### Finalization
@@ -300,7 +297,7 @@ rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <finalized> Epoch |-> (none => some BlockID) ... </finalized>
+       <finalized> o(Epoch |-> (none => some BlockID) _:Map) </finalized>
        <lastFinalized> _ => (Epoch, BlockID) </lastFinalized>
        ...
      </state>
@@ -309,7 +306,7 @@ rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <finalized> Epoch |-> some BlockID ... </finalized>
+       <finalized> o(Epoch |-> some BlockID _:Map) </finalized>
        <lastFinalized> (Epoch, BlockID) </lastFinalized>
        ...
      </state>
@@ -317,7 +314,7 @@ rule <k> false ~> finalize(_, _) => . ... </k>
 
 // source : source+1 = target justified
 // source : source+1 : source+2 = target justified
-syntax Bool ::= isFinalizable(Int, Int, Map) [function] // not functional
+syntax Bool ::= isFinalizable(Int, Int, OMap) [function] // not functional
 rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
   => isJustified(SourceEpoch, Justified) andBool isJustified(TargetEpoch, Justified)
      andBool (
@@ -325,9 +322,9 @@ rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
        orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool isJustified(SourceEpoch +Int 1, Justified) )
      )
 
-syntax Bool ::= isJustified(Int, Map) [function] // not functional
-rule isJustified(Epoch, Epoch |-> (some _) _:Map) => true
-rule isJustified(Epoch, Epoch |-> none     _:Map) => false
+syntax Bool ::= isJustified(Int, OMap) [function] // not functional
+rule isJustified(Epoch, o(Epoch |-> (some _) _:Map)) => true
+rule isJustified(Epoch, o(Epoch |-> none     _:Map)) => false
 ```
 
 ### Validator Updates
@@ -336,8 +333,8 @@ rule isJustified(Epoch, Epoch |-> none     _:Map) => false
 // TODO: check if no mistake was made as this process is associated with the previous epoch
 syntax KItem ::= processValidatorUpdates()
 rule <k> processValidatorUpdates()
-      => processValidatorEjection(keys_list(Validators))
-      ~> updateActivationEligibility(keys_list(Validators))
+      => processValidatorEjection(keysListVMap(Validators))
+      ~> updateActivationEligibility(keysListVMap(Validators))
       ~> processValidatorActivation() ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -356,7 +353,7 @@ rule <k> processValidatorEjection(ListItem(VID) VIDS:List)
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <validators> VID |-> V:Validator ... </validators>
+       <validators> v(VID |-> V:Validator _:Map) </validators>
        ...
      </state>
 rule processValidatorEjection(.List) => .
@@ -368,11 +365,13 @@ rule <k> updateActivationEligibility(ListItem(VID) VIDS:List)
      <state>
        <slot> Slot </slot>
        <validators>
+       v(
          VID |-> (V:Validator => #if isActivationEligible(V)
                                  #then V with activation_eligibility_epoch = epochOf(Slot) -Int 1
                                  #else V
                                  #fi)
-         ...
+         _:Map
+       )
        </validators>
        ...
      </state>
@@ -385,7 +384,7 @@ rule isActivationEligible(V)
 
 syntax Kitem ::= processValidatorActivation()
 rule <k> processValidatorActivation()
-      => activateValidators(activationQueueUptoChurnLimit(values(Validators), FinalizedEpoch, epochOf(Slot) -Int 1)) ... </k>
+      => activateValidators(activationQueueUptoChurnLimit(valuesVMap(Validators), FinalizedEpoch, epochOf(Slot) -Int 1)) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -403,12 +402,12 @@ rule <k> activateValidators(ListItem(V:Validator) Vs)
        <validators>
          Validators
        =>
-         Validators[
-           V.id <- #if V.activation_epoch ==Int FAR_FUTURE_EPOCH
+         storeVMap(Validators,
+           V.id,   #if V.activation_epoch ==Int FAR_FUTURE_EPOCH
                    #then V with activation_epoch = delayedActivationExitEpoch(epochOf(Slot) -Int 1)
                    #else V
                    #fi
-         ]
+         )
        </validators>
        ...
      </state>
@@ -507,8 +506,10 @@ rule <k> processSlashing(#Slashing(A1, A2))
      <state>
        <slot> Slot </slot>
        <validators>
+       v(
          A.attester |-> V:Validator
-         ...
+         _:Map
+       )
        </validators>
        ...
      </state>
@@ -522,11 +523,13 @@ rule <k> slashValidator(V) => . ... </k>
        <slot> Slot </slot>
        <slashedBalance> S => S +Int V.effective_balance </slashedBalance>
        <validators>
+       v(
          V.id |-> (V => V with slashed = true
                           with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
                           with effective_balance = V.effective_balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT)
                   )
-         ...
+         _:Map
+       )
        </validators>
        ...
      </state>
@@ -555,12 +558,16 @@ rule <k> processAttestation(A) => . ... </k>
      <state>
        <slot> Slot </slot>
        <attested>
+       a(
          A.target_epoch |-> (As:Attestations => A As)
-         ...
+         _:Map
+       )
        </attested>
        <validators>
+       v(
          A.attester |-> V:Validator
-         ...
+         _:Map
+       )
        </validators>
        ...
      </state>
@@ -590,8 +597,10 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators>
+       v(
          D.sender |-> (V:Validator => V with balance = V.balance +Int D.amount) // no change to effective_balance
-         ...
+         _:Map
+       )
        </validators>
        ...
      </state>
@@ -600,16 +609,16 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators>
-         Validators => Validators[
-           D.sender <- #Validator(D.sender, false,
+         Validators => storeVMap(Validators,
+           D.sender,   #Validator(D.sender, false,
                                   (D.amount, minInt(D.amount, MAX_EFFECTIVE_BALANCE)), // effective_balance cap
                                   (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH),
                                   (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH))
-         ]
+         )
        </validators>
        ...
      </state>
-     requires notBool D.sender in keys(Validators)
+     requires notBool D.sender in keysVMap(Validators)
 ```
 
 ### Voluntary Exits
@@ -625,7 +634,7 @@ rule <k> processVoluntaryExit(E)
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <validators> E.validator |-> V:Validator ... </validators>
+       <validators> v(E.validator |-> V:Validator _:Map) </validators>
        ...
      </state>
      requires isActiveValidator(V, epochOf(Slot))
@@ -639,7 +648,7 @@ rule isActiveValidator(V, Epoch)
 
 syntax KItem ::= initiateValidatorExit(Validator)
 rule <k> initiateValidatorExit(V)
-      => setExitEpoch(V, computeExitEpoch(values(Validators), epochOf(Slot))) ... </k>
+      => setExitEpoch(V, computeExitEpoch(valuesVMap(Validators), epochOf(Slot))) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -654,9 +663,11 @@ rule <k> setExitEpoch(V, ExitEpoch) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators>
+       v(
          V.id |-> (V => V with exit_epoch         = ExitEpoch
                           with withdrawable_epoch = ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
-         ...
+         _:Map
+       )
        </validators>
        ...
      </state>

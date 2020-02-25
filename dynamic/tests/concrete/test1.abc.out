@@ -11,13 +11,13 @@
         0
       </slot>
       <validators>
-        90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        v ( 90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90001 |-> #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90002 |-> #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90003 |-> #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90004 |-> #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
-        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) )
       </validators>
       <slashedBalance>
         0
@@ -26,10 +26,10 @@
         0 |-> .Attestations
       </attested>
       <justified>
-        0 |-> some 0
+        o ( 0 |-> some 0 )
       </justified>
       <finalized>
-        0 |-> some 0
+        o ( 0 |-> some 0 )
       </finalized>
       <lastBlock>
         ( 0 , 0 )
@@ -45,13 +45,13 @@
         1
       </slot>
       <validators>
-        90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        v ( 90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90001 |-> #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90002 |-> #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90003 |-> #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90004 |-> #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
-        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) )
       </validators>
       <slashedBalance>
         0
@@ -60,10 +60,10 @@
         0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
       </attested>
       <justified>
-        0 |-> some 0
+        o ( 0 |-> some 0 )
       </justified>
       <finalized>
-        0 |-> some 0
+        o ( 0 |-> some 0 )
       </finalized>
       <lastBlock>
         ( 1 , 10001 )
@@ -79,13 +79,13 @@
         2
       </slot>
       <validators>
-        90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        v ( 90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90001 |-> #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90002 |-> #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90003 |-> #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90004 |-> #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
-        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) )
       </validators>
       <slashedBalance>
         0
@@ -94,10 +94,10 @@
         0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
       </attested>
       <justified>
-        0 |-> some 0
+        o ( 0 |-> some 0 )
       </justified>
       <finalized>
-        0 |-> some 0
+        o ( 0 |-> some 0 )
       </finalized>
       <lastBlock>
         ( 1 , 10001 )
@@ -113,13 +113,13 @@
         3
       </slot>
       <validators>
-        90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        v ( 90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90001 |-> #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90002 |-> #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90003 |-> #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90004 |-> #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
-        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) )
       </validators>
       <slashedBalance>
         0
@@ -128,10 +128,10 @@
         0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) )  .Attestations
       </attested>
       <justified>
-        0 |-> some 0
+        o ( 0 |-> some 0 )
       </justified>
       <finalized>
-        0 |-> some 0
+        o ( 0 |-> some 0 )
       </finalized>
       <lastBlock>
         ( 3 , 10003 )
@@ -147,13 +147,13 @@
         4
       </slot>
       <validators>
-        90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        v ( 90000 |-> #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90001 |-> #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90002 |-> #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90003 |-> #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90004 |-> #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
         90005 |-> #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
-        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) )
+        90006 |-> #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) )
       </validators>
       <slashedBalance>
         0
@@ -163,12 +163,12 @@
         1 |-> .Attestations
       </attested>
       <justified>
-        0 |-> some 0
-        1 |-> none
+        o ( 0 |-> some 0
+        1 |-> none )
       </justified>
       <finalized>
-        0 |-> some 0
-        1 |-> none
+        o ( 0 |-> some 0
+        1 |-> none )
       </finalized>
       <lastBlock>
         ( 3 , 10003 )

@@ -14,12 +14,16 @@ rule
       <slot> Slot </slot>
       <validators> Vs </validators>
       <attested>
+      a(
         Epoch |-> Attestations:Attestations
-        ...
+        _:Map
+      )
       </attested>
       <justified>
+      o(
         Epoch |-> (none => some EpochBoundaryBlock)
-        ...
+        _:Map
+      )
       </justified>
       <lastJustified> _ => (Epoch, EpochBoundaryBlock) </lastJustified>
       ...

@@ -31,8 +31,8 @@ syntax Attestations ::= super(Attestations) [function]
 rule isJustifiable(B, super(As), Vs) => true
     requires isJustifiable(B, As, Vs)
 
-syntax Pred ::= isValidState(Int, Int, Attestations, Map, Option,
-                             Int, Int, Attestations, Map, Option,
+syntax Pred ::= isValidState(Int, Int, Attestations, VMap, Option,
+                             Int, Int, Attestations, VMap, Option,
                              Int, Int) [function]
 rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2JustifiedBlock,
                   Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1JustifiedBlock,

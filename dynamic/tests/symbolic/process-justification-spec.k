@@ -30,8 +30,10 @@ rule
         ...
       </attested>
       <justified>
+      o(
         0 |-> some GenesisBlock
-        ...
+        _:Map
+      )
       </justified>
       <lastJustified>
         (0, GenesisBlock)
@@ -71,8 +73,10 @@ rule
         ...
       </attested>
       <justified>
+      o(
         0 |-> some GenesisBlock
-        ...
+        _:Map
+      )
       </justified>
       <lastJustified>
         (0, GenesisBlock)
@@ -88,9 +92,11 @@ rule
         ...
       </attested>
       <justified>
+      o(
         0 |-> (some GenesisBlock => ?NewEpochJustifiedBlock0:Option)
         1 |-> (none              => ?NewEpochJustifiedBlock1:Option)
-        ...
+        _:Map
+      )
       </justified>
       <lastJustified>
         (0, GenesisBlock)
@@ -159,9 +165,11 @@ rule
         ...
       </attested>
       <justified>
+      o(
         Epoch3 |-> PrevEpoch3JustifiedBlock:Option
         Epoch2 |-> PrevEpoch2JustifiedBlock:Option
-        ...
+        _:Map
+      )
       </justified>
       <lastJustified>
         (PrevLastJustifiedEpoch, PrevLastJustifiedBlock)
@@ -177,9 +185,11 @@ rule
         ...
       </attested>
       <justified>
+      o(
         Epoch2 |-> (Epoch2JustifiedBlock:Option => ?NewEpoch2JustifiedBlock:Option)
         Epoch1 |-> (none                        => ?NewEpoch1JustifiedBlock:Option)
-        ...
+        _:Map
+      )
       </justified>
       <lastJustified>
         (LastJustifiedEpoch, LastJustifiedBlock)
