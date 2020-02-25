@@ -13,12 +13,19 @@ rule case(xor3(C, _, _)) => . requires C [trusted]
 rule case(xor3(_, C, _)) => . requires C [trusted]
 rule case(xor3(_, _, C)) => . requires C [trusted]
 
+rule case(xor4(C, _, _, _)) => . requires C [trusted]
+rule case(xor4(_, C, _, _)) => . requires C [trusted]
+rule case(xor4(_, _, C, _)) => . requires C [trusted]
+rule case(xor4(_, _, _, C)) => . requires C [trusted]
+
 syntax Pred ::= xor2(Bool, Bool)
               | xor3(Bool, Bool, Bool)
+              | xor4(Bool, Bool, Bool, Bool)
 
 syntax Bool ::= bool(Pred) [function]
 rule bool(xor2(C1, C2)) => C1 orBool C2
 rule bool(xor3(C1, C2, C3)) => C1 orBool C2 orBool C3
+rule bool(xor4(C1, C2, C3, C4)) => C1 orBool C2 orBool C3 orBool C4
 
 syntax Attestations ::= super(Attestations) [function]
 rule isJustifiable(B, super(As), Vs) => true
