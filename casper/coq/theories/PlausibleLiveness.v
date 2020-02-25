@@ -48,20 +48,28 @@ Proof.
 by move => n; apply/negP/negP; rewrite leqNgt; apply/negP; case/negP.
 Qed.
 
-(* All votes have justified sources *)
-Definition valid_votes st v :=
+(* Votes have justified sources *)
+Definition justified_source_votes st v :=
   forall s t s_h t_h,
     vote_msg st v s t s_h t_h -> justified st s s_h.
+
+(* Votes constitute valid forward links *)
+Definition forward_link_votes st v :=
+  forall s t s_h t_h,
+    vote_msg st v s t s_h t_h -> 
+    t_h > s_h /\ nth_ancestor (t_h - s_h) s t.
+
+
+Definition good_votes (st : State) :=
+  forall q2, q2 \in quorum_2 ->
+    forall v, v \in q2 -> 
+    justified_source_votes st v /\ forward_link_votes st v.
 
 (* 2/3 of the validators have behaved well *)
 (* This is now split into two *)
 Definition two_thirds_good (st : State) :=
   exists q2, q2 \in quorum_2 /\
     forall v, v \in q2 -> ~ slashed st v.
-
-Definition sources_justified (st : State) :=
-  forall q2, q2 \in quorum_2 ->
-    forall v, v \in q2 ->  valid_votes st v.
 
 (* We also need to assume block proposals continue.
    In particular, our proof requires that blocks exist
@@ -83,27 +91,27 @@ Definition maximal_justification_link st s t s_h t_h : Prop :=
   forall s' t' s_h' t_h', justification_link st s' t' s_h' t_h' -> t_h' <= t_h.
 
 Lemma source_justified : forall st s t s_h t_h,
-  sources_justified st ->
+  good_votes st ->
   justification_link st s t s_h t_h ->
   justified st s s_h.
 Proof.
   intros st s t s_h t_h Hgood Hjlink.
-  unfold sources_justified in Hgood.
+  unfold good_votes in Hgood.
   destruct Hjlink as [Hh [Hnth Hsm]].
   unfold supermajority_link in Hsm.
   specialize Hgood with (q2 := link_supporters st s t s_h t_h).
   have Hstgood := (Hgood Hsm). clear Hgood.
   destruct (quorum_2_nonempty Hsm) as [v Hv].
   specialize Hstgood with v.
-  have H := (Hstgood Hv). clear Hstgood.
-  unfold valid_votes in H.
+  have [H _] := (Hstgood Hv). clear Hstgood.
+  unfold justified_source_votes in H.
   specialize H with s t s_h t_h.
   rewrite in_set in Hv.
   by apply H in Hv.
 Qed.
 
 Lemma maximal_link_exists: forall st,
-  sources_justified st ->
+  good_votes st ->
   has_justification_link st ->
   exists s t s_h t_h, maximal_justification_link st s t s_h t_h.
 Proof.
@@ -123,7 +131,7 @@ Proof.
   move:(Hjust) =>[s [t [s_h [t_h [_]]]]]>[_ [_ Hlink]].
   move:(Hlink) => /quorum_2_nonempty [v].
   rewrite inE => Hvote.
-  exists s, t, s_h, t_h.
+  (* exists s, t, s_h, t_h. *)
   assert ((v,s,t,s_h,t_h) \in sm_votes).
    by rewrite inE /= inE /= unfold_in;apply/andP.
 
@@ -143,19 +151,37 @@ Proof.
   assert (maximal_vote \in maximal_sm_votes).
   by rewrite inE /= inE Hval leqnn Bool.andb_true_r.
   (* exists maximal supermajority link *)
+  move:H3;rewrite inE /= inE /=. move/andP=>[Hmax_sm Hmax_h].
+  move:Hmax_sm; rewrite inE /= inE /=. move/andP=>[Hmax_vote Hmax_sm].
+  exists (vote_source maximal_vote),
+         (vote_target maximal_vote),
+         (vote_source_height maximal_vote),
+         (vote_target_height maximal_vote).
+  rewrite /maximal_justification_link. split.
+    rewrite /justification_link.
+    (* ?? the construction needs more than just a supermajority link - need an assumption that these are forward links t_h > s_h *)
+    admit.
+  move=> s' t' s_h' t_h' [Hh' [Hsj' Hsm']].
+  move:(Hsm') => /quorum_2_nonempty [v'].
+  rewrite inE => Hvote'.
+  assert ((v',s',t',s_h',t_h') \in sm_votes).
+   by rewrite inE /= inE /= unfold_in;apply/andP.
+  assert (vote_target_height (v',s',t',s_h',t_h') \in sm_votes_targets).
+    by apply in_imfset. simpl in H4.
+  rewrite -Hval. rewrite /highest_sm_target. apply (highest_ub H4). 
 Admitted.
 
 Lemma maximal_link_highest_block: forall st s t s_h t_h b b_h,
    ~ quorum_slashed st ->
-   sources_justified st ->
+   good_votes st ->
    maximal_justification_link st s t s_h t_h ->
    justified st b b_h ->
    b_h >= t_h ->
    b = t /\ b_h = t_h.
 Proof.
-  intros st s t s_h t_h b b_h Hunslashed Hsources Hmaxjl Hbj Hbh.
+  intros st s t s_h t_h b b_h Hunslashed Hgood Hmaxjl Hbj Hbh.
   destruct Hmaxjl as [Hjl Hmaxjl].
-  have Hsj := (source_justified Hsources Hjl).
+  have Hsj := (source_justified Hgood Hjl).
   have Htj := (justified_link Hsj Hjl).
   case Heqh: (b_h == t_h).
     move/eqP: Heqh => Heqh.
@@ -184,12 +210,12 @@ Qed.
    and that sources in votes are justified. *)
 Lemma highest_exists: forall st,
     ~ quorum_slashed st ->
-    sources_justified st ->
+    good_votes st ->
     exists b b_h,
       justified st b b_h /\
       highest_justified st b b_h.
 Proof.
-intros st Hq Hsources.
+intros st Hq Hgood.
 have Hj: has_justification_link st \/ ~ has_justification_link st by apply classic.
 case: Hj => // Hj;first last.
   exists genesis, 0.
@@ -201,17 +227,17 @@ case: Hj => // Hj;first last.
   subst.
   contradict Hj.
   exists s, b', s_h, b_h'. split;[assumption|assumption].
-have Hmax_exists := (maximal_link_exists Hsources Hj).
+have Hmax_exists := (maximal_link_exists Hgood Hj).
 destruct Hmax_exists as [max_s [max_t [max_s_h [max_t_h Hmax_jlink]]]].
 exists max_t, max_t_h.
 destruct (Hmax_jlink) as [Hmaxj Hmaximal_link].
 split.
   apply (@justified_link st max_s max_s_h max_t max_t_h).
-  apply (source_justified Hsources Hmaxj).
+  apply (source_justified Hgood Hmaxj).
   assumption.
 unfold highest_justified.
 intros b b_h Hbmax Hbj.
-by apply (maximal_link_highest_block Hq Hsources Hmax_jlink Hbj Hbmax).
+by apply (maximal_link_highest_block Hq Hgood Hmax_jlink Hbj Hbmax).
 Qed.
 
 (** Now we have some defintions used to state the conclusion of the theorem **)
@@ -231,7 +257,7 @@ Theorem plausible_liveness :
   forall st,
     two_thirds_good st ->
     ~ quorum_slashed st ->
-    sources_justified st ->
+    good_votes st ->
   (forall b b_h, highest_justified st b b_h -> blocks_exist_high_over b) ->
   exists st', unslashed_can_extend st st'
    /\ no_new_slashed st st'
@@ -242,8 +268,8 @@ Theorem plausible_liveness :
          /\ supermajority_link st' new_finalized new_final_child
                                    new_height new_height.+1.
 Proof.
-  intros st Hgood Hunslashed Hsources_justified Hheight.
-  destruct (highest_exists Hunslashed Hsources_justified) as (just_max & just_max_h & [Hjust_max_just Hjust_max_max]).
+  intros st Hgood Hunslashed Hgood_votes Hheight.
+  destruct (highest_exists Hunslashed Hgood_votes) as (just_max & just_max_h & [Hjust_max_just Hjust_max_max]).
   specialize (Hheight _ _ Hjust_max_max).
 
   destruct Hgood as (good_quorum & Hgood_is_quorum & Hgood).
@@ -385,7 +411,9 @@ Proof.
   change (is_true (badV \in good_quorum)) in x_good.
 
   have Hnot_slashed := (Hgood badV x_good).
-  apply (Hsources_justified good_quorum) in Hinner as Hst2_justified;try (repeat assumption).
+  apply (Hgood_votes good_quorum) in x_good as HgoodbadV;try (repeat assumption).
+  destruct HgoodbadV as [Hst2_justifiedvotes Hforward_links].
+  apply Hst2_justifiedvotes in Hinner as Hst2_justified. 
   clear -Hjust_max_max Hst2_justified Hstarts.
   apply Hjust_max_max in Hst2_justified;[|apply ltnW;assumption].
   destruct Hst2_justified.
@@ -405,9 +433,8 @@ Proof.
   split;[|assumption].
 
   new_vote_mem_tac Houter.
-  apply (Hsources_justified good_quorum) in x_good; last by assumption.
-  unfold valid_votes in x_good.
-  apply x_good in Hinner as Hs2_justified.
+  apply (Hgood_votes good_quorum) in x_good as [Hst2_justifiedvotes Hforward_links]; last by assumption.
+  apply Hst2_justifiedvotes in Hinner as Hs2_justified.
   apply Hjust_le_target in Hs2_justified.
   clear -Hstarts Hs2_justified.
   rewrite <- ltnS in Hs2_justified.
