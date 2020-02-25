@@ -94,61 +94,6 @@ Definition k_finalized st b b_h k :=
         ) /\
         supermajority_link st b (last b ls) b_h (b_h+k). 
 
-(* A block is 1-finalized if it is finalized *)
-Lemma finalized_means_k_finalized : forall st b b_h,
-    finalized st b b_h <->
-    k_finalized st b b_h 1. 
-Proof.     
-  intros st b B_h; split.
-  (* Left direction *) 
-  { intro H_fin.
-    destruct H_fin as [H_just [c [H_rel H_link]]]. 
-    split. easy.
-    exists [::b; c]; repeat split.
-    assert (n = 0 \/ n = 1)%coq_nat by admit.
-    destruct H0 as [H_zero | H_one]; subst.
-    (* Proving justified *) 
-    { (* n = 0 *)
-      simpl. replace (B_h + 0) with B_h. 
-      assumption. 
-      admit. } 
-    { (* n = 1 *)
-      assert (justification_link st b c B_h B_h.+1).
-        { unfold justification_link; split.
-          easy. split. rewrite subSnn.
-          now apply parent_ancestor.
-          assumption. }
-        simpl.
-        replace (B_h + 1) with (B_h.+1). 
-        apply (justified_link H_just H0).
-        admit. }
-    (* Proving ancestor *)
-    assert (n = 0 \/ n = 1) by admit.
-    destruct H0 as [H_zero | H_one]; subst.
-    simpl. apply nth_ancestor_0. 
-    simpl. apply parent_ancestor. assumption.
-    simpl.
-    replace (B_h + 1) with (B_h.+1) by admit.
-    assumption. }
-  (* Right direction *) 
-  intros [H_k [ls [H_size [H_hd [H_rel H_link]]]]].
-  split.
-  (* Proving justified *)
-  { spec H_rel 0. spec H_rel.
-    easy. destruct H_rel.
-    rewrite <- nth0 in H_hd.
-    rewrite H_hd in H. 
-    replace (B_h + 0) with B_h in H by admit.
-    assumption. } 
-  (* Proving existential *)
-  { exists (last b ls). split.
-    spec H_rel 1. spec H_rel; try easy.
-    destruct H_rel.
-    admit.
-    replace (B_h.+1) with (B_h + 1) by admit.
-    assumption.
-Admitted.
-
 (* A k-finalized block is justified *)
 Lemma k_finalized_means_justified: forall st b b_h k,
     k_finalized st b b_h k ->
@@ -161,8 +106,8 @@ Proof.
   rewrite H_hd in H.
   replace (b_h + 0) with b_h in H.
   assumption.
-  admit.
-Admitted.
+  rewrite addn0. reflexivity.
+Qed. 
 
 (* A finalized block has a child who is justified *)
 Lemma finalized_means_justified_child: forall st p p_h,
