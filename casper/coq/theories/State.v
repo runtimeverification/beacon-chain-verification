@@ -54,3 +54,12 @@ Definition vote_target_height (v:Vote) : nat :=
     (_,_,_,_,t_h) => t_h
   end.
 
+Lemma vote_unfold (vote:Vote):
+  vote = ((vote_val           vote),
+          (vote_source        vote),
+          (vote_target        vote),
+          (vote_source_height vote),
+          (vote_target_height vote)).
+Proof.
+  by move:vote=>[[[[v s] t] s_h] t_h].
+Qed.

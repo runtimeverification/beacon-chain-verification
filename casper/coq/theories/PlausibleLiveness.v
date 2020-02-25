@@ -126,50 +126,60 @@ Proof.
   pose highest_sm_target := highest sm_votes_targets.
   pose maximal_sm_votes : {fset Vote} :=
     [ fset vote:Vote in sm_votes | (vote_target_height vote) >= highest_sm_target]%fset.
-
+  
   (* By has_justification_link (and non-empty-quorum assumption), sm_votes is non-empty. *)
-  move:(Hjust) =>[s [t [s_h [t_h [_]]]]]>[_ [_ Hlink]].
-  move:(Hlink) => /quorum_2_nonempty [v].
-  rewrite inE => Hvote.
-  (* exists s, t, s_h, t_h. *)
-  assert ((v,s,t,s_h,t_h) \in sm_votes).
-   by rewrite inE /= inE /= unfold_in;apply/andP.
+   move:(Hjust) =>[s [t [s_h [t_h [_]]]]]>[_ [_ Hlink]].
+   move:(Hlink) => /quorum_2_nonempty [v].
+   rewrite inE => Hvote.
+   assert ((v,s,t,s_h,t_h) \in sm_votes) as H_sm_votes_ne.
+    by rewrite inE /= inE /= unfold_in;apply/andP.
 
-  (* => sm_votes_targets is non-empty *)
-  assert (vote_target_height (v,s,t,s_h,t_h) \in sm_votes_targets).
-    by apply in_imfset.
-
-    (* => highest_sm_target \in sm_votes_targets *)
+   (* => sm_votes_targets is non-empty *)
+   assert (vote_target_height (v,s,t,s_h,t_h) \in sm_votes_targets) as H_sm_votes_targets_ne.
+     by apply in_imfset.
+   
+  (* highest_sm_target \in sm_votes_targets *)
   lapply (eq_bigmax (val: sm_votes_targets -> nat));
-    [|by rewrite -cardfE cardfs_gt0;apply /fset0Pn;eexists].
+    [|by rewrite -cardfE cardfs_gt0;apply /fset0Pn;exists (vote_target_height (v, s, t, s_h, t_h)) ].
   move => [i Hmax].
   match type of Hmax with (?L = _) => assert (L = highest_sm_target) by reflexivity end.
   assert (highest_sm_target \in sm_votes_targets).
-  rewrite -H1 Hmax. apply fsvalP.
-  (* => maximal_sm_votes is non-empty *)
-  move:(H2) => /imfsetP /= [maximal_vote Hin Hval].
+    rewrite -H Hmax. apply fsvalP.
+  (* maximal_sm_votes is non-empty *)
+  move:(H0) => /imfsetP /= [maximal_vote Hin Hval].
   assert (maximal_vote \in maximal_sm_votes).
-  by rewrite inE /= inE Hval leqnn Bool.andb_true_r.
+    by rewrite inE /= inE Hval leqnn Bool.andb_true_r.
   (* exists maximal supermajority link *)
-  move:H3;rewrite inE /= inE /=. move/andP=>[Hmax_sm Hmax_h].
+  move:H1;rewrite inE /= inE /=. move/andP=>[Hmax_sm Hmax_h].
   move:Hmax_sm; rewrite inE /= inE /=. move/andP=>[Hmax_vote Hmax_sm].
   exists (vote_source maximal_vote),
          (vote_target maximal_vote),
          (vote_source_height maximal_vote),
          (vote_target_height maximal_vote).
   rewrite /maximal_justification_link. split.
-    rewrite /justification_link.
-    (* ?? the construction needs more than just a supermajority link - need an assumption that these are forward links t_h > s_h *)
-    admit.
+    rewrite /good_votes in Hgood. rewrite /supermajority_link in Hmax_sm.
+    specialize (Hgood (link_supporters st (vote_source maximal_vote) (vote_target maximal_vote)
+            (vote_source_height maximal_vote) (vote_target_height maximal_vote))).
+    have Hvgood := (Hgood Hmax_sm).
+    specialize Hvgood with (v := (vote_val maximal_vote)).
+    unfold link_supporters, vote_msg in Hvgood.
+    rewrite inE in Hvgood.
+    rewrite (vote_unfold maximal_vote) in Hmax_vote.
+    have Hvgood_votes:= (Hvgood Hmax_vote).
+    move:Hvgood_votes=>[AAA Hf].
+    rewrite /forward_link_votes in Hf.
+    have [Hh Hnth]:= (@Hf (vote_source maximal_vote) (vote_target maximal_vote) (vote_source_height maximal_vote) (vote_target_height maximal_vote) Hmax_vote).
+    rewrite /justification_link. repeat (split; try assumption).
   move=> s' t' s_h' t_h' [Hh' [Hsj' Hsm']].
   move:(Hsm') => /quorum_2_nonempty [v'].
   rewrite inE => Hvote'.
   assert ((v',s',t',s_h',t_h') \in sm_votes).
-   by rewrite inE /= inE /= unfold_in;apply/andP.
+    by rewrite inE /= inE /= unfold_in;apply/andP.
   assert (vote_target_height (v',s',t',s_h',t_h') \in sm_votes_targets).
-    by apply in_imfset. simpl in H4.
-  rewrite -Hval. rewrite /highest_sm_target. apply (highest_ub H4). 
-Admitted.
+    by apply in_imfset. 
+  simpl in H2.
+  rewrite -Hval. rewrite /highest_sm_target. apply (highest_ub H2).
+Qed.
 
 Lemma maximal_link_highest_block: forall st s t s_h t_h b b_h,
    ~ quorum_slashed st ->
