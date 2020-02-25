@@ -7,7 +7,7 @@ From mathcomp.finmap
 Require Import finmap.
 
 From Hammer
-Require Reconstr.
+Require Reconstr. 
 
 Require Import Classical.
 
@@ -30,8 +30,13 @@ Definition finalization_fork st :=
     finalized st b2 b2_h /\
     b2 </~* b1 /\ b1 </~* b2.
 
-(* No two different blocks can be justified at the same height without
-   a quorum being slashed *)
+Definition k_finalization_fork st k :=
+  exists b1 b1_h b2 b2_h,
+    k_finalized st b1 b1_h k /\
+    k_finalized st b2 b2_h k /\
+    b2 </~* b1 /\ b1 </~* b2.  
+
+(* No two different blocks can be justified at the same height without a quorum being slashed *)
 Lemma no_two_justified_same_height: forall st b1 b1_h b2 b2_h,
   justified st b1 b1_h ->
   justified st b2 b2_h ->
@@ -79,6 +84,21 @@ by Reconstr.hcrush Reconstr.Empty
 		(@finalized).
 Qed.
 
+Lemma no_k_finalized_justified_same_height : forall st bf bf_h bj bj_h k,
+  k_finalized st bf bf_h k ->
+  justified st bj bj_h ->
+  ~ quorum_slashed st ->
+  bj <> bf ->
+  bj_h <> bf_h.
+Proof.
+  intros.
+  eapply no_two_justified_same_height.
+  apply H0.
+  apply k_finalized_means_justified with k.
+  apply H.
+  assumption. assumption.
+Qed. 
+
 (* Slash-surround case of the inductive step of the safety proof *)
 (* The specific case of proper link containment *)
 Lemma slash_surround_case_strict : forall st s t final s_h t_h final_h,
@@ -89,7 +109,7 @@ Lemma slash_surround_case_strict : forall st s t final s_h t_h final_h,
   final </~* t ->
   s_h < final_h ->
   quorum_slashed st.
-Proof.
+Proof. 
   move => st s t final s_h t_h final_h Hsj [Htgts [Hnth Hsm]] Hfinal Hft Hnoans Hsf.
   destruct Hfinal as [Hfj [c [Hcp Hcsm]]].
   unfold supermajority_link, link_supporters, vote_msg in Hsm.
@@ -110,16 +130,118 @@ Proof.
   repeat (split;try assumption).
 Qed.
 
+Lemma k_slash_surround_case_general : forall st s t final s_h t_h final_h k,
+  justified st s s_h ->
+  justification_link st s t s_h t_h ->
+  k_finalized st final final_h k ->
+  final_h < t_h ->
+  final </~* t ->
+  s_h < final_h ->
+  quorum_slashed st.
+Proof.
+  move => st s t final s_h t_h final_h k Hsj [Htgts [Hnth Hsm]] Hfinal Hft Hnoans Hsf.
+  destruct Hfinal as [H_k [ls [H_size [H_hd [H_rel H_link]]]]].
+  destruct (classic (final_h + k < t_h)). 
+  (* Full containment *) 
+  unfold supermajority_link, link_supporters, vote_msg in Hsm.
+  unfold supermajority_link, link_supporters, vote_msg in H_link.
+  have [q1 [Hq1 Hq1slashed]]: exists q1, q1 \in quorum_1 /\ 
+    forall v, v \in q1 ->
+      v \in [set v | (v, s, t, s_h, t_h) \in st] /\
+      v \in [set v | (v, final, last final ls, final_h, final_h+k) \in st]
+    by Reconstr.reasy (@quorums_property) Reconstr.Empty.
+  unfold quorum_slashed.
+  exists q1. split;[assumption|].
+  intros v Hvinq.
+  apply Hq1slashed in Hvinq as [H1 H2].
+  rewrite in_set in H1. rewrite in_set in H2.
+  unfold slashed. right.
+  unfold slashed_surround.
+  exists s, t, s_h, t_h. exists final, (last final ls), final_h, (final_h + k).
+  repeat (split;try assumption).
+  have Hge: (~final_h + k >= t_h)%coq_nat.
+  admit. 
+  clear H.
+  assert (Hdisj : t_h = final_h + k \/ t_h < final_h + k) by admit. 
+  destruct Hdisj as [Heq | Hlt].
+  (* Partial containment *)
+  destruct (classic (t = last final ls)). 
+  (** In the case that they overlap, we find a contradiction to non-ancestry **)
+  subst.
+  assert (final <~* last final ls).
+  { eapply (nth_ancestor_ancestor).
+    spec H_rel k. spec H_rel; intuition.
+    rewrite <- nth_last. rewrite H_size.
+      by apply H0. }
+  contradiction.
+  (** In the case that they do not overlap, we find a contradiction via two non-equal blocks justified at the same height *)
+  destruct (classic (quorum_slashed st)).
+  (* In the yes case, we're done *)
+  assumption.
+  (* In the no case, we find another contradiction *)
+  assert (Hjj : justified st t t_h). 
+  { eapply justified_link. exact Hsj.
+    unfold supermajority_link, link_supporters, vote_msg in Hsm.
+    unfold justification_link; split; by intuition. }
+  assert (Hjlast : justified st (nth final ls k) (final_h + k)).
+  { eapply H_rel. auto. }
+  assert (H_useful := no_two_justified_same_height Hjj Hjlast).
+  spec H_useful H0.
+  spec H_useful.
+  replace k with ((k.+1).-1).
+  rewrite <- H_size. rewrite nth_last.
+  assumption. auto.
+  contradiction.
+  clear Hge.
+  spec H_rel (t_h - final_h). 
+  spec H_rel. apply ltnW.
+  by rewrite ltn_psubLR. 
+  destruct H_rel as [H_just H_ancestor].
+  assert (Htj : justified st t t_h). 
+  { eapply justified_link. exact Hsj.
+    unfold supermajority_link, link_supporters, vote_msg in Hsm.
+    unfold justification_link; split; by intuition. }
+  destruct (classic (t = nth final ls (t_h - final_h))). 
+  (* In the case that t is on the justification chain of final *)
+  subst. 
+  assert (final <~* nth final ls (t_h - final_h)).
+  eapply nth_ancestor_ancestor. apply H_ancestor.
+  contradiction.
+  (* In the case that t is outside of the justification chain *)
+  assert (H_useful := no_two_justified_same_height Htj H_just). 
+  destruct (classic (quorum_slashed st)).
+  assumption. spec H_useful H0.
+  spec H_useful H.
+  assert (final_h <= t_h). intuition.
+  assert (H_useful2 := subnKC H1).
+  rewrite H_useful2 in H_useful.
+  contradiction.
+Admitted.
+
+Lemma no_two_justified_same_height' : forall (st : State) (b1 : Hash) (b1_h : nat) (b2 : Hash) (b2_h : nat),
+       justified st b1 b1_h ->
+       justified st b2 b2_h ->
+       b1 <> b2 ->
+       b1_h = b2_h ->
+       quorum_slashed st. 
+Proof. 
+  intros.
+  assert (H_useful := no_two_justified_same_height H H0).
+  destruct (classic (quorum_slashed st)).
+  assumption.
+  spec H_useful H3 H1. contradiction.
+Qed.
+
 (* Slash-surround case of the inductive step of the safety proof *)
 (* The general case *)
 Lemma slash_surround_case_general : forall st s t final s_h t_h final_h,
   justified st s s_h ->
   justification_link st s t s_h t_h ->
   finalized st final final_h ->
-  final_h < t_h ->
+  final_h < t_h -> 
   final </~* t ->
   s_h < final_h ->
-  quorum_slashed st.
+  quorum_slashed st. 
 Proof.
 move => st s t final s_h t_h final_h Hsj [Htgts [Hnth Hsm]] Hfinal Hft Hnoans Hsf.
 case Hn: (t_h == final_h.+1).
@@ -130,7 +252,7 @@ case Hn: (t_h == final_h.+1).
   destruct Hfinal as [Hfj [c [Hcp Hcsm]]].
   have Hfh : final_h.+1 > final_h by trivial.
   have Hca : final <~* c by apply (hash_parent_ancestor Hcp).
-  apply parent_ancestor in Hcp.
+  apply parent_ancestor in Hcp. 
   replace 1 with (final_h.+1 - final_h) in Hcp by apply subSnn.
   have Hcjl : justification_link st final c final_h final_h.+1 by trivial.
   have Hcj : justified st c final_h.+1 by apply (justified_link Hfj Hcjl).
@@ -139,11 +261,11 @@ case Hn: (t_h == final_h.+1).
   have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.
   case: Ho => // Ho.
   apply Hconf in Ho;[contradiction|assumption].
-move/negP/negP/eqP: Hn => Hn.
+move/negP/negP/eqP: Hn => Hn. 
 have Hgt: final_h.+1 < t_h.
   apply/ltP.
-  move/ltP: Hft => Hft.
-  by intuition.
+  move/ltP: Hft => Hft. 
+  by intuition. 
 have Hjl : justification_link st s t s_h t_h by trivial.
 by Reconstr.hobvious (@Hfinal, @Hnoans, @Hsf, @Hgt, @Hsj, @Hjl)
 		(@slash_surround_case_strict)
@@ -209,9 +331,70 @@ case Hlt: (b2_h < s_h); last first.
       by apply sym_eq in Hpp.
     move => Hlt.
     have Hjl : justification_link st s b1 s_h b1_h by trivial.
-    by have Hslash_surround := slash_surround_case_general Hsj Hjl Hb2f Hh Hconfl Hlt.
+    by have Hslash_surround := slash_surround_case_general Hsj Hjl Hb2f Hh Hconfl Hlt. 
 by apply: IH'.
 Qed.
+
+Lemma k_non_equal_height_case_ind : forall st b1 b1_h b2 b2_h k,
+  justified st b1 b1_h ->
+  k_finalized st b2 b2_h k ->
+  b2 </~* b1 ->
+  b1_h > b2_h ->
+  quorum_slashed st.
+Proof.
+move => st b1 b1_h b2 b2_h k Hb1j Hb2f Hconfl Hh.
+pose P (h1_h : nat) (h1 : Hash) :=
+  justified st h1 h1_h ->
+  k_finalized st b2 b2_h k ->
+  b2 </~* h1 ->
+  b2_h < h1_h ->
+  quorum_slashed st. 
+suff Hsuff: forall h1_h h1, P h1_h h1 by apply: Hsuff; eauto.
+apply (@strong_induction_sub b2_h).
+clear b1 b1_h Hb1j Hconfl Hh Hb2f.
+move => b1_h b1 IH Hb1j Hb2f Hconfl Hh.
+have Hor: (b1 = genesis /\ b1_h = 0) \/
+          (exists s s_h,
+             justified st s s_h /\
+             justification_link st s b1 s_h b1_h).
+  inversion Hb1j; first by left.
+  right.
+  by exists s, s_h.
+case: Hor => Hor; first by move: Hor => [H1 H2]; rewrite H2 in Hh.
+have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.
+case: Ho => // Ho.
+move: Hor => [s [s_h [Hsj [Hsh [Hsa Hsm]]]]].
+have IH' := IH s_h s _ _ Hsj Hb2f.
+have Hp: b2 </~* s.
+  have Hm := nth_ancestor_ancestor Hsa.
+  by apply: hash_ancestor_conflict; eauto.
+have Hpneq: b2 <> s by apply hash_nonancestor_nonequal.
+have Hpneq': s <> b2 by eauto.
+have Hplt: s_h - b2_h < b1_h - b2_h.
+  by apply ltn_sub2r.
+  case Hlt: (b2_h < s_h); last first.
+  rewrite ltn_neqAle /= in Hlt.
+  move/negP/negP: Hlt.
+  rewrite negb_and.
+  move/orP; case.
+  * move/negP/eqP => Hvv. 
+    case Hv2p: (b2_h == s_h); last by rewrite Hv2p /= in Hvv.
+    move/eqP: Hv2p => Hv2p {Hvv}.
+    have Hl5 := no_k_finalized_justified_same_height Hb2f Hsj Ho Hpneq'.
+    by have H : b2_h <> s_h by eauto.
+  * rewrite leq_eqVlt.
+    rewrite negb_or.
+    rewrite -leqNgt leq_eqVlt.
+    move/andP => [Hnq Hpp].
+    move/eqP: Hnq => Hnq.
+    case/orP: Hpp.
+      move/eqP => Hpp.
+      by apply sym_eq in Hpp.
+    move => Hlt.
+    have Hjl : justification_link st s b1 s_h b1_h by trivial.
+    by have Hslash_surround := k_slash_surround_case_general Hsj Hjl Hb2f Hh Hconfl Hlt.
+    intuition.
+Qed. 
 
 (* Safety proof case: two conflicting blocks are finalized at different
    heights *)
@@ -221,10 +404,22 @@ Lemma non_equal_height_case : forall st b1 b1_h b2 b2_h,
   b2 </~* b1 ->
   b1_h > b2_h ->
   quorum_slashed st.
-Proof.
+Proof. 
 intros st b1 b1_h b2 b2_h Hb1f Hb2f Hx Hh.
 destruct Hb1f as [Hb1j _].
 by apply non_equal_height_case_ind with b1 b1_h b2 b2_h.
+Qed.
+
+Lemma k_non_equal_height_case : forall st b1 b1_h b2 b2_h k,
+  k_finalized st b1 b1_h k ->
+  k_finalized st b2 b2_h k ->
+  b2 </~* b1 ->
+  b1_h > b2_h ->
+  quorum_slashed st.
+Proof.
+intros st b1 b1_h b2 b2_h k Hb1f Hb2f Hx Hh.
+apply k_finalized_means_justified in Hb1f. 
+by apply k_non_equal_height_case_ind with b1 b1_h b2 b2_h k.
 Qed.
 
 (* Safety proof case: two conflicting blocks are finalized at the same
@@ -245,6 +440,22 @@ case: Ho => // Ho.
 apply Hconf in Ho;[contradiction|assumption].
 Qed.
 
+Lemma k_equal_height_case : forall st b1 b2 h k,
+  k_finalized st b1 h k ->
+  k_finalized st b2 h k ->
+  b1 <> b2 ->
+  quorum_slashed st.
+Proof.
+move => st b1 b2 h k Hf1 Hf2 Hh.
+unfold k_finalized, supermajority_link, link_supporters, vote_msg in Hf1, Hf2.
+apply k_finalized_means_justified in Hf1. 
+apply k_finalized_means_justified in Hf2.
+have Hconf := no_two_justified_same_height Hf1 Hf2.
+have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.
+case: Ho => // Ho.
+apply Hconf in Ho;[contradiction|assumption].
+Qed.
+
 (* A quorum is slashed if two conflicting blocks are finalized *)
 Lemma safety' : forall st b1 b1_h b2 b2_h,
   finalized st b1 b1_h ->
@@ -252,7 +463,7 @@ Lemma safety' : forall st b1 b1_h b2 b2_h,
   b2 </~* b1 ->
   b1 </~* b2 ->
   quorum_slashed st.
-Proof.
+Proof. 
 move => st b1 b1_h b2 b2_h Hf1 Hf2 Hh1 Hh2.
 have Hn:= hash_nonancestor_nonequal Hh2.
   case Hbh: (b1_h == b2_h).
@@ -262,7 +473,7 @@ have Hn:= hash_nonancestor_nonequal Hh2.
   exact: equal_height_case.
 move/eqP: Hbh => Hbh.
 case H1: (b1_h > b2_h).
-  move: Hf1 Hf2 Hh1 H1.
+  move: Hf1 Hf2 Hh1 H1. 
   by apply: non_equal_height_case; eauto.
 have Hgt: b2_h > b1_h.
   apply/ltP.
@@ -273,10 +484,44 @@ move: Hgt.
 by apply: non_equal_height_case; eauto.
 Qed.
 
+Lemma k_safety' : forall st b1 b1_h b2 b2_h k,
+  k_finalized st b1 b1_h k ->
+  k_finalized st b2 b2_h k ->
+  b2 </~* b1 ->
+  b1 </~* b2 ->
+  quorum_slashed st.
+Proof.
+  move => st b1 b1_h b2 b2_h k Hf1 Hf2 Hh1 Hh2.
+have Hn:= hash_nonancestor_nonequal Hh2.
+  case Hbh: (b1_h == b2_h).
+  move/eqP: Hbh => Hbh.
+  subst.
+  move: Hf1 Hf2 Hn.
+  exact: k_equal_height_case.
+move/eqP: Hbh => Hbh.
+case H1: (b1_h > b2_h).
+  move: Hf1 Hf2 Hh1 H1. 
+  by apply: k_non_equal_height_case; eauto.
+have Hgt: b2_h > b1_h.
+  apply/ltP.
+  move/ltP: H1.
+  move => Hnn.
+  by intuition.
+move: Hgt.
+  by apply: k_non_equal_height_case; eauto.
+Qed. 
+
 (* The main accountable safety theorem *)
 Theorem accountable_safety : forall st, finalization_fork st -> quorum_slashed st.
 Proof.
 by Reconstr.hobvious Reconstr.Empty
 		(@safety')
 		(@finalization_fork).
+Qed.
+
+Theorem k_accountable_safety : forall st k, k_finalization_fork st k -> quorum_slashed st.
+Proof.
+by Reconstr.hobvious Reconstr.Empty
+		(@k_safety')
+		(@k_finalization_fork).
 Qed.
