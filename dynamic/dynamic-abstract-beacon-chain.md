@@ -210,7 +210,7 @@ rule <k> true ~> justify(Epoch, BlockID) => . ... </k>
        <lastJustified> _ => (Epoch, BlockID) </lastJustified>
        ...
      </state>
-// can be justified multiple times
+// the same block can be justified multiple times
 rule <k> true ~> justify(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -219,6 +219,17 @@ rule <k> true ~> justify(Epoch, BlockID) => . ... </k>
        <lastJustified> (Epoch, BlockID) </lastJustified>
        ...
      </state>
+// invalid multiple justification case
+rule <k> (. => bottom) ~> true ~> justify(Epoch, BlockID) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <justified> Epoch |-> some JBlockID ... </justified>
+       <lastJustified> (LJEpoch, LJBlockID) </lastJustified>
+       ...
+     </state>
+     requires Epoch =/=Int LJEpoch orBool BlockID =/=Int LJBlockID
+                                   orBool BlockID =/=Int  JBlockID
 rule <k> false ~> justify(_, _) => . ... </k>
 
 syntax Bool ::= isJustifiable(Int, Attestations, Map) [function] // functional only for Validators map
@@ -304,7 +315,7 @@ rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
        <lastFinalized> _ => (Epoch, BlockID) </lastFinalized>
        ...
      </state>
-// can be finalized multiple times
+// the same block can be finalized multiple times
 rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -313,6 +324,17 @@ rule <k> true ~> finalize(Epoch, BlockID) => . ... </k>
        <lastFinalized> (Epoch, BlockID) </lastFinalized>
        ...
      </state>
+// invalid multiple finalization case
+rule <k> (. => bottom) ~> true ~> finalize(Epoch, BlockID) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <finalized> Epoch |-> some FBlockID ... </finalized>
+       <lastFinalized> (LFEpoch, LFBlockID) </lastFinalized>
+       ...
+     </state>
+     requires Epoch =/=Int LFEpoch orBool BlockID =/=Int LFBlockID
+                                   orBool BlockID =/=Int  FBlockID
 rule <k> false ~> finalize(_, _) => . ... </k>
 
 // source : source+1 = target justified
@@ -324,6 +346,10 @@ rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
                 SourceEpoch +Int 1 ==Int TargetEpoch
        orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool isJustified(SourceEpoch +Int 1, Justified) )
      )
+// TODO: use rule priority
+  requires TargetEpoch -Int SourceEpoch <=Int 2
+rule isFinalizable(SourceEpoch, TargetEpoch, Justified) => false
+  requires TargetEpoch -Int SourceEpoch >Int 2
 
 syntax Bool ::= isJustified(Int, Map) [function] // not functional
 rule isJustified(Epoch, Epoch |-> (some _) _:Map) => true
