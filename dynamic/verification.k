@@ -51,30 +51,28 @@ syntax Attestations ::= super(Attestations) [function]
 rule isJustifiable(B, super(As), Vs) => true
     requires isJustifiable(B, As, Vs)
 
-syntax Pred ::= isValidState(Int, Int, Attestations, Map, Option,
-                             Int, Int, Attestations, Map, Option,
-                             Int, Int) [function]
-rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2JustifiedBlock,
-                  Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1JustifiedBlock,
-                  LastJustifiedEpoch, LastJustifiedBlock)
+syntax Pred ::= isValidState(Int, Int, Attestations, Map, Bool,
+                             Int, Int, Attestations, Map, Bool,
+                             Int) [function]
+rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
+                  Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
+                  LastJustifiedEpoch)
   => xor3(
                 notBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2)
         andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
         andBool LastJustifiedEpoch <Int Epoch2
-        andBool Epoch2JustifiedBlock ==K none
-        andBool Epoch1JustifiedBlock ==K none
+        andBool Epoch2Justified ==K false
+        andBool Epoch1Justified ==K false
      ,
                         isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2)
         andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
         andBool LastJustifiedEpoch ==Int Epoch2
-        andBool LastJustifiedBlock ==Int Epoch2BoundaryBlock
-        andBool Epoch2JustifiedBlock ==K some Epoch2BoundaryBlock
-        andBool Epoch1JustifiedBlock ==K none
+        andBool Epoch2Justified ==K true
+        andBool Epoch1Justified ==K false
      ,
                         isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
         andBool LastJustifiedEpoch ==Int Epoch1
-        andBool LastJustifiedBlock ==Int Epoch1BoundaryBlock
-        andBool Epoch1JustifiedBlock ==K some Epoch1BoundaryBlock
+        andBool Epoch1Justified ==K true
      )
 
 /*

@@ -17,9 +17,7 @@ rule
       <slot> firstSlotOf(0) </slot>
       <validators> Vs </validators>
       <lastBlock> (_, GenesisBlock) </lastBlock>
-      <lastJustified>
-        (0, GenesisBlock)
-      </lastJustified>
+      <lastJustified> 0 </lastJustified>
       ...
     </state>
     <state>
@@ -30,12 +28,10 @@ rule
         ...
       </attested>
       <justified>
-        0 |-> some GenesisBlock
+        0 |-> true
         ...
       </justified>
-      <lastJustified>
-        (0, GenesisBlock)
-      </lastJustified>
+      <lastJustified> 0 </lastJustified>
       ...
     </state>
     ...
@@ -57,9 +53,7 @@ rule
       <slot> firstSlotOf(0) </slot>
       <validators> Vs </validators>
       <lastBlock> (_, GenesisBlock) </lastBlock>
-      <lastJustified>
-        (0, GenesisBlock)
-      </lastJustified>
+      <lastJustified> 0 </lastJustified>
       ...
     </state>
     <state>
@@ -71,12 +65,10 @@ rule
         ...
       </attested>
       <justified>
-        0 |-> some GenesisBlock
+        0 |-> true
         ...
       </justified>
-      <lastJustified>
-        (0, GenesisBlock)
-      </lastJustified>
+      <lastJustified> 0 </lastJustified>
       ...
     </state>
     <state>
@@ -88,15 +80,11 @@ rule
         ...
       </attested>
       <justified>
-        0 |-> (some GenesisBlock => ?NewEpochJustifiedBlock0:Option)
-        1 |-> (none              => ?NewEpochJustifiedBlock1:Option)
+        0 |-> (true  => ?NewEpochJustified0:Bool)
+        1 |-> (false => ?NewEpochJustified1:Bool)
         ...
       </justified>
-      <lastJustified>
-        (0, GenesisBlock)
-      =>
-        (?NewLastJustifiedEpoch, ?NewLastJustifiedBlock)
-      </lastJustified>
+      <lastJustified> 0 => ?NewLastJustifiedEpoch </lastJustified>
       ...
     </state>
     ...
@@ -106,9 +94,9 @@ rule
 requires isValidators(Vs)
  andBool isJustifiable(GenesisBlock, PrevAttestations0, Vs) // because the genesis block is justified by default
  andBool Attestations0 ==K super(PrevAttestations0)
-ensures  bool(isValidState(0, GenesisBlock,        Attestations0, Vs, ?NewEpochJustifiedBlock0,
-                           1, EpochBoundaryBlock1, Attestations1, Vs, ?NewEpochJustifiedBlock1,
-                           ?NewLastJustifiedEpoch, ?NewLastJustifiedBlock))
+ensures  bool(isValidState(0, GenesisBlock,        Attestations0, Vs, ?NewEpochJustified0,
+                           1, EpochBoundaryBlock1, Attestations1, Vs, ?NewEpochJustified1,
+                           ?NewLastJustifiedEpoch))
 
 /*
 For the given current epoch e >= 3,
@@ -130,9 +118,9 @@ where Epoch3 = e - 3
 */
 rule
 <T>
-  <k> case(isValidState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3JustifiedBlock,
-                        Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2JustifiedBlock,
-                        PrevLastJustifiedEpoch, PrevLastJustifiedBlock))
+  <k> case(isValidState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3Justified,
+                        Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2Justified,
+                        PrevLastJustifiedEpoch))
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1) => . </k>
   <currentSlot> firstSlotOf(Epoch) </currentSlot>
@@ -159,13 +147,11 @@ rule
         ...
       </attested>
       <justified>
-        Epoch3 |-> PrevEpoch3JustifiedBlock:Option
-        Epoch2 |-> PrevEpoch2JustifiedBlock:Option
+        Epoch3 |-> PrevEpoch3Justified:Bool
+        Epoch2 |-> PrevEpoch2Justified:Bool
         ...
       </justified>
-      <lastJustified>
-        (PrevLastJustifiedEpoch, PrevLastJustifiedBlock)
-      </lastJustified>
+      <lastJustified> PrevLastJustifiedEpoch </lastJustified>
       ...
     </state>
     <state>
@@ -177,15 +163,11 @@ rule
         ...
       </attested>
       <justified>
-        Epoch2 |-> (Epoch2JustifiedBlock:Option => ?NewEpoch2JustifiedBlock:Option)
-        Epoch1 |-> (none                        => ?NewEpoch1JustifiedBlock:Option)
+        Epoch2 |-> (Epoch2Justified:Bool => ?NewEpoch2Justified:Bool)
+        Epoch1 |-> (false                => ?NewEpoch1Justified:Bool)
         ...
       </justified>
-      <lastJustified>
-        (LastJustifiedEpoch, LastJustifiedBlock)
-      =>
-        (?NewLastJustifiedEpoch, ?NewLastJustifiedBlock)
-      </lastJustified>
+      <lastJustified> LastJustifiedEpoch => ?NewLastJustifiedEpoch </lastJustified>
       ...
     </state>
     ...
@@ -197,9 +179,8 @@ requires isValidators(Vs)
  andBool Epoch2 ==Int Epoch -Int 2
  andBool Epoch3 ==Int Epoch -Int 3
  // invariant
- andBool Epoch2JustifiedBlock ==K PrevEpoch2JustifiedBlock
+ andBool Epoch2Justified ==K PrevEpoch2Justified
  andBool LastJustifiedEpoch ==Int PrevLastJustifiedEpoch
- andBool LastJustifiedBlock ==Int PrevLastJustifiedBlock
  andBool Attestations2 ==K super(PrevAttestations2)
  // ranges
  andBool Epoch >=Int 0
@@ -208,8 +189,8 @@ requires isValidators(Vs)
  andBool Epoch3 >=Int 0
  andBool PrevLastJustifiedEpoch >=Int 0
 ensures  ?NewLastJustifiedEpoch >=Int 0
- andBool bool(isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2JustifiedBlock,
-                           Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1JustifiedBlock,
-                           ?NewLastJustifiedEpoch, ?NewLastJustifiedBlock))
+ andBool bool(isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2Justified,
+                           Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1Justified,
+                           ?NewLastJustifiedEpoch))
 
 endmodule
