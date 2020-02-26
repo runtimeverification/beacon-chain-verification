@@ -267,7 +267,7 @@ rule #Ceil(values(_:Map)) => #True [anywhere]
 
 ```k
 // abstract predicate
-syntax Bool ::= isValidators(Map) [function, functional]
+syntax Bool ::= isValidators(Map) [function, functional, no-evaluators]
 
 syntax Bool ::= isValidatorsList(List) [function, functional]
 rule isValidatorsList(values(M:Map)) => isValidators(M)
