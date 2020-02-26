@@ -47,7 +47,7 @@ rule bool(xor3(C1, C2, C3)) => C1 orBool C2 orBool C3
 rule bool(xor4(C1, C2, C3, C4)) => C1 orBool C2 orBool C3 orBool C4
 rule bool(xor5(C1, C2, C3, C4, C5)) => C1 orBool C2 orBool C3 orBool C4 orBool C5
 
-syntax Attestations ::= super(Attestations) [function]
+syntax Attestations ::= super(Attestations) [function, no-evaluators]
 rule isJustifiable(B, super(As), Vs) => true
     requires isJustifiable(B, As, Vs)
 
