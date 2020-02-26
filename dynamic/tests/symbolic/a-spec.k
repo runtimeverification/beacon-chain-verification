@@ -18,10 +18,10 @@ rule
         ...
       </attested>
       <justified>
-        Epoch |-> (none => some EpochBoundaryBlock)
+        Epoch |-> (false => true)
         ...
       </justified>
-      <lastJustified> _ => (Epoch, EpochBoundaryBlock) </lastJustified>
+      <lastJustified> _ => Epoch </lastJustified>
       ...
     </state>
     <state>
