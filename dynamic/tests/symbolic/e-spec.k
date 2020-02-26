@@ -11,11 +11,11 @@ rule
 <T>
   <k> case(xor2(
                 LastJustifiedEpoch <Int Epoch2
-        andBool OldEpoch2JustifiedBlock ==K false
+        andBool select(JM, Epoch2) ==K false
       ,
                 LastJustifiedEpoch ==Int Epoch2
-        andBool OldEpoch2JustifiedBlock ==K true
-        andBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs) // TODO: add relaxation lemma
+        andBool select(JM, Epoch2) ==K true
+        andBool isJustifiable(Epoch2BoundaryBlock, selectA(AM, Epoch2), Vs) // TODO: add relaxation lemma
       ))
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1) => . </k>
@@ -36,16 +36,8 @@ rule
     <state>
       <slot> Slot </slot>
       <validators> Vs </validators>
-      <attested>
-        Epoch2 |-> Attestations2:Attestations
-        Epoch1 |-> Attestations1:Attestations
-        ...
-      </attested>
-      <justified>
-        Epoch2 |-> (OldEpoch2JustifiedBlock:Bool => ?NewEpoch2JustifiedBlock:Bool)
-        Epoch1 |-> (OldEpoch1JustifiedBlock:Bool => ?NewEpoch1JustifiedBlock:Bool)
-        ...
-      </justified>
+      <attested> AM </attested>
+      <justified> JM => ?JM2 </justified>
       <lastJustified> LastJustifiedEpoch => ?NewJustifiedEpoch </lastJustified>
       ...
     </state>
@@ -57,44 +49,49 @@ requires isValidators(Vs)
  andBool Epoch1 >=Int 1
  andBool Epoch1 ==Int epochOf(Slot) -Int 1
  andBool Epoch2 ==Int epochOf(Slot) -Int 2
- andBool OldEpoch1JustifiedBlock ==K false
+ andBool select(JM, Epoch1) ==K false
  // ranges
  andBool Slot >=Int 0
  andBool Epoch1 >=Int 0
  andBool Epoch2 >=Int 0
  andBool LastJustifiedEpoch >=Int 0
+ // invariant
+ andBool (notBool LastJustifiedEpoch <Int Epoch2 orBool select(JM, Epoch2) ==K false)
+ andBool (notBool LastJustifiedEpoch ==Int Epoch2 orBool (select(JM, Epoch2) ==K true andBool isJustifiable(Epoch2BoundaryBlock, selectA(AM, Epoch2), Vs)))
+ andBool LastJustifiedEpoch <=Int Epoch2
 ensures ?NewJustifiedEpoch >=Int 0 andBool
 (
     (
             (
-                        isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
-                andBool ?NewEpoch2JustifiedBlock ==K true
+                        isJustifiable(Epoch2BoundaryBlock, selectA(AM, Epoch2), Vs)
+                andBool select(?JM2, Epoch2) ==K true
             ) orBool (
-                notBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
-                andBool ?NewEpoch2JustifiedBlock ==K false
+                notBool isJustifiable(Epoch2BoundaryBlock, selectA(AM, Epoch2), Vs)
+                andBool select(?JM2, Epoch2) ==K false
             )
     ) orBool (
             (
-                        isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
-                andBool ?NewEpoch1JustifiedBlock ==K true
+                        isJustifiable(Epoch1BoundaryBlock, selectA(AM, Epoch1), Vs)
+                andBool select(?JM2, Epoch1) ==K true
             ) orBool (
-                notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
-                andBool ?NewEpoch1JustifiedBlock ==K false
+                notBool isJustifiable(Epoch1BoundaryBlock, selectA(AM, Epoch1), Vs)
+                andBool select(?JM2, Epoch1) ==K false
             )
     )
 ) andBool (
     (
-                        notBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
-                andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
+                        notBool isJustifiable(Epoch2BoundaryBlock, selectA(AM, Epoch2), Vs)
+                andBool notBool isJustifiable(Epoch1BoundaryBlock, selectA(AM, Epoch1), Vs)
                 andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
     ) orBool (
-                                isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
-                andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
+                                isJustifiable(Epoch2BoundaryBlock, selectA(AM, Epoch2), Vs)
+                andBool notBool isJustifiable(Epoch1BoundaryBlock, selectA(AM, Epoch1), Vs)
                 andBool ?NewJustifiedEpoch ==Int Epoch2
     ) orBool (
-                                isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
+                                isJustifiable(Epoch1BoundaryBlock, selectA(AM, Epoch1), Vs)
                 andBool ?NewJustifiedEpoch ==Int Epoch1
     )
 )
+ andBool JM ==BMap ?JM2 except SetItem(Epoch1) SetItem(Epoch2)
 
 endmodule

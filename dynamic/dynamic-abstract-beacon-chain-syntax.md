@@ -3,6 +3,7 @@
 ```k
 module DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
+imports SET
 
 // libraries
 syntax Int ::= hash(Int) [function, functional, smtlib(hash)]
@@ -210,6 +211,49 @@ rule epochOf(Slot)            => Slot /Int SLOTS_PER_EPOCH                      
 rule firstSlotOf(Epoch)       => Epoch *Int SLOTS_PER_EPOCH                     [macro]
 rule lastSlotOf(Epoch)        => firstSlotOf(Epoch) +Int SLOTS_PER_EPOCH -Int 1 [macro]
 rule isFirstSlotOfEpoch(Slot) => Slot %Int SLOTS_PER_EPOCH ==Int 0              [macro]
+```
 
+## Maps
+
+```k
+syntax AMap
+
+syntax AMap ::= ".AMap" [function, functional, no-evaluators]
+
+syntax Attestations ::= selectA(AMap, Int) [function, functional]
+rule selectA(storeA(M, K1, V), K2) => V             requires K1 ==Int K2
+rule selectA(storeA(M, K1, _), K2) => selectA(M, K2) requires K1 =/=Int K2
+rule selectA(.AMap, _) => .Attestations
+
+syntax AMap ::= storeA(AMap, Int, Attestations) [function, functional, no-evaluators]
+```
+
+```k
+syntax BMap
+
+syntax BMap ::= ".BMap" [function, functional, no-evaluators]
+
+syntax Bool ::= select(BMap, Int) [function, functional]
+rule select(store(M, K1, V), K2) => V             requires K1 ==Int K2
+rule select(store(M, K1, _), K2) => select(M, K2) requires K1 =/=Int K2
+rule select(.BMap, _) => false
+
+syntax BMap ::= store(BMap, Int, Bool) [function, functional, no-evaluators]
+
+syntax Bool ::= BMap "==BMap" BMap "except" Set [function, functional]
+
+rule store(M1, K, _) ==BMap M2 except Ks
+  =>       M1        ==BMap M2 except Ks
+  requires K in Ks
+
+rule M1 ==BMap store(M2, K, _) except Ks
+  => M1 ==BMap       M2        except Ks
+  requires K in Ks
+
+rule M1 ==BMap M2 except _ => true
+  requires M1 ==K M2  // structural equality
+```
+
+```k
 endmodule
 ```

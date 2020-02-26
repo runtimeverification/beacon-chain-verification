@@ -14,14 +14,8 @@ rule
     <state>
       <slot> Slot </slot>
       <validators> Vs </validators>
-      <attested>
-        Epoch |-> Attestations
-        ...
-      </attested>
-      <justified>
-        Epoch |-> (false => ?EpochJustifiedBlock:Bool)
-        ...
-      </justified>
+      <attested> AM </attested>
+      <justified> JM => ?JM2 </justified>
       <lastJustified> LastJustifiedEpoch => ?NewJustifiedEpoch </lastJustified>
       ...
     </state>
@@ -39,15 +33,19 @@ requires isValidators(Vs)
  andBool Epoch >=Int 1
  andBool Epoch ==Int epochOf(Slot) -Int 1
  andBool Epoch >Int LastJustifiedEpoch
+ andBool select(JM, Epoch) ==K false
 ensures (
-            isJustifiable(EpochBoundaryBlock, Attestations, Vs)
-    andBool ?EpochJustifiedBlock ==K true
+(
+            isJustifiable(EpochBoundaryBlock, selectA(AM, Epoch), Vs)
+    andBool select(?JM2, Epoch) ==K true
     andBool ?NewJustifiedEpoch ==Int Epoch
 ) orBool (
-    notBool isJustifiable(EpochBoundaryBlock, Attestations, Vs)
-    andBool ?EpochJustifiedBlock ==K false
+    notBool isJustifiable(EpochBoundaryBlock, selectA(AM, Epoch), Vs)
+    andBool select(?JM2, Epoch) ==K false
     andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
 )
+)
+ andBool JM ==BMap ?JM2 except SetItem(Epoch)
 
 // if e has already been justified,
 // processJustification(e) does nothing even if e is justifiable.
@@ -59,14 +57,8 @@ rule
     <state>
       <slot> Slot </slot>
       <validators> Vs </validators>
-      <attested>
-        Epoch |-> Attestations
-        ...
-      </attested>
-      <justified>
-        Epoch |-> true
-        ...
-      </justified>
+      <attested> AM </attested>
+      <justified> JM </justified>
       <lastJustified> Epoch </lastJustified>
       ...
     </state>
@@ -83,6 +75,7 @@ rule
 requires isValidators(Vs)
  andBool Epoch >=Int 1
  andBool Epoch ==Int epochOf(Slot) -Int 1
- andBool isJustifiable(EpochBoundaryBlock, Attestations, Vs)
+ andBool isJustifiable(EpochBoundaryBlock, selectA(AM, Epoch), Vs)
+ andBool select(JM, Epoch) ==K true
 
 endmodule

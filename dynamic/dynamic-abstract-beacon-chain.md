@@ -43,9 +43,9 @@ configuration <T>
       <slot> 0 </slot>
       <validators> .Map </validators> // ValidatorID -> ValidatorState
       <slashedBalance> 0 </slashedBalance> // slashed balance
-      <attested> .Map </attested> // Epoch -> Attestations
-      <justified> .Map </justified> // Epoch -> Block option
-      <finalized> .Map </finalized> // Epoch -> Block option
+      <attested> .AMap </attested> // Epoch -> Attestations
+      <justified> .BMap </justified> // Epoch -> Block option
+      <finalized> .BMap </finalized> // Epoch -> Block option
       // derived info
       <lastBlock> (0,0) </lastBlock> // last block (slot, id)
       <lastJustified> 0 </lastJustified> // last justified (epoch, block id)
@@ -85,9 +85,9 @@ rule <k> init => . ... </k>
            90006 |-> #Validator(90006,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH))
          </validators>
          <slashedBalance> 0 </slashedBalance>
-         <attested> 0 |-> .Attestations </attested>
-         <justified> 0 |-> true </justified>
-         <finalized> 0 |-> true </finalized>
+         <attested> storeA(.AMap, 0, .Attestations) </attested>
+         <justified> store(.BMap, 0, true) </justified>
+         <finalized> store(.BMap, 0, true) </finalized>
          <lastBlock> (0,0) </lastBlock>
          <lastJustified> 0 </lastJustified>
          <lastFinalized> 0 </lastFinalized>
@@ -162,9 +162,9 @@ rule <k> processEpoch()
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
-       <justified> J => J[epochOf(Slot) <- false] </justified>
-       <finalized> F => F[epochOf(Slot) <- false] </finalized>
+       <attested> A => storeA(A, epochOf(Slot), .Attestations) </attested>
+       <justified> J => store(J, epochOf(Slot), false) </justified>
+       <finalized> F => store(F, epochOf(Slot), false) </finalized>
        ...
      </state>
      requires isFirstSlotOfEpoch(Slot)
@@ -179,15 +179,12 @@ rule <k> processEpoch() => . ... </k>
 ```k
 syntax KItem ::= processJustification(Int)
 rule <k> processJustification(Epoch)
-      => isJustifiable(EpochBoundaryBlock, Attestations, Validators)
+      => isJustifiable(EpochBoundaryBlock, selectA(AM, Epoch), Validators)
       ~> justify(Epoch) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <attested>
-         Epoch |-> Attestations:Attestations
-         ...
-       </attested>
+       <attested> AM:AMap </attested>
      //<validators> Validators </validators> // TODO: which validators to be considered?
        ...
      </state>
@@ -206,7 +203,7 @@ rule <k> true ~> justify(Epoch) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <justified> Epoch |-> (_ => true) ... </justified>
+       <justified> JM => store(JM, Epoch, true) </justified>
        <lastJustified> _ => Epoch </lastJustified>
        ...
      </state>
@@ -291,7 +288,7 @@ rule <k> true ~> finalize(Epoch) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <finalized> Epoch |-> (_ => true) ... </finalized>
+       <finalized> FM => store(FM, Epoch, true) </finalized>
        <lastFinalized> _ => Epoch </lastFinalized>
        ...
      </state>
@@ -299,7 +296,7 @@ rule <k> false ~> finalize(_) => . ... </k>
 
 // source : source+1 = target justified
 // source : source+1 : source+2 = target justified
-syntax Bool ::= isFinalizable(Int, Int, Map) [function] // not functional
+syntax Bool ::= isFinalizable(Int, Int, BMap) [function] // not functional
 rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
   => isJustified(SourceEpoch, Justified) andBool isJustified(TargetEpoch, Justified)
      andBool (
@@ -311,12 +308,8 @@ rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
 rule isFinalizable(SourceEpoch, TargetEpoch, Justified) => false
   requires TargetEpoch -Int SourceEpoch >Int 2
 
-syntax Bool ::= isJustified(Int, Map) [function] // not functional
-rule isJustified(Epoch, Justified) => {Justified[Epoch]}:>Bool
-/*
-rule isJustified(Epoch, Epoch |-> true  _:Map) => true
-rule isJustified(Epoch, Epoch |-> false _:Map) => false
-*/
+syntax Bool ::= isJustified(Int, BMap) [function] // not functional
+rule isJustified(Epoch, Justified) => select(Justified, Epoch)
 ```
 
 ### Validator Updates
@@ -548,10 +541,7 @@ rule <k> true ~> addAttestation(A) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <attested>
-         A.target_epoch |-> (As:Attestations => A As)
-         ...
-       </attested>
+       <attested> AM => storeA(AM, A.target_epoch, A selectA(AM, A.target_epoch)) </attested>
        ...
      </state>
 rule <k> false ~> addAttestation(_) => bottom ... </k>
