@@ -8,7 +8,7 @@ DEPS_DIR:=../deps
 K_SUBMODULE:=$(abspath $(DEPS_DIR)/k)
 PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
 
-K_RELEASE := $(K_SUBMODULE)/k-distribution/target/release/k
+K_RELEASE ?= $(K_SUBMODULE)/k-distribution/target/release/k
 K_BIN     := $(K_RELEASE)/bin
 K_LIB     := $(K_RELEASE)/lib
 export K_RELEASE
