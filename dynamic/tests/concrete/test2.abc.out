@@ -26,19 +26,19 @@
         0 |-> .Attestations
       </attested>
       <justified>
-        0 |-> some 0
+        0 |-> true
       </justified>
       <finalized>
-        0 |-> some 0
+        0 |-> true
       </finalized>
       <lastBlock>
         ( 0 , 0 )
       </lastBlock>
       <lastJustified>
-        ( 0 , 0 )
+        0
       </lastJustified>
       <lastFinalized>
-        ( 0 , 0 )
+        0
       </lastFinalized>
     </state> <state>
       <slot>
@@ -60,19 +60,19 @@
         0 |-> .Attestations
       </attested>
       <justified>
-        0 |-> some 0
+        0 |-> true
       </justified>
       <finalized>
-        0 |-> some 0
+        0 |-> true
       </finalized>
       <lastBlock>
         ( 1 , 10001 )
       </lastBlock>
       <lastJustified>
-        ( 0 , 0 )
+        0
       </lastJustified>
       <lastFinalized>
-        ( 0 , 0 )
+        0
       </lastFinalized>
     </state> <state>
       <slot>
@@ -94,19 +94,19 @@
         0 |-> .Attestations
       </attested>
       <justified>
-        0 |-> some 0
+        0 |-> true
       </justified>
       <finalized>
-        0 |-> some 0
+        0 |-> true
       </finalized>
       <lastBlock>
         ( 1 , 10001 )
       </lastBlock>
       <lastJustified>
-        ( 0 , 0 )
+        0
       </lastJustified>
       <lastFinalized>
-        ( 0 , 0 )
+        0
       </lastFinalized>
     </state> <state>
       <slot>
@@ -128,19 +128,19 @@
         0 |-> .Attestations
       </attested>
       <justified>
-        0 |-> some 0
+        0 |-> true
       </justified>
       <finalized>
-        0 |-> some 0
+        0 |-> true
       </finalized>
       <lastBlock>
         ( 1 , 10001 )
       </lastBlock>
       <lastJustified>
-        ( 0 , 0 )
+        0
       </lastJustified>
       <lastFinalized>
-        ( 0 , 0 )
+        0
       </lastFinalized>
     </state> <state>
       <slot>
@@ -163,21 +163,21 @@
         1 |-> .Attestations
       </attested>
       <justified>
-        0 |-> some 0
-        1 |-> none
+        0 |-> true
+        1 |-> false
       </justified>
       <finalized>
-        0 |-> some 0
-        1 |-> none
+        0 |-> true
+        1 |-> false
       </finalized>
       <lastBlock>
         ( 4 , 10004 )
       </lastBlock>
       <lastJustified>
-        ( 0 , 0 )
+        0
       </lastJustified>
       <lastFinalized>
-        ( 0 , 0 )
+        0
       </lastFinalized>
     </state> <state>
       <slot>
@@ -200,21 +200,21 @@
         1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
       </attested>
       <justified>
-        0 |-> some 0
-        1 |-> none
+        0 |-> true
+        1 |-> false
       </justified>
       <finalized>
-        0 |-> some 0
-        1 |-> none
+        0 |-> true
+        1 |-> false
       </finalized>
       <lastBlock>
         ( 5 , 10005 )
       </lastBlock>
       <lastJustified>
-        ( 0 , 0 )
+        0
       </lastJustified>
       <lastFinalized>
-        ( 0 , 0 )
+        0
       </lastFinalized>
     </state> <state>
       <slot>
@@ -237,21 +237,21 @@
         1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
       </attested>
       <justified>
-        0 |-> some 0
-        1 |-> none
+        0 |-> true
+        1 |-> false
       </justified>
       <finalized>
-        0 |-> some 0
-        1 |-> none
+        0 |-> true
+        1 |-> false
       </finalized>
       <lastBlock>
         ( 5 , 10005 )
       </lastBlock>
       <lastJustified>
-        ( 0 , 0 )
+        0
       </lastJustified>
       <lastFinalized>
-        ( 0 , 0 )
+        0
       </lastFinalized>
     </state> <state>
       <slot>
@@ -274,21 +274,21 @@
         1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Attestations
       </attested>
       <justified>
-        0 |-> some 0
-        1 |-> none
+        0 |-> true
+        1 |-> false
       </justified>
       <finalized>
-        0 |-> some 0
-        1 |-> none
+        0 |-> true
+        1 |-> false
       </finalized>
       <lastBlock>
         ( 5 , 10005 )
       </lastBlock>
       <lastJustified>
-        ( 0 , 0 )
+        0
       </lastJustified>
       <lastFinalized>
-        ( 0 , 0 )
+        0
       </lastFinalized>
     </state> <state>
       <slot>
@@ -312,23 +312,23 @@
         2 |-> .Attestations
       </attested>
       <justified>
-        0 |-> some 0
-        1 |-> some 10004
-        2 |-> none
+        0 |-> true
+        1 |-> true
+        2 |-> false
       </justified>
       <finalized>
-        0 |-> some 0
-        1 |-> none
-        2 |-> none
+        0 |-> true
+        1 |-> false
+        2 |-> false
       </finalized>
       <lastBlock>
         ( 5 , 10005 )
       </lastBlock>
       <lastJustified>
-        ( 1 , 10004 )
+        1
       </lastJustified>
       <lastFinalized>
-        ( 0 , 0 )
+        0
       </lastFinalized>
     </state>
   </states>
