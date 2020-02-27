@@ -21,6 +21,8 @@ rule C:Cmd Cs:Cmds => C ~> Cs
 // data structures
 syntax Pair ::= "(" Int "," Int ")"
 syntax Option ::= "none" | "some" Int
+
+syntax KItem ::= "bottom"
 ```
 
 ## Abstract Blocks

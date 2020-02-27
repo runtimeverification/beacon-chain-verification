@@ -11,7 +11,7 @@ rule
 <T>
   <k> case(isValidState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3JustifiedBlock,
                         Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2JustifiedBlock,
-                        PrevLastJustifiedEpoch, PrevLastJustifiedBlock))
+                        PrevLastJustifiedEpoch))
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1) => . </k>
   <currentSlot> firstSlotOf(Epoch) </currentSlot>
@@ -38,13 +38,11 @@ rule
         ...
       </attested>
       <justified>
-        Epoch3 |-> PrevEpoch3JustifiedBlock:Option
-        Epoch2 |-> PrevEpoch2JustifiedBlock:Option
+        Epoch3 |-> PrevEpoch3JustifiedBlock:Bool
+        Epoch2 |-> PrevEpoch2JustifiedBlock:Bool
         ...
       </justified>
-      <lastJustified>
-        (PrevLastJustifiedEpoch, PrevLastJustifiedBlock)
-      </lastJustified>
+      <lastJustified> PrevLastJustifiedEpoch </lastJustified>
       ...
     </state>
     <state>
@@ -56,15 +54,11 @@ rule
         ...
       </attested>
       <justified>
-        Epoch2 |-> (Epoch2JustifiedBlock:Option => ?NewEpoch2JustifiedBlock:Option)
-        Epoch1 |-> (none                        => ?NewEpoch1JustifiedBlock:Option)
+        Epoch2 |-> (Epoch2JustifiedBlock:Bool => ?NewEpoch2JustifiedBlock:Bool)
+        Epoch1 |-> (false                     => ?NewEpoch1JustifiedBlock:Bool)
         ...
       </justified>
-      <lastJustified>
-        (LastJustifiedEpoch, LastJustifiedBlock)
-      =>
-        (?NewLastJustifiedEpoch, ?NewLastJustifiedBlock)
-      </lastJustified>
+      <lastJustified> LastJustifiedEpoch => ?NewLastJustifiedEpoch </lastJustified>
       ...
     </state>
     ...
@@ -78,7 +72,6 @@ requires isValidators(Vs)
  // invariant
  andBool Epoch2JustifiedBlock ==K PrevEpoch2JustifiedBlock
  andBool LastJustifiedEpoch ==Int PrevLastJustifiedEpoch
- andBool LastJustifiedBlock ==Int PrevLastJustifiedBlock
  andBool Attestations2 ==K super(PrevAttestations2)
  // ranges
  andBool Epoch >=Int 0
@@ -89,6 +82,6 @@ requires isValidators(Vs)
 ensures  ?NewLastJustifiedEpoch >=Int 0
  andBool bool(isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2JustifiedBlock,
                            Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1JustifiedBlock,
-                           ?NewLastJustifiedEpoch, ?NewLastJustifiedBlock))
+                           ?NewLastJustifiedEpoch))
 
 endmodule

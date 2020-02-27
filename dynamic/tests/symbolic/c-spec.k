@@ -19,14 +19,10 @@ rule
         ...
       </attested>
       <justified>
-        Epoch |-> (none => ?EpochJustifiedBlock:Option)
+        Epoch |-> (false => ?EpochJustifiedBlock:Bool)
         ...
       </justified>
-      <lastJustified>
-        (LastJustifiedEpoch, LastJustifiedBlock)
-      =>
-        (?NewJustifiedEpoch, ?NewJustifiedBlock)
-      </lastJustified>
+      <lastJustified> LastJustifiedEpoch => ?NewJustifiedEpoch </lastJustified>
       ...
     </state>
     <state>
@@ -45,14 +41,12 @@ requires isValidators(Vs)
  andBool Epoch >Int LastJustifiedEpoch
 ensures (
             isJustifiable(EpochBoundaryBlock, Attestations, Vs)
-    andBool ?EpochJustifiedBlock ==K some EpochBoundaryBlock
+    andBool ?EpochJustifiedBlock ==K true
     andBool ?NewJustifiedEpoch ==Int Epoch
-    andBool ?NewJustifiedBlock ==Int EpochBoundaryBlock
 ) orBool (
     notBool isJustifiable(EpochBoundaryBlock, Attestations, Vs)
-    andBool ?EpochJustifiedBlock ==K none
+    andBool ?EpochJustifiedBlock ==K false
     andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
-    andBool ?NewJustifiedBlock ==Int LastJustifiedBlock
 )
 
 // if e has already been justified,
@@ -70,12 +64,10 @@ rule
         ...
       </attested>
       <justified>
-        Epoch |-> some EpochBoundaryBlock
+        Epoch |-> true
         ...
       </justified>
-      <lastJustified>
-        (Epoch, EpochBoundaryBlock)
-      </lastJustified>
+      <lastJustified> Epoch </lastJustified>
       ...
     </state>
     <state>

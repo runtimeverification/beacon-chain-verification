@@ -19,8 +19,8 @@ rule
       <justified> Js </justified>
       <finalized> Fs </finalized>
       <lastBlock> (LastBlockSlot, LastBlockID) </lastBlock>
-      <lastJustified> (LastJustifiedEpoch, LastJustifiedBlock) </lastJustified>
-      <lastFinalized> (LastFinalizedEpoch, LastFinalizedBlock) </lastFinalized>
+      <lastJustified> LastJustifiedEpoch </lastJustified>
+      <lastFinalized> LastFinalizedEpoch </lastFinalized>
     </state>
   </states>
   <blocks>
@@ -51,8 +51,8 @@ rule
       <justified> Js </justified>
       <finalized> Fs </finalized>
       <lastBlock> (LastBlockSlot, LastBlockID) </lastBlock>
-      <lastJustified> (LastJustifiedEpoch, LastJustifiedBlock) </lastJustified>
-      <lastFinalized> (LastFinalizedEpoch, LastFinalizedBlock) </lastFinalized>
+      <lastJustified> LastJustifiedEpoch </lastJustified>
+      <lastFinalized> LastFinalizedEpoch </lastFinalized>
     </state>
   </states>
   <blocks>

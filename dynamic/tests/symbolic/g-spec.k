@@ -13,20 +13,18 @@ rule
                 notBool isJustifiable(Epoch3BoundaryBlock, PrevAttestations3, Vs)
         andBool notBool isJustifiable(Epoch2BoundaryBlock, PrevAttestations2, Vs)
         andBool PrevLastJustifiedEpoch <Int Epoch3
-        andBool PrevEpoch3JustifiedBlock ==K none
-        andBool PrevEpoch2JustifiedBlock ==K none
+        andBool PrevEpoch3JustifiedBlock ==K false
+        andBool PrevEpoch2JustifiedBlock ==K false
       ,
                         isJustifiable(Epoch3BoundaryBlock, PrevAttestations3, Vs)
         andBool notBool isJustifiable(Epoch2BoundaryBlock, PrevAttestations2, Vs)
         andBool PrevLastJustifiedEpoch ==Int Epoch3
-        andBool PrevLastJustifiedBlock ==Int Epoch3BoundaryBlock
-        andBool PrevEpoch3JustifiedBlock ==K some Epoch3BoundaryBlock
-        andBool PrevEpoch2JustifiedBlock ==K none
+        andBool PrevEpoch3JustifiedBlock ==K true
+        andBool PrevEpoch2JustifiedBlock ==K false
       ,
                         isJustifiable(Epoch2BoundaryBlock, PrevAttestations2, Vs)
         andBool PrevLastJustifiedEpoch ==Int Epoch2
-        andBool PrevLastJustifiedBlock ==Int Epoch2BoundaryBlock
-        andBool PrevEpoch2JustifiedBlock ==K some Epoch2BoundaryBlock
+        andBool PrevEpoch2JustifiedBlock ==K true
       ))
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1) => . </k>
@@ -54,13 +52,11 @@ rule
         ...
       </attested>
       <justified>
-        Epoch3 |-> PrevEpoch3JustifiedBlock:Option
-        Epoch2 |-> PrevEpoch2JustifiedBlock:Option
+        Epoch3 |-> PrevEpoch3JustifiedBlock:Bool
+        Epoch2 |-> PrevEpoch2JustifiedBlock:Bool
         ...
       </justified>
-      <lastJustified>
-        (PrevLastJustifiedEpoch, PrevLastJustifiedBlock)
-      </lastJustified>
+      <lastJustified> PrevLastJustifiedEpoch </lastJustified>
       ...
     </state>
     <state>
@@ -72,15 +68,11 @@ rule
         ...
       </attested>
       <justified>
-        Epoch2 |-> (Epoch2JustifiedBlock:Option => ?NewEpoch2JustifiedBlock:Option)
-        Epoch1 |-> (none                        => ?NewEpoch1JustifiedBlock:Option)
+        Epoch2 |-> (Epoch2JustifiedBlock:Bool => ?NewEpoch2JustifiedBlock:Bool)
+        Epoch1 |-> (false                     => ?NewEpoch1JustifiedBlock:Bool)
         ...
       </justified>
-      <lastJustified>
-        (LastJustifiedEpoch, LastJustifiedBlock)
-      =>
-        (?NewLastJustifiedEpoch, ?NewLastJustifiedBlock)
-      </lastJustified>
+      <lastJustified> LastJustifiedEpoch => ?NewLastJustifiedEpoch </lastJustified>
       ...
     </state>
     ...
@@ -94,7 +86,6 @@ requires isValidators(Vs)
  //
  andBool Epoch2JustifiedBlock ==K PrevEpoch2JustifiedBlock
  andBool LastJustifiedEpoch ==Int PrevLastJustifiedEpoch
- andBool LastJustifiedBlock ==Int PrevLastJustifiedBlock
  // ranges
  andBool Epoch >=Int 0
  andBool Epoch1 >=Int 0
@@ -108,20 +99,18 @@ ensures ?NewLastJustifiedEpoch >=Int 0 andBool
                 notBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
         andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
         andBool ?NewLastJustifiedEpoch <Int Epoch2
-        andBool ?NewEpoch2JustifiedBlock ==K none
-        andBool ?NewEpoch1JustifiedBlock ==K none
+        andBool ?NewEpoch2JustifiedBlock ==K false
+        andBool ?NewEpoch1JustifiedBlock ==K false
       ) orBool (
                         isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
         andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
         andBool ?NewLastJustifiedEpoch ==Int Epoch2
-        andBool ?NewLastJustifiedBlock ==Int Epoch2BoundaryBlock
-        andBool ?NewEpoch2JustifiedBlock ==K some Epoch2BoundaryBlock
-        andBool ?NewEpoch1JustifiedBlock ==K none
+        andBool ?NewEpoch2JustifiedBlock ==K true
+        andBool ?NewEpoch1JustifiedBlock ==K false
       ) orBool (
                         isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
         andBool ?NewLastJustifiedEpoch ==Int Epoch1
-        andBool ?NewLastJustifiedBlock ==Int Epoch1BoundaryBlock
-        andBool ?NewEpoch1JustifiedBlock ==K some Epoch1BoundaryBlock
+        andBool ?NewEpoch1JustifiedBlock ==K true
       )
 )
 

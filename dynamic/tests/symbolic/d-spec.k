@@ -10,11 +10,10 @@ rule
 <T>
   <k> case(xor2(
                 LastJustifiedEpoch <Int Epoch
-        andBool OldEpochJustifiedBlock ==K none
+        andBool OldEpochJustifiedBlock ==K false
       ,
                 LastJustifiedEpoch ==Int Epoch
-        andBool OldEpochJustifiedBlock ==K some EpochBoundaryBlock
-        andBool LastJustifiedBlock ==K EpochBoundaryBlock
+        andBool OldEpochJustifiedBlock ==K true
       ))
    ~> processJustification(Epoch) => . </k>
   <currentSlot> Slot </currentSlot>
@@ -27,14 +26,10 @@ rule
         ...
       </attested>
       <justified>
-        Epoch |-> (OldEpochJustifiedBlock:Option => ?NewEpochJustifiedBlock:Option)
+        Epoch |-> (OldEpochJustifiedBlock:Bool => ?NewEpochJustifiedBlock:Bool)
         ...
       </justified>
-      <lastJustified>
-        (LastJustifiedEpoch, LastJustifiedBlock)
-      =>
-        (?NewJustifiedEpoch, ?NewJustifiedBlock)
-      </lastJustified>
+      <lastJustified> LastJustifiedEpoch => ?NewJustifiedEpoch </lastJustified>
       ...
     </state>
     <state>
@@ -54,21 +49,18 @@ ensures (
     LastJustifiedEpoch <Int Epoch andBool (
         (
                     isJustifiable(EpochBoundaryBlock, Attestations, Vs)
-            andBool ?NewEpochJustifiedBlock ==K some EpochBoundaryBlock
+            andBool ?NewEpochJustifiedBlock ==K true
             andBool ?NewJustifiedEpoch ==Int Epoch
-            andBool ?NewJustifiedBlock ==Int EpochBoundaryBlock
         ) orBool (
             notBool isJustifiable(EpochBoundaryBlock, Attestations, Vs)
-            andBool ?NewEpochJustifiedBlock ==K none
+            andBool ?NewEpochJustifiedBlock ==K false
             andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
-            andBool ?NewJustifiedBlock ==Int LastJustifiedBlock
         )
     )
 ) orBool (
     LastJustifiedEpoch ==Int Epoch andBool (
                 ?NewEpochJustifiedBlock ==K OldEpochJustifiedBlock
         andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
-        andBool ?NewJustifiedBlock ==Int LastJustifiedBlock
     )
 )
 
