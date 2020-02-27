@@ -36,16 +36,27 @@ rule case(xor5(_, _, C, _, _)) => . requires C [trusted]
 rule case(xor5(_, _, _, C, _)) => . requires C [trusted]
 rule case(xor5(_, _, _, _, C)) => . requires C [trusted]
 
+/* TODO: fix rule automaton bug
+rule case(xor6(C, _, _, _, _, _)) => . requires C [trusted]
+rule case(xor6(_, C, _, _, _, _)) => . requires C [trusted]
+rule case(xor6(_, _, C, _, _, _)) => . requires C [trusted]
+rule case(xor6(_, _, _, C, _, _)) => . requires C [trusted]
+rule case(xor6(_, _, _, _, C, _)) => . requires C [trusted]
+rule case(xor6(_, _, _, _, _, C)) => . requires C [trusted]
+*/
+
 syntax Pred ::= xor2(Bool, Bool)
               | xor3(Bool, Bool, Bool)
               | xor4(Bool, Bool, Bool, Bool)
               | xor5(Bool, Bool, Bool, Bool, Bool)
+              | xor6(Bool, Bool, Bool, Bool, Bool, Bool)
 
 syntax Bool ::= bool(Pred) [function]
 rule bool(xor2(C1, C2)) => C1 orBool C2
 rule bool(xor3(C1, C2, C3)) => C1 orBool C2 orBool C3
 rule bool(xor4(C1, C2, C3, C4)) => C1 orBool C2 orBool C3 orBool C4
 rule bool(xor5(C1, C2, C3, C4, C5)) => C1 orBool C2 orBool C3 orBool C4 orBool C5
+rule bool(xor6(C1, C2, C3, C4, C5, C6)) => C1 orBool C2 orBool C3 orBool C4 orBool C5 orBool C6
 
 syntax Attestations ::= super(Attestations) [function, no-evaluators]
 rule isJustifiable(B, super(As), Vs) => true

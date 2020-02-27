@@ -1,0 +1,83 @@
+1. e-1 -> e-2
+2. e-1 -> e-3
+3. e-1 -> e-4+
+
+a. e-2 -> e-3
+b. e-2 -> e-4
+c. e-2 -> e-5+
+
+
+1a. (e-2 already justified, thus e-3 already finalized)
+- e-1 j <=> e-2 f
+- e-3 f
+- e-4 stay
+
+1b. (e-2 already justified)
+- e-1 j <=> e-2 f
+- e-3 j <=> e-4 f
+- e-3 nf
+
+1c. (e-2 already justified)
+- e-1 j <=> e-2 f
+- e-3 nf
+- e-4 nf
+
+2a. (e-1 doesn't affect)
+- e-2 j <=> e-3 f
+- e-2 nf
+- e-4 stay
+
+2b. (e-3 already justified)
+- e-2 j <=> e-4 f
+- e-1 j and e-2 j <=> e-3 f
+- e-2 nf
+
+2c.
+- e-1 j and e-2 j <=> e-3 f
+- e-2 nf
+- e-4 nf
+
+3a. impossible
+
+3b. (e-3 cannot be justified)
+- nothing finalized
+
+3c.
+- nothing finalized
+
+
+
+
+////
+
+
+e-1 -> e-2
+- e-2 1-f: iff e-1 j
+- e-3 2-f: false
+
+e-1 -> e-3
+- e-2 1-f: false
+- e-3 2-f: iff e-1 j and e-2 j
+
+e-1 -> e-4+
+- e-2 1-f: false
+- e-3 2-f: false
+
+
+e-2 -> e-3
+- e-3 1-f: iff e-2 j
+- e-4 2-f: false
+
+e-2 -> e-4
+- e-3 1-f: false
+- e-4 2-f: iff e-2 j and e-3 j
+
+e-2 -> e-5+
+- e-3 1-f: false
+- e-4 2-f: false
+
+
+
+e-2 f: iff e-2 1-f
+e-3 f: iff e-3 1-f or e-3 2-f
+e-4 f: iff e-4 2-f

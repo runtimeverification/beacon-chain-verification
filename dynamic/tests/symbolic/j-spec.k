@@ -1,6 +1,6 @@
 require "../../verification.k"
 
-module PROCESS-FINALIZATION-SPEC
+module J-SPEC
 
 imports VERIFICATION
 
@@ -193,7 +193,7 @@ andBool bool(xor2(
         ,
                     ?NewEpoch2Finalized ==K false
             andBool (
-                    Epoch1LastJustifiedEpoch =/=Int Epoch2
+                    Epoch1LastJustifiedEpoch <Int Epoch2
              orBool Epoch1Justified ==K false
             )
         ))
@@ -213,7 +213,7 @@ andBool bool(xor6(
         ,
                     ?NewEpoch3Finalized ==K false andBool Epoch3Finalized ==K false
             andBool Epoch1LastJustifiedEpoch =/=Int Epoch3
-            andBool Epoch2LastJustifiedEpoch =/=Int Epoch3
+            andBool Epoch2LastJustifiedEpoch <Int Epoch3
         ,
                     ?NewEpoch3Finalized ==K false andBool Epoch3Finalized ==K false
             andBool Epoch1LastJustifiedEpoch ==Int Epoch3
