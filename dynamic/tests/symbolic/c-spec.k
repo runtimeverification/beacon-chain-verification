@@ -45,7 +45,7 @@ ensures (
     andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
 )
 )
- andBool JM ==BMap ?JM2 except SetItem(Epoch)
+// andBool JM ==BMap ?JM2 except SetItem(Epoch)
 
 // if e has already been justified,
 // processJustification(e) does nothing even if e is justifiable.
@@ -58,7 +58,7 @@ rule
       <slot> Slot </slot>
       <validators> Vs </validators>
       <attested> AM </attested>
-      <justified> JM </justified>
+      <justified> JM => ?JM2 </justified>
       <lastJustified> Epoch </lastJustified>
       ...
     </state>
@@ -77,5 +77,7 @@ requires isValidators(Vs)
  andBool Epoch ==Int epochOf(Slot) -Int 1
  andBool isJustifiable(EpochBoundaryBlock, selectA(AM, Epoch), Vs)
  andBool select(JM, Epoch) ==K true
+ensures  select(?JM2, Epoch) ==K true
+// andBool JM ==BMap ?JM2 except SetItem(Epoch)
 
 endmodule

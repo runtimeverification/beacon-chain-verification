@@ -35,7 +35,7 @@ requires Slot ==Int firstSlotOf(Epoch +Int 1)
  //
  andBool select(JM, Epoch) ==K false
 ensures  select(?JM2, Epoch) ==K true
- andBool JM ==BMap ?JM2 except SetItem(Epoch)
+// andBool JM ==BMap ?JM2 except SetItem(Epoch)
 // andBool (?X:Int ==Int Epoch orBool select(JM, ?X) ==K select(?JM2, ?X))
 
 endmodule

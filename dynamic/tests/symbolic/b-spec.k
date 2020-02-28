@@ -34,6 +34,6 @@ requires Slot ==Int firstSlotOf(Epoch +Int 1)
  andBool isJustifiable(EpochBoundaryBlock, selectA(AM, Epoch), Vs)
  andBool select(JM, Epoch) ==K false
 ensures  select(?JM2, Epoch) ==K true
- andBool JM ==BMap ?JM2 except SetItem(Epoch)
+// andBool JM ==BMap ?JM2 except SetItem(Epoch)
 
 endmodule
