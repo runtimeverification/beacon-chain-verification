@@ -29,6 +29,7 @@ Definition State := {fset Vote}.
 Definition vote_msg (st:State) v s t (s_h t_h:nat) : bool
   := (v,s,t,s_h,t_h) \in st .
 
+(* Vote projection operations *)
 Definition vote_val (v:Vote) : Validator :=
   match v with
     (x,_,_,_,_) => x
@@ -54,6 +55,7 @@ Definition vote_target_height (v:Vote) : nat :=
     (_,_,_,_,t_h) => t_h
   end.
 
+(* Reconstructing a vote using its projections *)
 Lemma vote_unfold (vote:Vote):
   vote = ((vote_val           vote),
           (vote_source        vote),
