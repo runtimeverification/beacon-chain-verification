@@ -58,6 +58,12 @@ rule bool(xor4(C1, C2, C3, C4)) => C1 orBool C2 orBool C3 orBool C4
 rule bool(xor5(C1, C2, C3, C4, C5)) => C1 orBool C2 orBool C3 orBool C4 orBool C5
 rule bool(xor6(C1, C2, C3, C4, C5, C6)) => C1 orBool C2 orBool C3 orBool C4 orBool C5 orBool C6
 
+syntax Bool ::= implies(Bool, Bool) [function]
+rule implies(A, B) => notBool A orBool B
+
+syntax Bool ::= iff(Bool, Bool) [function]
+rule iff(A, B) => implies(A, B) andBool implies(B, A)
+
 syntax Attestations ::= super(Attestations) [function, no-evaluators]
 rule isJustifiable(B, super(As), Vs) => true
     requires isJustifiable(B, As, Vs)
@@ -85,6 +91,23 @@ rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justifi
         andBool LastJustifiedEpoch ==Int Epoch1
         andBool Epoch1Justified ==K true
      )
+
+
+syntax Bool ::= isGoodState(Int, Int, Attestations, Map, Bool,
+                            Int, Int, Attestations, Map, Bool,
+                            Int) [function]
+rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
+                 Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
+                 LastJustifiedEpoch)
+  => // justification of e-2 and e-1
+             iff(Epoch2Justified ==K true, isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2))
+     andBool iff(Epoch1Justified ==K true, isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1))
+     // last justified epoch
+     andBool implies(LastJustifiedEpoch  <Int Epoch2, Epoch2Justified ==K false andBool Epoch1Justified ==K false)
+     andBool implies(LastJustifiedEpoch ==Int Epoch2, Epoch2Justified ==K true  andBool Epoch1Justified ==K false)
+     andBool implies(LastJustifiedEpoch ==Int Epoch1,                                   Epoch1Justified ==K true )
+     andBool         LastJustifiedEpoch <=Int Epoch1
+
 
 /*
 
