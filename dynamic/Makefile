@@ -67,24 +67,27 @@ KOMPILE_OPTS      :=
 k_files := $(MAIN_DEFN_FILE).k          \
            $(MAIN_DEFN_FILE)-syntax.k
 
-static_dir      := $(DEFN_DIR)/static
-static_java_dir := $(DEFN_DIR)/static-java
-dynamic_dir     := $(DEFN_DIR)/dynamic
+static_dir              := $(DEFN_DIR)/static
+static_verification_dir := $(DEFN_DIR)/static-verification
+static_java_dir         := $(DEFN_DIR)/static-java
+dynamic_dir             := $(DEFN_DIR)/dynamic
 
 static_files      := $(patsubst %,$(static_dir)/%,$(k_files))
 static_java_files := $(patsubst %,$(static_java_dir)/%,$(k_files))
 dynamic_files     := $(patsubst %,$(dynamic_dir)/%,$(k_files))
 
-static_kompiled      := $(static_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-static_java_kompiled := $(static_java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
-dynamic_kompiled     := $(dynamic_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+static_kompiled              := $(static_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+static_verification_kompiled := $(static_verification_dir)/verification-kompiled/definition.kore
+static_java_kompiled         := $(static_java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
+dynamic_kompiled             := $(dynamic_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 
-.PHONY: build build-static build-static-java build-dynamic
+.PHONY: build build-static build-static-verification build-static-java build-dynamic
 
 build: build-static build-static-java build-dynamic
-build-static:      $(static_kompiled)
-build-static-java: $(static_java_kompiled)
-build-dynamic:     $(dynamic_kompiled)
+build-static:              $(static_kompiled)
+build-static-verification: $(static_verification_kompiled)
+build-static-java:         $(static_java_kompiled)
+build-dynamic:             $(dynamic_kompiled)
 
 # Generate definitions from source files
 
@@ -118,6 +121,13 @@ $(static_kompiled): $(static_files)
 	                 --syntax-module $(SYNTAX_MODULE) $(static_dir)/$(MAIN_DEFN_FILE).k \
 	                 --directory $(static_dir) -I $(static_dir)                         \
 	                 --emit-json                                                        \
+	                 $(KOMPILE_OPTS)
+
+$(static_verification_kompiled): $(static_files) verification.k
+	$(K_BIN)/kompile --debug --main-module VERIFICATION --backend haskell    \
+	                 --syntax-module $(SYNTAX_MODULE) verification.k         \
+	                 --directory $(static_verification_dir) -I $(static_dir) \
+	                 --emit-json                                             \
 	                 $(KOMPILE_OPTS)
 
 $(static_java_kompiled): $(static_java_files)
