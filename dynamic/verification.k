@@ -92,6 +92,23 @@ rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justifi
         andBool Epoch1Justified ==K true
      )
 
+
+syntax Bool ::= isGoodState(Int, Int, Attestations, Map, Bool,
+                            Int, Int, Attestations, Map, Bool,
+                            Int) [function]
+rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
+                 Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
+                 LastJustifiedEpoch)
+  => // justification of e-2 and e-1
+             iff(Epoch2Justified ==K true, isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2))
+     andBool iff(Epoch1Justified ==K true, isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1))
+     // last justified epoch
+     andBool implies(LastJustifiedEpoch  <Int Epoch2, Epoch2Justified ==K false andBool Epoch1Justified ==K false)
+     andBool implies(LastJustifiedEpoch ==Int Epoch2, Epoch2Justified ==K true  andBool Epoch1Justified ==K false)
+     andBool implies(LastJustifiedEpoch ==Int Epoch1,                                   Epoch1Justified ==K true )
+     andBool         LastJustifiedEpoch <=Int Epoch1
+
+
 /*
 
 

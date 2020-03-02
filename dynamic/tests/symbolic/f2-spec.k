@@ -1,6 +1,6 @@
 require "../../verification.k"
 
-module F-SPEC
+module F2-SPEC
 
 imports VERIFICATION
 
@@ -10,7 +10,7 @@ imports VERIFICATION
 rule
 <T>
   <k> case(xor2(
-        LastJustifiedEpoch <Int Epoch2
+        LastJustifiedEpoch  <Int Epoch2
       ,
         LastJustifiedEpoch ==Int Epoch2
       ))
@@ -73,35 +73,16 @@ requires isValidators(Vs)
  andBool LastJustifiedEpoch >=Int 0
  andBool Attestations2 ==K super(PrevAttestations2)
  ensures ?NewJustifiedEpoch >=Int 0
+//
 // ensures
-// justification of e - 2
-andBool bool(xor2(
-            isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
-    andBool ?NewEpoch2JustifiedBlock ==K true
-,
-    notBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
-    andBool ?NewEpoch2JustifiedBlock ==K false
-))
-// justification of e - 1
-andBool bool(xor2(
-            isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
-    andBool ?NewEpoch1JustifiedBlock ==K true
-,
-    notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
-    andBool ?NewEpoch1JustifiedBlock ==K false
-))
+//
+// justification of e-2 and e-1
+andBool iff(?NewEpoch2JustifiedBlock ==K true, isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs))
+andBool iff(?NewEpoch1JustifiedBlock ==K true, isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs))
 // last justified epoch
-andBool bool(xor3(
-            ?NewEpoch2JustifiedBlock ==K false
-    andBool ?NewEpoch1JustifiedBlock ==K false
-    andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
-,
-            ?NewEpoch2JustifiedBlock ==K true
-    andBool ?NewEpoch1JustifiedBlock ==K false
-    andBool ?NewJustifiedEpoch ==Int Epoch2
-,
-            ?NewEpoch1JustifiedBlock ==K true
-    andBool ?NewJustifiedEpoch ==Int Epoch1
-))
+andBool implies(?NewJustifiedEpoch  <Int Epoch2, ?NewEpoch2JustifiedBlock ==K false andBool ?NewEpoch1JustifiedBlock ==K false)
+andBool implies(?NewJustifiedEpoch ==Int Epoch2, ?NewEpoch2JustifiedBlock ==K true  andBool ?NewEpoch1JustifiedBlock ==K false)
+andBool implies(?NewJustifiedEpoch ==Int Epoch1,                                            ?NewEpoch1JustifiedBlock ==K true )
+andBool         ?NewJustifiedEpoch <=Int Epoch1
 
 endmodule

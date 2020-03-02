@@ -10,10 +10,8 @@ rule
 <T>
   <k> case(xor2(
                 LastJustifiedEpoch <Int Epoch
-        andBool OldEpochJustifiedBlock ==K false
       ,
                 LastJustifiedEpoch ==Int Epoch
-        andBool OldEpochJustifiedBlock ==K true
       ))
    ~> processJustification(Epoch) => . </k>
   <currentSlot> Slot </currentSlot>

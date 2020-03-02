@@ -1,6 +1,6 @@
 require "../../verification.k"
 
-module G-SPEC
+module G2-SPEC
 
 imports VERIFICATION
 
@@ -9,10 +9,8 @@ imports VERIFICATION
 // where e is the current epoch.
 rule
 <T>
-  <k> case(xor3(
-        PrevLastJustifiedEpoch  <Int Epoch3
-      ,
-        PrevLastJustifiedEpoch ==Int Epoch3
+  <k> case(xor2(
+        PrevLastJustifiedEpoch  <Int Epoch2
       ,
         PrevLastJustifiedEpoch ==Int Epoch2
       ))
