@@ -47,8 +47,8 @@ requires isValidators(Vs)
  andBool Epoch ==Int epochOf(Slot) -Int 1
  // invariant
  andBool LastJustifiedEpoch <=Int Epoch
- andBool ( notBool LastJustifiedEpoch  <Int Epoch orBool OldEpochJustifiedBlock ==K false )
- andBool ( notBool LastJustifiedEpoch ==Int Epoch orBool OldEpochJustifiedBlock ==K true )
+ andBool implies(LastJustifiedEpoch  <Int Epoch, OldEpochJustifiedBlock ==K false)
+ andBool implies(LastJustifiedEpoch ==Int Epoch, OldEpochJustifiedBlock ==K true)
 ensures (
     LastJustifiedEpoch <Int Epoch andBool (
         (
