@@ -92,7 +92,7 @@ rule
   ...
 </T>
 requires isValidators(Vs)
- andBool isJustifiable(GenesisBlock, PrevAttestations0, Vs) // because the genesis block is justified by default
+ andBool isJustifiable(0, GenesisBlock, PrevAttestations0, Vs) // because the genesis block is justified by default
  andBool Attestations0 ==K super(PrevAttestations0)
  ensures isGoodState(0, GenesisBlock,        Attestations0, Vs, ?NewEpochJustified0,
                      1, EpochBoundaryBlock1, Attestations1, Vs, ?NewEpochJustified1,

@@ -59,7 +59,7 @@ requires isValidators(Vs)
  andBool LastJustifiedEpoch <=Int Epoch2
  andBool implies(LastJustifiedEpoch  <Int Epoch2, OldEpoch2JustifiedBlock ==K false)
  andBool implies(LastJustifiedEpoch ==Int Epoch2, OldEpoch2JustifiedBlock ==K true)
- andBool implies(OldEpoch2JustifiedBlock ==K true, isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)) // TODO: add relaxation lemma
+ andBool implies(OldEpoch2JustifiedBlock ==K true, isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs)) // NOTE: this condition is relaxed in f-spec.k
  // ranges
  andBool Slot >=Int 0
  andBool Epoch1 >=Int 0
@@ -69,18 +69,18 @@ requires isValidators(Vs)
 // ensures
 // justification of e - 2
 andBool bool(xor2(
-            isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
+            isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs)
     andBool ?NewEpoch2JustifiedBlock ==K true
 ,
-    notBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs)
+    notBool isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs)
     andBool ?NewEpoch2JustifiedBlock ==K false
 ))
 // justification of e - 1
 andBool bool(xor2(
-            isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
+            isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs)
     andBool ?NewEpoch1JustifiedBlock ==K true
 ,
-    notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs)
+    notBool isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs)
     andBool ?NewEpoch1JustifiedBlock ==K false
 ))
 // last justified epoch

@@ -65,7 +65,7 @@ requires isValidators(Vs)
  andBool LastJustifiedEpoch <=Int Epoch2
  andBool implies(LastJustifiedEpoch  <Int Epoch2, OldEpoch2JustifiedBlock ==K false)
  andBool implies(LastJustifiedEpoch ==Int Epoch2, OldEpoch2JustifiedBlock ==K true)
- andBool implies(OldEpoch2JustifiedBlock ==K true, isJustifiable(Epoch2BoundaryBlock, PrevAttestations2, Vs))
+ andBool implies(OldEpoch2JustifiedBlock ==K true, isJustifiable(Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs))
  // ranges
  andBool Epoch >=Int 0
  andBool Epoch1 >=Int 0
@@ -77,8 +77,8 @@ requires isValidators(Vs)
 // ensures
 //
 // justification of e-2 and e-1
-andBool iff(?NewEpoch2JustifiedBlock ==K true, isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs))
-andBool iff(?NewEpoch1JustifiedBlock ==K true, isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs))
+andBool iff(?NewEpoch2JustifiedBlock ==K true, isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs))
+andBool iff(?NewEpoch1JustifiedBlock ==K true, isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs))
 // last justified epoch
 andBool implies(?NewJustifiedEpoch  <Int Epoch2, ?NewEpoch2JustifiedBlock ==K false andBool ?NewEpoch1JustifiedBlock ==K false)
 andBool implies(?NewJustifiedEpoch ==Int Epoch2, ?NewEpoch2JustifiedBlock ==K true  andBool ?NewEpoch1JustifiedBlock ==K false)

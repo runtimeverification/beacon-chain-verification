@@ -50,11 +50,11 @@ requires isValidators(Vs)
 ensures (
     LastJustifiedEpoch <Int Epoch andBool (
         (
-                    isJustifiable(EpochBoundaryBlock, Attestations, Vs)
+                    isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Vs)
             andBool ?NewEpochJustifiedBlock ==K true
             andBool ?NewJustifiedEpoch ==Int Epoch
         ) orBool (
-            notBool isJustifiable(EpochBoundaryBlock, Attestations, Vs)
+            notBool isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Vs)
             andBool ?NewEpochJustifiedBlock ==K false
             andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
         )

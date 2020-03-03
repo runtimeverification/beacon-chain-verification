@@ -65,8 +65,8 @@ syntax Bool ::= iff(Bool, Bool) [function]
 rule iff(A, B) => implies(A, B) andBool implies(B, A)
 
 syntax Attestations ::= super(Attestations) [function, no-evaluators]
-rule isJustifiable(B, super(As), Vs) => true
-    requires isJustifiable(B, As, Vs)
+rule isJustifiable(E, B, super(As), Vs) => true
+    requires isJustifiable(E, B, As, Vs)
 
 syntax Pred ::= isValidState(Int, Int, Attestations, Map, Bool,
                              Int, Int, Attestations, Map, Bool,
@@ -75,19 +75,19 @@ rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justifi
                   Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
                   LastJustifiedEpoch)
   => xor3(
-                notBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2)
-        andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
+                notBool isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2)
+        andBool notBool isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
         andBool LastJustifiedEpoch <Int Epoch2
         andBool Epoch2Justified ==K false
         andBool Epoch1Justified ==K false
      ,
-                        isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2)
-        andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
+                        isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2)
+        andBool notBool isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
         andBool LastJustifiedEpoch ==Int Epoch2
         andBool Epoch2Justified ==K true
         andBool Epoch1Justified ==K false
      ,
-                        isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
+                        isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
         andBool LastJustifiedEpoch ==Int Epoch1
         andBool Epoch1Justified ==K true
      )
@@ -100,8 +100,8 @@ rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justifie
                  Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
                  LastJustifiedEpoch)
   => // justification of e-2 and e-1
-             iff(Epoch2Justified ==K true, isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2))
-     andBool iff(Epoch1Justified ==K true, isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1))
+             iff(Epoch2Justified ==K true, isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2))
+     andBool iff(Epoch1Justified ==K true, isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1))
      // last justified epoch
      andBool implies(LastJustifiedEpoch  <Int Epoch2, Epoch2Justified ==K false andBool Epoch1Justified ==K false)
      andBool implies(LastJustifiedEpoch ==Int Epoch2, Epoch2Justified ==K true  andBool Epoch1Justified ==K false)
