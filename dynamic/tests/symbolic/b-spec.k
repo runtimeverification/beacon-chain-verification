@@ -37,6 +37,6 @@ rule
 requires Slot ==Int firstSlotOf(Epoch +Int 1)
  andBool Epoch >=Int 1
  andBool isValidators(Vs)
- andBool isJustifiable(EpochBoundaryBlock, Attestations, Vs)
+ andBool isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Vs)
 
 endmodule

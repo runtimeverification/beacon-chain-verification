@@ -92,11 +92,13 @@ rule
   ...
 </T>
 requires isValidators(Vs)
- andBool isJustifiable(GenesisBlock, PrevAttestations0, Vs) // because the genesis block is justified by default
+ andBool isJustifiable(0, GenesisBlock, PrevAttestations0, Vs) // because the genesis block is justified by default
  andBool Attestations0 ==K super(PrevAttestations0)
  ensures isGoodState(0, GenesisBlock,        Attestations0, Vs, ?NewEpochJustified0,
                      1, EpochBoundaryBlock1, Attestations1, Vs, ?NewEpochJustified1,
                      ?NewLastJustifiedEpoch)
+ andBool ?NewEpochJustified0 ==K true
+ andBool ?NewLastJustifiedEpoch >=Int 0
 
 /*
 For the given current epoch e >= 3,
@@ -201,5 +203,7 @@ requires isValidators(Vs)
  andBool isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2Justified,
                      Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1Justified,
                      ?NewLastJustifiedEpoch)
+ andBool implies(Epoch2Justified, ?NewEpoch2Justified)
+ andBool LastJustifiedEpoch <=Int ?NewLastJustifiedEpoch
 
 endmodule
