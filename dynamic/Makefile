@@ -167,6 +167,7 @@ test-static: build-static
 test-static-java: build-static-java
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/simple-spec.k | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/process-justification-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/process-finalization-spec.k  | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/a-spec.k  | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/b-spec.k  | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/c-spec.k  | diff - tests/success.out

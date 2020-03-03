@@ -182,7 +182,9 @@ requires isValidators(Vs)
  andBool Epoch1 ==Int Epoch -Int 1
  andBool Epoch2 ==Int Epoch -Int 2
  andBool Epoch3 ==Int Epoch -Int 3
+ //
  // invariant
+ //
  andBool isGoodState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3Justified,
                      Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2Justified,
                      PrevLastJustifiedEpoch)
@@ -190,7 +192,9 @@ requires isValidators(Vs)
  andBool Epoch2Justified ==K PrevEpoch2Justified
  andBool LastJustifiedEpoch ==Int PrevLastJustifiedEpoch
  andBool Attestations2 ==K super(PrevAttestations2)
+ //
  // ranges
+ //
  andBool Epoch >=Int 0
  andBool Epoch1 >=Int 0
  andBool Epoch2 >=Int 0
