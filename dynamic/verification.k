@@ -108,42 +108,4 @@ rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justifie
      andBool implies(LastJustifiedEpoch ==Int Epoch1,                                   Epoch1Justified ==K true )
      andBool         LastJustifiedEpoch <=Int Epoch1
 
-
-/*
-
-
-    ite(
-        isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2)
-    ,
-        Epoch2JustifiedBlock ==K some Epoch2BoundaryBlock
-    ,
-        Epoch2JustifiedBlock ==K none
-    )
-
-    ite(
-        isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
-    ,
-        Epoch1JustifiedBlock ==K some Epoch1BoundaryBlock
-    ,
-        Epoch1JustifiedBlock ==K none
-    )
-
-    xor3(
-               LastJustifiedEpoch <Int Epoch2
-       andBool Epoch2JustifiedBlock ==K none
-       andBool Epoch1JustifiedBlock ==K none
-    ,
-               LastJustifiedEpoch ==Int Epoch2
-       andBool LastJustifiedBlock ==Int Epoch2BoundaryBlock
-       andBool Epoch2JustifiedBlock ==K some Epoch2BoundaryBlock
-       andBool Epoch1JustifiedBlock ==K none
-    ,
-               LastJustifiedEpoch ==Int Epoch1
-       andBool LastJustifiedBlock ==Int Epoch1BoundaryBlock
-       andBool Epoch1JustifiedBlock ==K some Epoch1BoundaryBlock
-    )
-
-*/
-
-
 endmodule
