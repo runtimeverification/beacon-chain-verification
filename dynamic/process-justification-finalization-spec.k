@@ -104,19 +104,19 @@ rule
       <justified>
         Epoch4 |-> Epoch4Justified:Bool
         Epoch3 |-> Epoch3Justified:Bool
-        Epoch2 |-> (Epoch2Justified:Bool => ?NewEpoch2Justified:Bool)
-        Epoch1 |-> (false                => ?NewEpoch1Justified:Bool)
+        Epoch2 |-> (PrevEpoch2Justified:Bool => ?NewEpoch2Justified:Bool)
+        Epoch1 |-> (false                    => ?NewEpoch1Justified:Bool)
         ...
       </justified>
       <finalized>
-        Epoch4 |-> (Epoch4Finalized:Bool => ?NewEpoch4Finalized:Bool)
-        Epoch3 |-> (Epoch3Finalized:Bool => ?NewEpoch3Finalized:Bool)
-        Epoch2 |-> (false                => ?NewEpoch2Finalized:Bool)
+        Epoch4 |-> (PrevEpoch4Finalized:Bool => ?NewEpoch4Finalized:Bool)
+        Epoch3 |-> (PrevEpoch3Finalized:Bool => ?NewEpoch3Finalized:Bool)
+        Epoch2 |-> (false                    => ?NewEpoch2Finalized:Bool)
         Epoch1 |-> false
         ...
       </finalized>
-      <lastJustified> LastJustifiedEpoch => ?NewLastJustifiedEpoch </lastJustified>
-      <lastFinalized> LastFinalizedEpoch => ?NewLastFinalizedEpoch </lastFinalized>
+      <lastJustified> PrevLastJustifiedEpoch => ?NewLastJustifiedEpoch </lastJustified>
+      <lastFinalized> PrevLastFinalizedEpoch => ?NewLastFinalizedEpoch </lastFinalized>
       ...
     </state>
     ...
@@ -137,11 +137,11 @@ andBool Attestations2 ==K super(Epoch1Attestations2)
 // process slots preserve justification/finalization
 andBool Epoch4Justified ==K Epoch1Epoch4Justified
 andBool Epoch3Justified ==K Epoch1Epoch3Justified
-andBool Epoch2Justified ==K Epoch1Epoch2Justified
-andBool Epoch4Finalized ==K Epoch1Epoch4Finalized
-andBool Epoch3Finalized ==K Epoch1Epoch3Finalized
-andBool LastJustifiedEpoch ==Int Epoch1LastJustifiedEpoch
-andBool LastFinalizedEpoch ==Int Epoch1LastFinalizedEpoch
+andBool PrevEpoch2Justified ==K Epoch1Epoch2Justified
+andBool PrevEpoch4Finalized ==K Epoch1Epoch4Finalized
+andBool PrevEpoch3Finalized ==K Epoch1Epoch3Finalized
+andBool PrevLastJustifiedEpoch ==Int Epoch1LastJustifiedEpoch
+andBool PrevLastFinalizedEpoch ==Int Epoch1LastFinalizedEpoch
 // justification result propagation
 andBool implies(Epoch3Epoch4Justified, Epoch2Epoch4Justified)
 andBool implies(Epoch2Epoch3Justified, Epoch1Epoch3Justified)
@@ -165,8 +165,8 @@ andBool Epoch4 >=Int 0
 andBool Epoch1LastJustifiedEpoch >=Int 0
 andBool Epoch2LastJustifiedEpoch >=Int 0
 andBool Epoch1LastFinalizedEpoch >=Int 0
-andBool LastJustifiedEpoch >=Int 0
-andBool LastFinalizedEpoch >=Int 0
+andBool PrevLastJustifiedEpoch >=Int 0
+andBool PrevLastFinalizedEpoch >=Int 0
 ensures ?NewLastJustifiedEpoch >=Int 0
 andBool ?NewLastFinalizedEpoch >=Int 0
 //
@@ -176,11 +176,11 @@ andBool ?NewLastFinalizedEpoch >=Int 0
 andBool iff(?NewEpoch2Justified, isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs))
 andBool iff(?NewEpoch1Justified, isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs))
 // finalization of e-4
-andBool implies(Epoch4Finalized ==K false,
+andBool implies(PrevEpoch4Finalized ==K false,
             iff(?NewEpoch4Finalized, Epoch2LastJustifiedEpoch ==Int Epoch4 andBool ?NewEpoch2Justified andBool Epoch3Justified andBool Epoch4Justified)
         )
 // finalization of e-3
-andBool implies(Epoch3Finalized ==K false,
+andBool implies(PrevEpoch3Finalized ==K false,
             iff(?NewEpoch3Finalized,
                     ( Epoch1LastJustifiedEpoch ==Int Epoch3 andBool ?NewEpoch1Justified andBool ?NewEpoch2Justified andBool Epoch3Justified )
                 orBool
@@ -194,10 +194,10 @@ andBool isCorrectLastJustifiedEpoch(?NewLastJustifiedEpoch, Epoch, ?NewEpoch1Jus
 // last finalized epoch
 andBool isCorrectLastFinalizedEpoch(?NewLastFinalizedEpoch, Epoch, ?NewEpoch2Finalized, ?NewEpoch3Finalized, ?NewEpoch4Finalized)
 // propagation
-andBool implies(Epoch2Justified, ?NewEpoch2Justified)
-andBool implies(Epoch4Finalized, ?NewEpoch4Finalized)
-andBool implies(Epoch3Finalized, ?NewEpoch3Finalized)
-andBool LastJustifiedEpoch <=Int ?NewLastJustifiedEpoch
-andBool LastFinalizedEpoch <=Int ?NewLastFinalizedEpoch
+andBool implies(PrevEpoch2Justified, ?NewEpoch2Justified)
+andBool implies(PrevEpoch4Finalized, ?NewEpoch4Finalized)
+andBool implies(PrevEpoch3Finalized, ?NewEpoch3Finalized)
+andBool PrevLastJustifiedEpoch <=Int ?NewLastJustifiedEpoch
+andBool PrevLastFinalizedEpoch <=Int ?NewLastFinalizedEpoch
 
 endmodule
