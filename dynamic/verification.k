@@ -9,6 +9,8 @@ rule (I1 +Int I2) -Int I3 => I1 +Int (I2 -Int I3) requires notBool #isConcrete(I
 rule (I1 -Int I2) +Int I3 => I1 -Int (I2 -Int I3) requires notBool #isConcrete(I1) andBool #isConcrete(I2) andBool #isConcrete(I3)
 rule (I1 -Int I2) -Int I3 => I1 -Int (I2 +Int I3) requires notBool #isConcrete(I1) andBool #isConcrete(I2) andBool #isConcrete(I3)
 
+rule (I1 *Int I2) /Int I3 => I1 requires I2 ==Int I3 andBool I3 =/=Int 0
+
 endmodule
 
 module VERIFICATION
@@ -58,9 +60,15 @@ rule bool(xor4(C1, C2, C3, C4)) => C1 orBool C2 orBool C3 orBool C4
 rule bool(xor5(C1, C2, C3, C4, C5)) => C1 orBool C2 orBool C3 orBool C4 orBool C5
 rule bool(xor6(C1, C2, C3, C4, C5, C6)) => C1 orBool C2 orBool C3 orBool C4 orBool C5 orBool C6
 
+syntax Bool ::= implies(Bool, Bool) [function]
+rule implies(A, B) => notBool A orBool B
+
+syntax Bool ::= iff(Bool, Bool) [function]
+rule iff(A, B) => implies(A, B) andBool implies(B, A)
+
 syntax Attestations ::= super(Attestations) [function, no-evaluators]
-rule isJustifiable(B, super(As), Vs) => true
-    requires isJustifiable(B, As, Vs)
+rule isJustifiable(E, B, super(As), Vs) => true
+    requires isJustifiable(E, B, As, Vs)
 
 syntax Pred ::= isValidState(Int, Int, Attestations, Map, Bool,
                              Int, Int, Attestations, Map, Bool,
@@ -69,58 +77,58 @@ rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justifi
                   Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
                   LastJustifiedEpoch)
   => xor3(
-                notBool isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2)
-        andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
+                notBool isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2)
+        andBool notBool isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
         andBool LastJustifiedEpoch <Int Epoch2
         andBool Epoch2Justified ==K false
         andBool Epoch1Justified ==K false
      ,
-                        isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2)
-        andBool notBool isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
+                        isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2)
+        andBool notBool isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
         andBool LastJustifiedEpoch ==Int Epoch2
         andBool Epoch2Justified ==K true
         andBool Epoch1Justified ==K false
      ,
-                        isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
+                        isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
         andBool LastJustifiedEpoch ==Int Epoch1
         andBool Epoch1Justified ==K true
      )
 
-/*
 
+syntax Bool ::= isGoodState(Int, Int, Attestations, Map, Bool,
+                            Int, Int, Attestations, Map, Bool,
+                            Int) [function]
+rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
+                 Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
+                 LastJustifiedEpoch)
+  => // justification of e-2 and e-1
+             iff(Epoch2Justified ==K true, isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2))
+     andBool iff(Epoch1Justified ==K true, isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1))
+     // last justified epoch
+     andBool implies(LastJustifiedEpoch  <Int Epoch2, Epoch2Justified ==K false andBool Epoch1Justified ==K false)
+     andBool implies(LastJustifiedEpoch ==Int Epoch2, Epoch2Justified ==K true  andBool Epoch1Justified ==K false)
+     andBool implies(LastJustifiedEpoch ==Int Epoch1,                                   Epoch1Justified ==K true )
+     andBool         LastJustifiedEpoch <=Int Epoch1
 
-    ite(
-        isJustifiable(Epoch2BoundaryBlock, Attestations2, Vs2)
-    ,
-        Epoch2JustifiedBlock ==K some Epoch2BoundaryBlock
-    ,
-        Epoch2JustifiedBlock ==K none
-    )
+syntax Bool ::= isCorrectLastJustifiedEpoch(Int, Int, Bool, Bool) [function]
+rule isCorrectLastJustifiedEpoch(LastJustifiedEpoch, Epoch, Epoch1Justified, Epoch2Justified)
+  =>         implies(LastJustifiedEpoch  <Int Epoch -Int 2, Epoch2Justified ==K false andBool Epoch1Justified ==K false)
+     andBool implies(LastJustifiedEpoch ==Int Epoch -Int 2, Epoch2Justified ==K true  andBool Epoch1Justified ==K false)
+     andBool implies(LastJustifiedEpoch ==Int Epoch -Int 1,                                   Epoch1Justified ==K true)
+     andBool         LastJustifiedEpoch <=Int Epoch -Int 1
 
-    ite(
-        isJustifiable(Epoch1BoundaryBlock, Attestations1, Vs1)
-    ,
-        Epoch1JustifiedBlock ==K some Epoch1BoundaryBlock
-    ,
-        Epoch1JustifiedBlock ==K none
-    )
-
-    xor3(
-               LastJustifiedEpoch <Int Epoch2
-       andBool Epoch2JustifiedBlock ==K none
-       andBool Epoch1JustifiedBlock ==K none
-    ,
-               LastJustifiedEpoch ==Int Epoch2
-       andBool LastJustifiedBlock ==Int Epoch2BoundaryBlock
-       andBool Epoch2JustifiedBlock ==K some Epoch2BoundaryBlock
-       andBool Epoch1JustifiedBlock ==K none
-    ,
-               LastJustifiedEpoch ==Int Epoch1
-       andBool LastJustifiedBlock ==Int Epoch1BoundaryBlock
-       andBool Epoch1JustifiedBlock ==K some Epoch1BoundaryBlock
-    )
-
-*/
-
+syntax Bool ::= isCorrectLastFinalizedEpoch(Int, Int, Bool, Bool) [function]
+              | isCorrectLastFinalizedEpoch(Int, Int, Bool, Bool, Bool) [function]
+rule isCorrectLastFinalizedEpoch(LastFinalizedEpoch, Epoch, Epoch2Finalized, Epoch3Finalized)
+  =>         implies(LastFinalizedEpoch  <Int Epoch -Int 3, Epoch3Finalized ==K false andBool Epoch2Finalized ==K false)
+     andBool implies(LastFinalizedEpoch ==Int Epoch -Int 3, Epoch3Finalized ==K true  andBool Epoch2Finalized ==K false)
+     andBool implies(LastFinalizedEpoch ==Int Epoch -Int 2,                                   Epoch2Finalized ==K true)
+     andBool         LastFinalizedEpoch <=Int Epoch -Int 2
+rule isCorrectLastFinalizedEpoch(LastFinalizedEpoch, Epoch, Epoch2Finalized, Epoch3Finalized, Epoch4Finalized)
+  =>         implies(LastFinalizedEpoch  <Int Epoch -Int 4, Epoch4Finalized ==K false andBool Epoch3Finalized ==K false andBool Epoch2Finalized ==K false)
+     andBool implies(LastFinalizedEpoch ==Int Epoch -Int 4, Epoch4Finalized ==K true  andBool Epoch3Finalized ==K false andBool Epoch2Finalized ==K false)
+     andBool implies(LastFinalizedEpoch ==Int Epoch -Int 3,                                   Epoch3Finalized ==K true  andBool Epoch2Finalized ==K false)
+     andBool implies(LastFinalizedEpoch ==Int Epoch -Int 2,                                                                     Epoch2Finalized ==K true)
+     andBool         LastFinalizedEpoch <=Int Epoch -Int 2
 
 endmodule

@@ -179,7 +179,7 @@ rule <k> processEpoch() => . ... </k>
 ```k
 syntax KItem ::= processJustification(Int)
 rule <k> processJustification(Epoch)
-      => isJustifiable(EpochBoundaryBlock, Attestations, Validators)
+      => isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Validators)
       ~> justify(Epoch) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -212,9 +212,10 @@ rule <k> true ~> justify(Epoch) => . ... </k>
      </state>
 rule <k> false ~> justify(_) => . ... </k>
 
-syntax Bool ::= isJustifiable(Int, Attestations, Map) [function] // functional only for Validators map
-rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
+syntax Bool ::= isJustifiable(Int, Int, Attestations, Map) [function] // functional only for Validators map
+rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Validators)
   => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(values(Validators)))
+     orBool Epoch ==Int 0 // the genesis block is justified by default
 ```
 ```{.k .kast}
   requires #isConcrete(Attestations) // TODO: drop this
@@ -223,7 +224,7 @@ rule isJustifiable(EpochBoundaryBlock, Attestations, Validators)
 ```k
 syntax Bool ::= isMajority(Int, Int) [function, functional]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
-                             andBool Total >Int 0
+                             andBool Total >Int 0             // ensure no div-by-zero
 
 syntax Int ::= attestationsBalance(Int, Attestations, Map) [function] // functional only for Validators map
 rule attestationsBalance(Target, A Attestations, Validators)
@@ -245,7 +246,7 @@ rule totalBalance(.List) => 0
 
 ```{.k .kore}
 // definedness
-rule #Ceil(isJustifiable(_, _, Validators))       => {isValidators(Validators) #Equals true} [anywhere]
+rule #Ceil(isJustifiable(_, _, _, Validators))       => {isValidators(Validators) #Equals true} [anywhere]
 
 rule #Ceil(attestationsBalance(_, _, Validators)) => {isValidators(Validators) #Equals true} [anywhere]
 

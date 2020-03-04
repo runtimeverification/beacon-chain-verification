@@ -9,9 +9,13 @@ imports VERIFICATION
 // where e is the current epoch.
 rule
 <T>
-  <k> case(isValidState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3JustifiedBlock,
-                        Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2JustifiedBlock,
-                        PrevLastJustifiedEpoch))
+  <k> case(xor3(
+        PrevLastJustifiedEpoch  <Int Epoch3
+      ,
+        PrevLastJustifiedEpoch ==Int Epoch3
+      ,
+        PrevLastJustifiedEpoch ==Int Epoch2
+      ))
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1) => . </k>
   <currentSlot> firstSlotOf(Epoch) </currentSlot>
@@ -70,6 +74,10 @@ requires isValidators(Vs)
  andBool Epoch2 ==Int Epoch -Int 2
  andBool Epoch3 ==Int Epoch -Int 3
  // invariant
+ andBool isGoodState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3JustifiedBlock,
+                     Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2JustifiedBlock,
+                     PrevLastJustifiedEpoch)
+ //
  andBool Epoch2JustifiedBlock ==K PrevEpoch2JustifiedBlock
  andBool LastJustifiedEpoch ==Int PrevLastJustifiedEpoch
  andBool Attestations2 ==K super(PrevAttestations2)
@@ -79,9 +87,12 @@ requires isValidators(Vs)
  andBool Epoch2 >=Int 0
  andBool Epoch3 >=Int 0
  andBool PrevLastJustifiedEpoch >=Int 0
-ensures  ?NewLastJustifiedEpoch >=Int 0
- andBool bool(isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2JustifiedBlock,
-                           Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1JustifiedBlock,
-                           ?NewLastJustifiedEpoch))
+ ensures ?NewLastJustifiedEpoch >=Int 0
+ //
+ // ensures
+ //
+ andBool isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2JustifiedBlock,
+                     Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1JustifiedBlock,
+                     ?NewLastJustifiedEpoch)
 
 endmodule

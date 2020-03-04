@@ -10,10 +10,8 @@ rule
 <T>
   <k> case(xor2(
                 LastJustifiedEpoch <Int Epoch
-        andBool OldEpochJustifiedBlock ==K false
       ,
                 LastJustifiedEpoch ==Int Epoch
-        andBool OldEpochJustifiedBlock ==K true
       ))
    ~> processJustification(Epoch) => . </k>
   <currentSlot> Slot </currentSlot>
@@ -45,14 +43,18 @@ rule
 requires isValidators(Vs)
  andBool Epoch >=Int 1
  andBool Epoch ==Int epochOf(Slot) -Int 1
+ // invariant
+ andBool LastJustifiedEpoch <=Int Epoch
+ andBool implies(LastJustifiedEpoch  <Int Epoch, OldEpochJustifiedBlock ==K false)
+ andBool implies(LastJustifiedEpoch ==Int Epoch, OldEpochJustifiedBlock ==K true)
 ensures (
     LastJustifiedEpoch <Int Epoch andBool (
         (
-                    isJustifiable(EpochBoundaryBlock, Attestations, Vs)
+                    isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Vs)
             andBool ?NewEpochJustifiedBlock ==K true
             andBool ?NewJustifiedEpoch ==Int Epoch
         ) orBool (
-            notBool isJustifiable(EpochBoundaryBlock, Attestations, Vs)
+            notBool isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Vs)
             andBool ?NewEpochJustifiedBlock ==K false
             andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
         )

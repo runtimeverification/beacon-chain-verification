@@ -92,11 +92,13 @@ rule
   ...
 </T>
 requires isValidators(Vs)
- andBool isJustifiable(GenesisBlock, PrevAttestations0, Vs) // because the genesis block is justified by default
+ andBool isJustifiable(0, GenesisBlock, PrevAttestations0, Vs) // because the genesis block is justified by default
  andBool Attestations0 ==K super(PrevAttestations0)
-ensures  bool(isValidState(0, GenesisBlock,        Attestations0, Vs, ?NewEpochJustified0,
-                           1, EpochBoundaryBlock1, Attestations1, Vs, ?NewEpochJustified1,
-                           ?NewLastJustifiedEpoch))
+ ensures isGoodState(0, GenesisBlock,        Attestations0, Vs, ?NewEpochJustified0,
+                     1, EpochBoundaryBlock1, Attestations1, Vs, ?NewEpochJustified1,
+                     ?NewLastJustifiedEpoch)
+ andBool ?NewEpochJustified0 ==K true
+ andBool ?NewLastJustifiedEpoch >=Int 0
 
 /*
 For the given current epoch e >= 3,
@@ -105,22 +107,24 @@ update the <justified> entries properly according to the justifiability of e - 2
 
 More formally,
 if the pre-state satisfies:
-    isValidState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3JustifiedBlock,
+    isGoodState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3JustifiedBlock,
                         Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2JustifiedBlock,
                         PrevLastJustifiedEpoch, PrevLastJustifiedBlock),
 then the post-state of `processJustification(e - 2) followed by processJustification(e - 1)` satisfies:
-    isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2JustifiedBlock,
-                         Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1JustifiedBlock,
-                         ?NewLastJustifiedEpoch, ?NewLastJustifiedBlock))
+    isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2JustifiedBlock,
+                        Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1JustifiedBlock,
+                        ?NewLastJustifiedEpoch, ?NewLastJustifiedBlock))
 where Epoch3 = e - 3
       Epoch2 = e - 2
       Epoch1 = e - 1
 */
 rule
 <T>
-  <k> case(isValidState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3Justified,
-                        Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2Justified,
-                        PrevLastJustifiedEpoch))
+  <k> case(xor2(
+        PrevLastJustifiedEpoch  <Int Epoch2
+      ,
+        PrevLastJustifiedEpoch ==Int Epoch2
+      ))
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1) => . </k>
   <currentSlot> firstSlotOf(Epoch) </currentSlot>
@@ -178,19 +182,32 @@ requires isValidators(Vs)
  andBool Epoch1 ==Int Epoch -Int 1
  andBool Epoch2 ==Int Epoch -Int 2
  andBool Epoch3 ==Int Epoch -Int 3
+ //
  // invariant
+ //
+ andBool isGoodState(Epoch3, Epoch3BoundaryBlock, PrevAttestations3, Vs, PrevEpoch3Justified,
+                     Epoch2, Epoch2BoundaryBlock, PrevAttestations2, Vs, PrevEpoch2Justified,
+                     PrevLastJustifiedEpoch)
+ //
  andBool Epoch2Justified ==K PrevEpoch2Justified
  andBool LastJustifiedEpoch ==Int PrevLastJustifiedEpoch
  andBool Attestations2 ==K super(PrevAttestations2)
+ //
  // ranges
+ //
  andBool Epoch >=Int 0
  andBool Epoch1 >=Int 0
  andBool Epoch2 >=Int 0
  andBool Epoch3 >=Int 0
  andBool PrevLastJustifiedEpoch >=Int 0
-ensures  ?NewLastJustifiedEpoch >=Int 0
- andBool bool(isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2Justified,
-                           Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1Justified,
-                           ?NewLastJustifiedEpoch))
+ ensures ?NewLastJustifiedEpoch >=Int 0
+ //
+ // ensures
+ //
+ andBool isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs, ?NewEpoch2Justified,
+                     Epoch1, Epoch1BoundaryBlock, Attestations1, Vs, ?NewEpoch1Justified,
+                     ?NewLastJustifiedEpoch)
+ andBool implies(Epoch2Justified, ?NewEpoch2Justified)
+ andBool LastJustifiedEpoch <=Int ?NewLastJustifiedEpoch
 
 endmodule

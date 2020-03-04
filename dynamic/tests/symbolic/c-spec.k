@@ -40,11 +40,11 @@ requires isValidators(Vs)
  andBool Epoch ==Int epochOf(Slot) -Int 1
  andBool Epoch >Int LastJustifiedEpoch
 ensures (
-            isJustifiable(EpochBoundaryBlock, Attestations, Vs)
+            isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Vs)
     andBool ?EpochJustifiedBlock ==K true
     andBool ?NewJustifiedEpoch ==Int Epoch
 ) orBool (
-    notBool isJustifiable(EpochBoundaryBlock, Attestations, Vs)
+    notBool isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Vs)
     andBool ?EpochJustifiedBlock ==K false
     andBool ?NewJustifiedEpoch ==Int LastJustifiedEpoch
 )
@@ -83,6 +83,6 @@ rule
 requires isValidators(Vs)
  andBool Epoch >=Int 1
  andBool Epoch ==Int epochOf(Slot) -Int 1
- andBool isJustifiable(EpochBoundaryBlock, Attestations, Vs)
+ andBool isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Vs)
 
 endmodule
