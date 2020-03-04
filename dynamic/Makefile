@@ -186,7 +186,8 @@ test-static-java: build-static-java
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/k1b-spec.k | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/k2a-spec.k | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/k2b-spec.k | diff - tests/success.out
-#	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn-spec.k  | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn1-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn2-spec.k | diff - tests/success.out
 
 test-dynamic: build-dynamic
 	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
