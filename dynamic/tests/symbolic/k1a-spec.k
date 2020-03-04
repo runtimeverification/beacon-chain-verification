@@ -5,7 +5,7 @@ module K1A-SPEC
 imports VERIFICATION
 
 // Slot + 1 == TargetSlot
-// using ...
+// using `...`
 rule
 <T>
   <k> processSlots(TargetSlot) => . </k>

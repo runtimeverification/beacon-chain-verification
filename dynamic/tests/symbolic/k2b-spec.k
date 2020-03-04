@@ -5,7 +5,7 @@ module K2B-SPEC
 imports VERIFICATION
 
 // Slot + 2 == TargetSlot
-// using ?_
+// using `?_`
 rule
 <T>
   <k> processSlots(TargetSlot) => . </k>
