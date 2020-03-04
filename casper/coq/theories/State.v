@@ -29,3 +29,39 @@ Definition State := {fset Vote}.
 Definition vote_msg (st:State) v s t (s_h t_h:nat) : bool
   := (v,s,t,s_h,t_h) \in st .
 
+(* Vote projection operations *)
+Definition vote_val (v:Vote) : Validator :=
+  match v with
+    (x,_,_,_,_) => x
+  end.
+
+Definition vote_source (v:Vote) : Hash :=
+  match v with
+    (_,s,_,_,_) => s
+  end.
+
+Definition vote_target (v:Vote) : Hash :=
+  match v with
+    (_,_,t,_,_) => t
+  end.
+
+Definition vote_source_height (v:Vote) : nat :=
+  match v with
+    (_,_,_,s_h,_) => s_h
+  end.
+
+Definition vote_target_height (v:Vote) : nat :=
+  match v with
+    (_,_,_,_,t_h) => t_h
+  end.
+
+(* Reconstructing a vote using its projections *)
+Lemma vote_unfold (vote:Vote):
+  vote = ((vote_val           vote),
+          (vote_source        vote),
+          (vote_target        vote),
+          (vote_source_height vote),
+          (vote_target_height vote)).
+Proof.
+  by move:vote=>[[[[v s] t] s_h] t_h].
+Qed.

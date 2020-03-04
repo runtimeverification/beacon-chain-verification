@@ -7,14 +7,17 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(** Note **)
 (* We consider the checkpoint tree of blocks, and so a "block" refers
-   to a "checkpoint block" throughout the specs below. *)
+   to a "checkpoint block" throughout the specs below.
+ *)
 
 (* We assume finite hash values (block identifiers) *)
 Parameter Hash : finType.
 
 (* This relation links blocks (b,b'), written b <~ b', if b is a (the)
-   parent of b' in the block tree *)
+   parent of b' in the block tree
+ *)
 Parameter hash_parent : rel Hash.
 
 Notation "h1 <~ h2" := (hash_parent h1 h2) (at level 50).
@@ -50,7 +53,7 @@ Proof.
 by apply/connect0.
 Qed.
 
-(* A parent block is an ancestor block *)
+(* A parent block is a proper ancestor block *)
 Lemma hash_parent_ancestor :
   forall h1 h2,
     h1 <~ h2 -> h1 <~* h2 /\ h1 <> h2.
@@ -123,9 +126,9 @@ Lemma nth_ancestor_ancestor :
   forall n s t,
     nth_ancestor n s t -> (s <~* t).
 Proof.
-  induction 1.
-  apply connect0.
-  apply connect_trans with h2;[|apply connect1];assumption.
+induction 1.
+apply connect0.
+apply connect_trans with h2;[|apply connect1];assumption.
 Qed.
 
 (* a parent is a first-level ancestor *)
