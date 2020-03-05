@@ -166,21 +166,31 @@ test-static: build-static
 
 test-static-java: build-static-java
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-justification-finalization-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-slots-base0-spec.k                  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-slots-base1-spec.k                  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-slots-inductive-spec.k              | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/simple-spec.k                | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/process-justification-spec.k | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/process-finalization-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/a-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/b-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/c-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/d-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/e-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/f-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/f2-spec.k | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/g-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/g2-spec.k | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/h-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/i-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/j-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/a-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/b-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/c-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/d-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/e-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/f-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/f2-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/g-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/g2-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/h-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/i-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/j-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/k0-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/k1a-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/k1b-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/k2a-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/k2b-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn1-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn2-spec.k | diff - tests/success.out
 
 test-dynamic: build-dynamic
 	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
