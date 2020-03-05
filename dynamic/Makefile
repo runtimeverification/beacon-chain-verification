@@ -166,6 +166,9 @@ test-static: build-static
 
 test-static-java: build-static-java
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-justification-finalization-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-slots-base0-spec.k                  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-slots-base1-spec.k                  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-slots-inductive-spec.k              | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/simple-spec.k                | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/process-justification-spec.k | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/process-finalization-spec.k  | diff - tests/success.out
