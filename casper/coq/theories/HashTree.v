@@ -131,11 +131,24 @@ apply connect0.
 apply connect_trans with h2;[|apply connect1];assumption.
 Qed.
 
+(* nth_ancestor_0 must be with oneself *) 
+Lemma nth_ancestor_0_refl :
+  forall h1 h2,
+    nth_ancestor 0 h1 h2 ->
+    h1 = h2.
+Proof.
+  intros h1 h2 H_an.
+  inversion H_an; subst. reflexivity.
+Qed.
+
 (* a parent is a first-level ancestor *)
 Example parent_ancestor : forall h1 h2,
-  h1 <~ h2 -> nth_ancestor 1 h1 h2.
+  h1 <~ h2 <-> nth_ancestor 1 h1 h2.
 Proof.
-move => h1 h2 Hp.
+move => h1 h2; split; move => Hp.
 apply: nth_ancestor_nth; eauto.
 exact: nth_ancestor_0.
+inversion Hp; subst.
+apply nth_ancestor_0_refl in H0. 
+subst. assumption. 
 Qed.
