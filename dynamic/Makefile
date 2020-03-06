@@ -157,12 +157,15 @@ test-static: build-static
 	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
 	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out
 	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/simple-spec.k | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/a-spec.k | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/b-spec.k | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/c-spec.k | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/d-spec.k | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/e-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/simple-spec.k | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/a-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/b-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/c-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/d-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/e-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/f-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/f2-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/g-spec.k  | diff - tests/success.out
 
 test-static-java: build-static-java
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-justification-finalization-spec.k   | diff - tests/success.out
