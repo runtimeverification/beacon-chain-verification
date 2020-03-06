@@ -220,6 +220,9 @@ rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Validators)
 ```{.k .kast}
   requires #isConcrete(Attestations) // TODO: drop this
 ```
+```{.k .kore}
+     [concrete]
+```
 
 ```k
 syntax Bool ::= isMajority(Int, Int) [function, functional]
@@ -246,7 +249,7 @@ rule totalBalance(.List) => 0
 
 ```{.k .kore}
 // definedness
-rule #Ceil(isJustifiable(_, _, _, Validators))       => {isValidators(Validators) #Equals true} [anywhere]
+rule #Ceil(isJustifiable(_, _, _, Validators))    => {isValidators(Validators) #Equals true} [anywhere]
 
 rule #Ceil(attestationsBalance(_, _, Validators)) => {isValidators(Validators) #Equals true} [anywhere]
 
