@@ -56,26 +56,27 @@ syntax Pred ::= xor2(Bool, Bool)
               | xor5(Bool, Bool, Bool, Bool, Bool)
               | xor6(Bool, Bool, Bool, Bool, Bool, Bool)
 
-syntax Bool ::= bool(Pred) [function]
+syntax Bool ::= bool(Pred) [function, functional]
 rule bool(xor2(C1, C2)) => C1 orBool C2
 rule bool(xor3(C1, C2, C3)) => C1 orBool C2 orBool C3
 rule bool(xor4(C1, C2, C3, C4)) => C1 orBool C2 orBool C3 orBool C4
 rule bool(xor5(C1, C2, C3, C4, C5)) => C1 orBool C2 orBool C3 orBool C4 orBool C5
 rule bool(xor6(C1, C2, C3, C4, C5, C6)) => C1 orBool C2 orBool C3 orBool C4 orBool C5 orBool C6
 
-syntax Bool ::= implies(Bool, Bool) [function]
+syntax Bool ::= implies(Bool, Bool) [function, functional]
 rule implies(A, B) => notBool A orBool B
 
-syntax Bool ::= iff(Bool, Bool) [function]
+syntax Bool ::= iff(Bool, Bool) [function, functional]
 rule iff(A, B) => implies(A, B) andBool implies(B, A)
 
-syntax Attestations ::= super(Attestations) [function, no-evaluators]
+syntax Attestations ::= super(Attestations) [function, functional, no-evaluators]
 rule isJustifiable(E, B, super(As), Vs) => true
     requires isJustifiable(E, B, As, Vs)
+    [simplification]
 
 syntax Pred ::= isValidState(Int, Int, Attestations, Map, Bool,
                              Int, Int, Attestations, Map, Bool,
-                             Int) [function]
+                             Int) [function, functional]
 rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
                   Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
                   LastJustifiedEpoch)
@@ -100,7 +101,7 @@ rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justifi
 
 syntax Bool ::= isGoodState(Int, Int, Attestations, Map, Bool,
                             Int, Int, Attestations, Map, Bool,
-                            Int) [function]
+                            Int) [function, functional]
 rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
                  Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
                  LastJustifiedEpoch)
@@ -113,15 +114,15 @@ rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justifie
      andBool implies(LastJustifiedEpoch ==Int Epoch1,                                   Epoch1Justified ==K true )
      andBool         LastJustifiedEpoch <=Int Epoch1
 
-syntax Bool ::= isCorrectLastJustifiedEpoch(Int, Int, Bool, Bool) [function]
+syntax Bool ::= isCorrectLastJustifiedEpoch(Int, Int, Bool, Bool) [function, functional]
 rule isCorrectLastJustifiedEpoch(LastJustifiedEpoch, Epoch, Epoch1Justified, Epoch2Justified)
   =>         implies(LastJustifiedEpoch  <Int Epoch -Int 2, Epoch2Justified ==K false andBool Epoch1Justified ==K false)
      andBool implies(LastJustifiedEpoch ==Int Epoch -Int 2, Epoch2Justified ==K true  andBool Epoch1Justified ==K false)
      andBool implies(LastJustifiedEpoch ==Int Epoch -Int 1,                                   Epoch1Justified ==K true)
      andBool         LastJustifiedEpoch <=Int Epoch -Int 1
 
-syntax Bool ::= isCorrectLastFinalizedEpoch(Int, Int, Bool, Bool) [function]
-              | isCorrectLastFinalizedEpoch(Int, Int, Bool, Bool, Bool) [function]
+syntax Bool ::= isCorrectLastFinalizedEpoch(Int, Int, Bool, Bool) [function, functional]
+              | isCorrectLastFinalizedEpoch(Int, Int, Bool, Bool, Bool) [function, functional]
 rule isCorrectLastFinalizedEpoch(LastFinalizedEpoch, Epoch, Epoch2Finalized, Epoch3Finalized)
   =>         implies(LastFinalizedEpoch  <Int Epoch -Int 3, Epoch3Finalized ==K false andBool Epoch2Finalized ==K false)
      andBool implies(LastFinalizedEpoch ==Int Epoch -Int 3, Epoch3Finalized ==K true  andBool Epoch2Finalized ==K false)
