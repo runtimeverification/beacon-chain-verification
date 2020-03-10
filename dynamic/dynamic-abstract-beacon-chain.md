@@ -362,7 +362,7 @@ rule <k> updateActivationEligibility(ListItem(VID) VIDS:List)
        <slot> Slot </slot>
        <validators>
          VID |-> (V:Validator => #if isActivationEligible(V)
-                                 #then V with activation_eligibility_epoch = epochOf(Slot) -Int 1
+                                 #then V with activation_eligibility_epoch = epochOf(Slot)
                                  #else V
                                  #fi)
          ...
