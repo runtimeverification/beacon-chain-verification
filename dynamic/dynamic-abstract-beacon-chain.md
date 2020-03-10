@@ -397,10 +397,7 @@ rule <k> activateValidators(ListItem(V:Validator) Vs)
          Validators
        =>
          Validators[
-           V.id <- #if V.activation_epoch ==Int FAR_FUTURE_EPOCH
-                   #then V with activation_epoch = delayedActivationExitEpoch(epochOf(Slot) -Int 1)
-                   #else V
-                   #fi
+           V.id <- V with activation_epoch = delayedActivationExitEpoch(epochOf(Slot) -Int 1)
          ]
        </validators>
        ...
