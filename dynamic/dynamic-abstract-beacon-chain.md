@@ -374,7 +374,7 @@ rule updateActivationEligibility(.List) => .
 syntax Bool ::= isActivationEligible(Validator) [function, functional]
 rule isActivationEligible(V)
   => V.activation_eligibility_epoch ==Int FAR_FUTURE_EPOCH andBool
-     V.effective_balance >=Int MAX_EFFECTIVE_BALANCE
+     V.effective_balance ==Int MAX_EFFECTIVE_BALANCE
 
 syntax Kitem ::= processValidatorActivation()
 rule <k> processValidatorActivation()
