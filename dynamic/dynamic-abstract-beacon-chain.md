@@ -416,8 +416,8 @@ rule activationQueueUptoChurnLimit(Validators, FinalizedEpoch, CurrentEpoch)
 
 syntax List ::= activationQueue(List, Int) [function] // functional only for Validators
 rule activationQueue(ListItem(V:Validator) Vs:List, FinalizedEpoch)
-  => #if V.activation_eligibility_epoch =/=Int FAR_FUTURE_EPOCH andBool
-         V.activation_epoch >=Int delayedActivationExitEpoch(FinalizedEpoch) // TODO: why is this needed?
+  => #if V.activation_eligibility_epoch <=Int FinalizedEpoch andBool // is_eligible_for_activation
+         V.activation_epoch ==Int FAR_FUTURE_EPOCH
      #then ListItem(V) activationQueue(Vs, FinalizedEpoch)
      #else             activationQueue(Vs, FinalizedEpoch)
      #fi
