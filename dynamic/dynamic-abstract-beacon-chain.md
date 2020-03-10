@@ -514,7 +514,7 @@ rule <k> slashValidator(V) => . ... </k>
        <validators>
          V.id |-> (V => V with slashed = true
                           with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
-                          with effective_balance = V.effective_balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT)
+                          with balance = maxInt(0, V.balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT))
                   )
          ...
        </validators>
