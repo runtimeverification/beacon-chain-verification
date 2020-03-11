@@ -149,25 +149,55 @@ $(dynamic_kompiled): $(dynamic_files)
 # Test
 # ----
 
-.PHONY: test test-static test-static-java test-dynamic
+.PHONY: test test-concrete test-symbolic \
+        test-concrete-static test-concrete-dynamic \
+        test-symbolic-static test-symbolic-static-java
 
-test: test-static test-static-java test-dynamic
+test: test-concrete test-symbolic
 
-test-static: build-static
+test-concrete: test-concrete-static test-concrete-dynamic
+
+test-symbolic: test-symbolic-static test-symbolic-static-java
+
+test-concrete-static: build-static
 	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
 	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out
 	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out
-#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/simple-spec.k | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/a-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/b-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/c-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/d-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/e-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/f-spec.k  | diff - tests/success.out
-	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/f2-spec.k | diff - tests/success.out
-#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/g-spec.k  | diff - tests/success.out
 
-test-static-java: build-static-java
+test-concrete-dynamic: build-dynamic
+	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
+	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out
+	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out
+
+test-symbolic-static: build-static
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION process-justification-finalization-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION process-slots-base0-spec.k                  | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION process-slots-base1-spec.k                  | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION process-slots-inductive-spec.k              | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/simple-spec.k                | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/process-justification-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/process-finalization-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/a-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/b-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/c-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/d-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/e-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/f-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/f2-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/g-spec.k   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/g2-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/h-spec.k   | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/i-spec.k   | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/j-spec.k   | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/k0-spec.k  | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/k1a-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/k1b-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/k2a-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/k2b-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/kn1-spec.k | diff - tests/success.out
+#	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION tests/symbolic/kn2-spec.k | diff - tests/success.out
+
+test-symbolic-static-java: build-static-java
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-justification-finalization-spec.k   | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-slots-base0-spec.k                  | diff - tests/success.out
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none process-slots-base1-spec.k                  | diff - tests/success.out
@@ -194,9 +224,3 @@ test-static-java: build-static-java
 	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/k2b-spec.k | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn1-spec.k | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn2-spec.k | diff - tests/success.out
-
-test-dynamic: build-dynamic
-	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
-	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out
-	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out
-
