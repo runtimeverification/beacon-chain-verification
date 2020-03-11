@@ -112,12 +112,19 @@ The Beacon chain state transition function takes as input a state at slot `N` an
 Validation of block signatures and state roots is omitted in the abstract model.
 
 ```k
+// state_transition
 rule <k> stateTransition(NewBlock)
       => processSlots(NewBlock.slot)
       ~> processBlock(NewBlock) ... </k>
      <currentSlot> Slot </currentSlot>
      requires Slot <Int NewBlock.slot
+```
 
+The `process_epoch()` in the concrete model is called before increasing the slot number, while it is called after increasing `Slot` here.
+
+
+```k
+// process_slots
 rule <k> (. => processSlot()
             ~> processEpoch())
       ~> processSlots(TargetSlot) ... </k>
@@ -141,13 +148,17 @@ rule <k> processSlots(TargetSlot) => . ... </k>
 Updating the cached history is not required here since the full history is recorded in the abstract model.
 
 ```k
+// process_slot
 rule <k> processSlot() => . ... </k>
 ```
 
 ## Epoch Processing
 
+Note that `Slot` is equal to `state.slot + 1` of the concrete model.
+
 ```k
-// TODO: add process_rewards_and_penalties, process_slashings, process_final_updates (?)
+// TODO: add process_rewards_and_penalties, process_slashings, process_final_updates (for updating effective balances with hysteresis)
+// process_epoch
 rule <k> processEpoch()
       => processJustification(epochOf(Slot) -Int 2)
       ~> processJustification(epochOf(Slot) -Int 1)
@@ -327,9 +338,10 @@ rule isJustified(Epoch, Epoch |-> false _:Map) => false
 
 ```{.k .dynamic}
 // TODO: check if no mistake was made as this process is associated with the previous epoch
+// process_registry_updates
 syntax KItem ::= processValidatorUpdates()
 rule <k> processValidatorUpdates()
-      => processValidatorEjection(keys_list(Validators))
+      => processValidatorEjection(keys_list(Validators))    // TODO: processValidatorEjection comes after updateActivationEligibility in the concrete model
       ~> updateActivationEligibility(keys_list(Validators))
       ~> processValidatorActivation() ... </k>
      <currentSlot> Slot </currentSlot>
@@ -362,7 +374,7 @@ rule <k> updateActivationEligibility(ListItem(VID) VIDS:List)
        <slot> Slot </slot>
        <validators>
          VID |-> (V:Validator => #if isActivationEligible(V)
-                                 #then V with activation_eligibility_epoch = epochOf(Slot) -Int 1
+                                 #then V with activation_eligibility_epoch = epochOf(Slot)
                                  #else V
                                  #fi)
          ...
@@ -371,10 +383,11 @@ rule <k> updateActivationEligibility(ListItem(VID) VIDS:List)
      </state>
 rule updateActivationEligibility(.List) => .
 
+// is_eligible_for_activation_queue
 syntax Bool ::= isActivationEligible(Validator) [function, functional]
 rule isActivationEligible(V)
   => V.activation_eligibility_epoch ==Int FAR_FUTURE_EPOCH andBool
-     V.effective_balance >=Int MAX_EFFECTIVE_BALANCE
+     V.effective_balance ==Int MAX_EFFECTIVE_BALANCE
 
 syntax Kitem ::= processValidatorActivation()
 rule <k> processValidatorActivation()
@@ -397,10 +410,7 @@ rule <k> activateValidators(ListItem(V:Validator) Vs)
          Validators
        =>
          Validators[
-           V.id <- #if V.activation_epoch ==Int FAR_FUTURE_EPOCH
-                   #then V with activation_epoch = delayedActivationExitEpoch(epochOf(Slot) -Int 1)
-                   #else V
-                   #fi
+           V.id <- V with activation_epoch = delayedActivationExitEpoch(epochOf(Slot) -Int 1)
          ]
        </validators>
        ...
@@ -416,8 +426,8 @@ rule activationQueueUptoChurnLimit(Validators, FinalizedEpoch, CurrentEpoch)
 
 syntax List ::= activationQueue(List, Int) [function] // functional only for Validators
 rule activationQueue(ListItem(V:Validator) Vs:List, FinalizedEpoch)
-  => #if V.activation_eligibility_epoch =/=Int FAR_FUTURE_EPOCH andBool
-         V.activation_epoch >=Int delayedActivationExitEpoch(FinalizedEpoch) // TODO: why is this needed?
+  => #if V.activation_eligibility_epoch <=Int FinalizedEpoch andBool // is_eligible_for_activation
+         V.activation_epoch ==Int FAR_FUTURE_EPOCH
      #then ListItem(V) activationQueue(Vs, FinalizedEpoch)
      #else             activationQueue(Vs, FinalizedEpoch)
      #fi
@@ -444,6 +454,9 @@ rule dropLastActivationEligibleValidatorAux(.List, _, Vs) => Vs
 ## Block Processing
 
 ```k
+// process_block
+// process_block_header
+// process_operations
 rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits))
       => processSlashings(Slashings)
       ~> processAttestations(Attestations)
@@ -483,6 +496,8 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposi
 ```k
 // capturing both proposer slashings and attester slashings
 
+// process_proposer_slashing
+// process_attester_slashing
 syntax KItem ::= processSlashings(Slashings)
 rule processSlashings(S Slashings) => processSlashing(S) ~> processSlashings(Slashings)
 rule processSlashings(.Slashings) => .
@@ -508,16 +523,17 @@ rule <k> processSlashing(#Slashing(A1, A2))
      requires isSlashableAttestation(A1, A2) // assertion
       andBool A1.attester ==Int A2.attester
 
+// slash_validator
 syntax KItem ::= slashValidator(Validator)
 rule <k> slashValidator(V) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <slashedBalance> S => S +Int V.effective_balance </slashedBalance>
+       <slashedBalance> S => S +Int V.effective_balance </slashedBalance> // TODO: store slashed balance for each epoch
        <validators>
          V.id |-> (V => V with slashed = true
                           with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
-                          with effective_balance = V.effective_balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT)
+                          with balance = maxInt(0, V.balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT))
                   )
          ...
        </validators>
@@ -538,6 +554,7 @@ rule isSlashableAttestation(A1, A2)
 ### Attestations
 
 ```k
+// process_attestation
 syntax KItem ::= processAttestations(Attestations)
 rule processAttestations(A Attestations) => processAttestation(A) ~> processAttestations(Attestations)
 rule processAttestations(.Attestations) => .
@@ -614,6 +631,7 @@ rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, V)
 ### Deposits
 
 ```{.k .dynamic}
+// process_deposit
 syntax KItem ::= processDeposits(Deposits)
 rule processDeposits(D Deposits) => processDeposit(D) ~> processDeposits(Deposits)
 rule processDeposits(.Deposits) => .
@@ -649,6 +667,7 @@ rule <k> processDeposit(D) => . ... </k>
 ### Voluntary Exits
 
 ```{.k .dynamic}
+// process_voluntary_exit
 syntax KItem ::= processVoluntaryExits(VoluntaryExits)
 rule processVoluntaryExits(E Exits) => processVoluntaryExit(E) ~> processVoluntaryExits(Exits)
 rule processVoluntaryExits(.VoluntaryExits) => .
@@ -667,10 +686,12 @@ rule <k> processVoluntaryExit(E)
       andBool epochOf(Slot) >=Int E.epoch
       andBool epochOf(Slot) >=Int V.activation_epoch +Int PERSISTENT_COMMITTEE_PERIOD
 
+// is_active_validator
 syntax Bool ::= isActiveValidator(Validator, Int) [function, functional]
 rule isActiveValidator(V, Epoch)
   => V.activation_epoch <=Int Epoch andBool Epoch <Int V.exit_epoch
 
+// initiate_validator_exit
 syntax KItem ::= initiateValidatorExit(Validator)
 rule <k> initiateValidatorExit(V)
       => setExitEpoch(V, computeExitEpoch(values(Validators), epochOf(Slot))) ... </k>
@@ -726,9 +747,11 @@ rule activeValidators(ListItem(V:Validator) Vs:List, Epoch)
      #fi
 rule activeValidators(.List, _) => .Map
 
+// compute_activation_exit_epoch
 syntax Int ::= delayedActivationExitEpoch(Int) [function, functional]
 rule delayedActivationExitEpoch(Epoch) => Epoch +Int 1 +Int ACTIVATION_EXIT_DELAY
 
+// get_validator_churn_limit
 syntax Int ::= churnLimit(Int) [function, functional]
 rule churnLimit(ActiveValidatorSize)
   => maxInt(MIN_PER_EPOCH_CHURN_LIMIT, ActiveValidatorSize /Int CHURN_LIMIT_QUOTIENT)
