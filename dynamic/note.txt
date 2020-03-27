@@ -1,0 +1,21 @@
+main theorem
+- for a given good state, stateTransition() returns another good state
+
+misc
+- no attestations are missed
+- once justified/finalized, never change 
+- last justified/finalized blocks are maintained correctly
+
+
+dynamic validators
+
+validator exit
+- all active validators triggered to exit, are assigned an exit epoch that is at least 4 epochs far from the current epoch.
+  there is no more than X validators assigned to the same exit epoch, where X is max(4, Va / 2^16) and Va is the number of active validators.
+  - exit triggers:
+    - effective balance is less than 16
+    - slashed
+    - voluntary exit
+- all inactive but eligible validators will eventually be assigned an activation epoch that is at least 4 epochs far from the epoch they becomes eligible.
+  there is no more than X validators assigned to the same activation epoch.
+  the activation epoch is assigned in order they become eligible.

@@ -701,6 +701,8 @@ rule <k> initiateValidatorExit(V)
        <validators> Validators </validators>
        ...
      </state>
+     requires V.exit_epoch ==Int FAR_FUTURE_EPOCH
+rule initiateValidatorExit(V) => .
      requires V.exit_epoch =/=Int FAR_FUTURE_EPOCH
 
 syntax KItem ::= setExitEpoch(Validator, Int)
