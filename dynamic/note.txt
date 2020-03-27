@@ -10,12 +10,16 @@ misc
 dynamic validators
 
 validator exit
-- all active validators triggered to exit, are assigned an exit epoch that is at least 4 epochs far from the current epoch.
-  there is no more than X validators assigned to the same exit epoch, where X is max(4, Va / 2^16) and Va is the number of active validators.
-  - exit triggers:
-    - effective balance is less than 16
-    - slashed
-    - voluntary exit
-- all inactive but eligible validators will eventually be assigned an activation epoch that is at least 4 epochs far from the epoch they becomes eligible.
-  there is no more than X validators assigned to the same activation epoch.
-  the activation epoch is assigned in order they become eligible.
+- all active validators triggered to exit, are assigned an exit epoch that is at least 4-5 epochs far from the triggered epoch.
+- there is no more than N validators assigned to the same exit epoch, where N is:
+  - 0.0015 % of the number of active validators, or
+  - 4,  if the number of active validators is less than 262,144
+- exit triggers:
+  - effective balance is less than 16 at an epoch boundary
+  - slashed
+  - voluntary exit
+
+validator activation
+- all inactive but eligible validators will eventually be assigned an activation epoch that is at least 4-5 epochs far from the epoch they becomes eligible.
+- there is no more than N validators assigned to the same activation epoch.
+- the activation epoch is assigned in order they become eligible.
