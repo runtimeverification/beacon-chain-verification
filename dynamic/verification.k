@@ -21,6 +21,14 @@ module VERIFICATION
 imports DYNAMIC-ABSTRACT-BEACON-CHAIN
 imports LEMMAS-JAVA
 
+// rule maxInt(I1, I2) => I1 requires I1 >=Int I2
+// rule maxInt(I1, I2) => I2 requires I1 <Int I2
+
+// for l-spec
+rule #if _ #then I1 #else I2 #fi >=Int J => true requires I1 >=Int J andBool I2 >=Int J
+rule maxInt(I1, I2) >=Int J => true requires I1 ==Int J orBool I2 ==Int J
+rule I1 +Int I2 >=Int J => true requires (I1 >=Int J andBool I2 >=Int 0) orBool (I1 >=Int 0 andBool I2 >=Int J)
+
 syntax Tactic ::= case(Pred) // case analysis
 
 rule case(xor2(C, _)) => . requires C [trusted]
