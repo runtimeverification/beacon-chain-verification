@@ -374,7 +374,7 @@ rule <k> updateActivationEligibility(ListItem(VID) VIDS:List)
        <slot> Slot </slot>
        <validators>
          VID |-> (V:Validator => #if isActivationEligible(V)
-                                 #then V with activation_eligibility_epoch = epochOf(Slot)
+                                 #then V withInt "activation_eligibility_epoch" = epochOf(Slot)
                                  #else V
                                  #fi)
          ...
@@ -410,7 +410,7 @@ rule <k> activateValidators(ListItem(V:Validator) Vs)
          Validators
        =>
          Validators[
-           V.id <- V with activation_epoch = delayedActivationExitEpoch(epochOf(Slot) -Int 1)
+           V.id <- V withInt "activation_epoch" = delayedActivationExitEpoch(epochOf(Slot) -Int 1)
          ]
        </validators>
        ...
@@ -531,9 +531,9 @@ rule <k> slashValidator(V) => . ... </k>
        <slot> Slot </slot>
        <slashedBalance> S => S +Int V.effective_balance </slashedBalance> // TODO: store slashed balance for each epoch
        <validators>
-         V.id |-> (V => V with slashed = true
-                          with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
-                          with balance = maxInt(0, V.balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT))
+         V.id |-> (V => V withBool "slashed" = true
+                          withInt  "withdrawable_epoch" = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
+                          withInt  "balance" = maxInt(0, V.balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT))
                   )
          ...
        </validators>
@@ -642,7 +642,7 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators>
-         D.sender |-> (V:Validator => V with balance = V.balance +Int D.amount) // no change to effective_balance
+         D.sender |-> (V:Validator => V withInt "balance" = V.balance +Int D.amount) // no change to effective_balance
          ...
        </validators>
        ...
@@ -711,8 +711,8 @@ rule <k> setExitEpoch(V, ExitEpoch) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators>
-         V.id |-> (V => V with exit_epoch         = ExitEpoch
-                          with withdrawable_epoch = ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
+         V.id |-> (V => V withInt "exit_epoch"         = ExitEpoch
+                          withInt "withdrawable_epoch" = ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
          ...
        </validators>
        ...
