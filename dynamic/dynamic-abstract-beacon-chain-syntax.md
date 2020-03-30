@@ -146,14 +146,14 @@ The cryptographic data (`pubkey` and `withdrawal_credentials`) is omitted in the
 
 ```k
 syntax Validator ::= #Validator(Int,Bool,Pair,Pair,Pair) // id, slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
-syntax Int  ::= Validator ".id"                           [function, functional]
-syntax Bool ::= Validator ".slashed"                      [function, functional]
-syntax Int  ::= Validator ".balance"                      [function, functional]
-syntax Int  ::= Validator ".effective_balance"            [function, functional]
-syntax Int  ::= Validator ".activation_eligibility_epoch" [function, functional]
-syntax Int  ::= Validator ".activation_epoch"             [function, functional]
-syntax Int  ::= Validator ".exit_epoch"                   [function, functional]
-syntax Int  ::= Validator ".withdrawable_epoch"           [function, functional]
+syntax Int  ::= Validator ".id"                           [function, functional, klabel(v_id)                          , smtlib(v_id)                          ]
+syntax Bool ::= Validator ".slashed"                      [function, functional, klabel(v_slashed)                     , smtlib(v_slashed)                     ]
+syntax Int  ::= Validator ".balance"                      [function, functional, klabel(v_balance)                     , smtlib(v_balance)                     ]
+syntax Int  ::= Validator ".effective_balance"            [function, functional, klabel(v_effective_balance)           , smtlib(v_effective_balance)           ]
+syntax Int  ::= Validator ".activation_eligibility_epoch" [function, functional, klabel(v_activation_eligibility_epoch), smtlib(v_activation_eligibility_epoch)]
+syntax Int  ::= Validator ".activation_epoch"             [function, functional, klabel(v_activation_epoc)             , smtlib(v_activation_epoc)             ]
+syntax Int  ::= Validator ".exit_epoch"                   [function, functional, klabel(v_exit_epoch)                  , smtlib(v_exit_epoch)                  ]
+syntax Int  ::= Validator ".withdrawable_epoch"           [function, functional, klabel(v_withdrawable_epoch)          , smtlib(v_withdrawable_epoch)          ]
 rule #Validator(X,_,(_,_),(_,_),(_,_)).id                           => X
 rule #Validator(_,X,(_,_),(_,_),(_,_)).slashed                      => X
 rule #Validator(_,_,(X,_),(_,_),(_,_)).balance                      => X
@@ -162,13 +162,13 @@ rule #Validator(_,_,(_,_),(X,_),(_,_)).activation_eligibility_epoch => X
 rule #Validator(_,_,(_,_),(_,X),(_,_)).activation_epoch             => X
 rule #Validator(_,_,(_,_),(_,_),(X,_)).exit_epoch                   => X
 rule #Validator(_,_,(_,_),(_,_),(_,X)).withdrawable_epoch           => X
-syntax Validator ::= Validator "with" "slashed"                      "=" Bool [function, functional]
-syntax Validator ::= Validator "with" "balance"                      "=" Int  [function, functional]
-syntax Validator ::= Validator "with" "effective_balance"            "=" Int  [function, functional]
-syntax Validator ::= Validator "with" "activation_eligibility_epoch" "=" Int  [function, functional]
-syntax Validator ::= Validator "with" "activation_epoch"             "=" Int  [function, functional]
-syntax Validator ::= Validator "with" "exit_epoch"                   "=" Int  [function, functional]
-syntax Validator ::= Validator "with" "withdrawable_epoch"           "=" Int  [function, functional]
+syntax Validator ::= Validator "with" "slashed"                      "=" Bool [function, functional, klabel(v_with_slashed)                     , smtlib(v_with_slashed)                     ]
+syntax Validator ::= Validator "with" "balance"                      "=" Int  [function, functional, klabel(v_with_balance)                     , smtlib(v_with_balance)                     ]
+syntax Validator ::= Validator "with" "effective_balance"            "=" Int  [function, functional, klabel(v_with_effective_balance)           , smtlib(v_with_effective_balance)           ]
+syntax Validator ::= Validator "with" "activation_eligibility_epoch" "=" Int  [function, functional, klabel(v_with_activation_eligibility_epoch), smtlib(v_with_activation_eligibility_epoch)]
+syntax Validator ::= Validator "with" "activation_epoch"             "=" Int  [function, functional, klabel(v_with_activation_epoc)             , smtlib(v_with_activation_epoc)             ]
+syntax Validator ::= Validator "with" "exit_epoch"                   "=" Int  [function, functional, klabel(v_with_exit_epoch)                  , smtlib(v_with_exit_epoch)                  ]
+syntax Validator ::= Validator "with" "withdrawable_epoch"           "=" Int  [function, functional, klabel(v_with_withdrawable_epoch)          , smtlib(v_with_withdrawable_epoch)          ]
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with slashed                      = V => #Validator(A,V,(B,C),(D,E),(F,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with balance                      = V => #Validator(A,S,(V,C),(D,E),(F,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with effective_balance            = V => #Validator(A,S,(B,V),(D,E),(F,G))
