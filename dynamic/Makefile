@@ -82,7 +82,7 @@ static_kompiled              := $(static_dir)/$(MAIN_DEFN_FILE)-kompiled/definit
 static_verification_kompiled := $(static_verification_dir)/verification-kompiled/definition.kore
 static_java_kompiled         := $(static_java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
 dynamic_kompiled             := $(dynamic_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-dynamic_java_kompiled        := $(dynamic_java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
+dynamic_java_kompiled        := $(dynamic_java_dir)/verification-kompiled/timestamp
 
 .PHONY: build build-static build-static-verification build-static-java build-dynamic build-dynamic-java
 
@@ -170,7 +170,8 @@ $(dynamic_java_kompiled): $(dynamic_java_files) verification.k
         test-concrete-static test-concrete-dynamic \
         test-symbolic-static test-symbolic-static-java test-symbolic-dynamic-java
 
-test: test-concrete test-symbolic
+test: test-concrete-dynamic-java test-symbolic-dynamic-java
+#test: test-concrete test-symbolic
 
 test-concrete: test-concrete-static test-concrete-dynamic
 
@@ -185,6 +186,11 @@ test-concrete-dynamic: build-dynamic
 	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
 	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out
 	$(K_BIN)/krun   -d $(dynamic_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out
+
+test-concrete-dynamic-java: build-dynamic-java
+	$(K_BIN)/krun   -d $(dynamic_java_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out-java
+	$(K_BIN)/krun   -d $(dynamic_java_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out-java
+	$(K_BIN)/krun   -d $(dynamic_java_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out-java
 
 test-symbolic-static: build-static
 #	$(K_BIN)/kprove -d $(static_dir) -m VERIFICATION process-justification-finalization-spec.k   | diff - tests/success.out
