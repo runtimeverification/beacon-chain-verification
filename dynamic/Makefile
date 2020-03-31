@@ -276,3 +276,4 @@ test-symbolic-dynamic-java: build-dynamic-java
 #	$(K_BIN)/kprove -d $(dynamic_java_dir) -m VERIFICATION -w none tests/symbolic/kn1-spec.k | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(dynamic_java_dir) -m VERIFICATION -w none tests/symbolic/kn2-spec.k | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_dir) -m VERIFICATION -w none tests/symbolic/l1-spec.k  | diff - tests/success.out
+	$(K_BIN)/kprove -d $(dynamic_java_dir) -m VERIFICATION -w none tests/symbolic/l2-spec.k  | diff - tests/success.out

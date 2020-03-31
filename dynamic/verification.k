@@ -25,9 +25,9 @@ imports LEMMAS-JAVA
 // rule maxInt(I1, I2) => I2 requires I1 <Int I2
 
 // for l-spec
-rule #if _ #then I1 #else I2 #fi >=Int J => true requires I1 >=Int J andBool I2 >=Int J
-rule maxInt(I1, I2) >=Int J => true requires I1 ==Int J orBool I2 ==Int J
-rule I1 +Int I2 >=Int J => true requires (I1 >=Int J andBool I2 >=Int 0) orBool (I1 >=Int 0 andBool I2 >=Int J)
+//rule #if _ #then I1 #else I2 #fi >=Int J => true requires I1 >=Int J andBool I2 >=Int J
+//rule maxInt(I1, I2) >=Int J => true requires I1 ==Int J orBool I2 ==Int J
+//rule I1 +Int I2 >=Int J => true requires (I1 >=Int J andBool I2 >=Int 0) orBool (I1 >=Int 0 andBool I2 >=Int J)
 //
 /*
 rule (_ withInt K = I).exit_epoch => I            requires K  ==String "exit_epoch"
@@ -40,6 +40,12 @@ rule (V with activation_eligibility_epoch = _).exit_epoch => V.exit_epoch
 rule (V with activation_epoch             = _).exit_epoch => V.exit_epoch
 rule (V with exit_epoch                   = I).exit_epoch => I
 rule (V with withdrawable_epoch           = _).exit_epoch => V.exit_epoch
+
+// rule X >=Int Y => true requires X >Int Y
+// rule X +Int 1 <=Int Y => true requires X <Int Y
+
+rule countValidatorsToExit(v(VM [ VID <- V ]v, VIDs), E) => countValidatorsToExit(v(VM, VIDs), E) +Int 1
+    requires V.exit_epoch =/=Int VM[VID]v.exit_epoch
 
 syntax Tactic ::= case(Pred) // case analysis
 
