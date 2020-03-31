@@ -7,8 +7,8 @@ Require Import Nat.
 From mathcomp.finmap
 Require Import finmap.
 
-From Casper
-Require Import Quorums HashTree State.
+From Dynamic
+Require Import Validator HashTree State Slashing Quorums.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -28,22 +28,29 @@ Tactic Notation "spec" hyp(H) constr(a) constr(b) :=
 Definition link_supporters st s t s_h t_h : {set Validator} :=
   [set v | vote_msg st v s t s_h t_h ].
 
+(* The assumption that votes originate only from the vset of the target block
+   being voted for (Needed for liveness) *)
+Axiom votes_from_target_vset: forall x st s s_h t t_h, 
+  x \in link_supporters st s t s_h t_h -> x \in vSet.[vs_fun t].
+
 (* The voter set for a link constitute a supermajority *)
 Definition supermajority_link (st:State) (s t : Hash) (s_h t_h : nat) : bool :=
-  link_supporters st s t s_h t_h \in quorum_2.
+  quorum_2 (link_supporters st s t s_h t_h) t.
 
 (* Adding more votes (from the same validators) to a state preserves supermajority links *)
-Lemma supermajority_weaken: forall (st st':State)
+(** Note: Needed the assumption that the extra votes must have come from vSet.[target] **)
+Lemma supermajority_weaken: forall (st st':State) s t s_h t_h
   (HSub:forall (v: Vote), v \in st -> v \in st'),
-    forall s t s_h t_h,
       supermajority_link st s t s_h t_h
       -> supermajority_link st' s t s_h t_h.
 Proof.
-  move=> st st' Hsub s t s_h t_h.
+  move=> st st' s t s_h t_h Hsub.
   unfold supermajority_link, link_supporters, vote_msg.
   apply quorum_2_upclosed.
-  apply/subsetP. intro. rewrite in_set. rewrite in_set.
-  apply Hsub.
+    apply/subsetP. intro. rewrite in_set. rewrite in_set.
+    apply Hsub.
+  apply/subsetP. intro.
+  apply votes_from_target_vset.
 Qed.
 
 Definition justification_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
@@ -61,19 +68,19 @@ Inductive justified (st:State) : Hash -> nat -> Prop :=
     justification_link st s t s_h t_h ->
     justified st t t_h.
 
-(* Justification is preserved when the state is expanded with new votes *)
-Lemma justified_weaken: forall (st st':State)
+(* Justification is preserved when the state is expanded with new votes
+   (coming from validators in the v-set of the justified block) *)
+Lemma justified_weaken: forall (st st':State) t t_h
     (HSub:forall (v: Vote), v \in st -> v \in st'),
-  forall t t_h, justified st t t_h -> justified st' t t_h.
+  justified st t t_h -> justified st' t t_h.
 Proof.
-  move=> st st' Hsub t t_h.
+  move=> st st' t t_h Hsub.
   induction 1. constructor.
   destruct H0 as [Hh [Ha Hsm]].
   apply (justified_link IHjustified).
   unfold justification_link;repeat (split; try assumption).
   revert Hsm.
-  apply supermajority_weaken.
-  assumption.
+  apply supermajority_weaken. assumption.
 Qed.
 
 (* A finalized block is a justified block that has a child who is also

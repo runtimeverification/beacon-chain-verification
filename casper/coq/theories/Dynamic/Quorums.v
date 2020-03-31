@@ -3,47 +3,82 @@ From mathcomp.ssreflect
 Require Import all_ssreflect.
 Set Warnings "parsing".
 
+From mathcomp.finmap
+Require Import finmap.
+
+From Dynamic
+Require Import Validator HashTree State Slashing.
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* We assume finite sets of validators *)
-Parameter Validator : finType.
+Open Scope fmap_scope.
 
-(* The sets of "at least 1/3 weight" validators *)
-Parameter quorum_1 : {set {set Validator}}.
+(* A finite map vSet defining the set of validators for a given block *)
+Parameter vSet : {fmap Hash -> {set Validator}}.
 
-(* The sets of "at least 2/3 weight" validators *)
-Parameter quorum_2 : {set {set Validator}}.
+(* We assume the map vSet is total *)
+Axiom vs_fun : forall h : Hash, h \in vSet.
 
-(* The essential intersection property that comes from the
-   numeric choices 2/3 and 1/3 - any two sets from quorum_2
-   have an intersection containing a quorum_1 set. *)
-Axiom quorums_intersection_property :
-  forall (q2 q2': {set Validator}), q2 \in quorum_2 -> q2' \in quorum_2 ->
-  exists q1, q1 \in quorum_1 /\ q1 \subset q2 /\ q1 \subset q2'.
+(** Activation and Exit Sets **)
+(* The set of validators who activated from vs1 to vs2 *)
+Definition activated (vs1 vs2: {set Validator}): {set Validator} :=
+  vs2 :\: vs1.
 
-(* This is a re-statement of the property above in terms of membership *)
-Lemma quorums_property :
- forall (q2 q2': {set Validator}), q2 \in quorum_2 -> q2' \in quorum_2 ->
- exists q1, q1 \in quorum_1 /\ forall n, n \in q1 -> n \in q2 /\ n \in q2'.
-Proof.
-move => q1 q2 Hq1 Hq2.
-have [q3 [Hq3 [Hq13 Hq23]]] := (quorums_intersection_property Hq1 Hq2).
-exists q3.
-split => //.
-move => n Hn.
-split.
-- by apply/(subsetP Hq13).
-- by apply/(subsetP Hq23).
-Qed.
+(* The set of validators who exited from vs1 to vs2 *)
+Definition exited (vs1 vs2: {set Validator}): {set Validator} :=
+  vs1 :\: vs2.
 
-(* The assumption on quorums that a supermajority quorum is nonempty
-   (Needed for liveness) *)
+(* A finite map defining the weight of a given set of validators 
+   Note: weight is currently nat (will probably use real in the future)
+ *)
+Parameter weight : {fmap {set Validator} -> nat}.
+
+(* We assume the map weight is both total and zero at the empty set *)
+Axiom wt_fun  : forall s : {set Validator}, s \in weight.
+Axiom wt_zero : forall s : {set Validator}, weight.[wt_fun s] == 0 <-> s == set0.
+
+(* The weight of new activations from vs1 to vs2 *)
+Definition activated_weight (vs1 vs2: {set Validator}): nat :=
+  weight.[wt_fun (activated vs1 vs2)].
+
+(* The weight of validators who exited from vs1 to vs2 *)
+Definition exited_weight (vs1 vs2: {set Validator}): nat :=
+  weight.[wt_fun (exited vs1 vs2)].
+
+(** Quorums **)
+(* A predicate for an "at least 1/3 weight" set of validators *)
+Definition quorum_1 (vs : {set Validator}) (b : Hash) : bool :=
+  (vs \subset vSet.[vs_fun b]) && 
+  (weight.[wt_fun vs] >= (weight.[wt_fun vSet.[vs_fun b]] %/ 3)).
+
+(* A predicate for an "at least 2/3 weight" set of validators *)
+Definition quorum_2 (vs : {set Validator}) (b : Hash) : bool :=
+  (vs \subset vSet.[vs_fun b]) && 
+  (weight.[wt_fun vs] >= (2 * weight.[wt_fun vSet.[vs_fun b]] %/ 3)).
+
+(* Meaning of a validator set being slashed in thr context of dynamic validator sets *)
+Definition q_intersection_slashed st :=
+  exists (bL bR: Hash) (vL vR: {set Validator}),
+    vL \subset vSet.[vs_fun bL] /\ 
+    vR \subset vSet.[vs_fun bR] /\
+    quorum_2 vL bL /\ 
+    quorum_2 vR bR /\
+    forall v, v \in vL -> v \in vR -> slashed st v.
+
+(* The assumption on quorums that a supermajority quorum with respect to
+   a block is nonempty (Needed for liveness) *)
 Axiom quorum_2_nonempty:
-  forall (q :{set Validator}), q \in quorum_2 -> exists v, v \in q.
+  forall (b:Hash) (q :{set Validator}), 
+    quorum_2 q b -> exists v, v \in q.
 
-(* The assumption that adding more validators to a supermajority
-   leaves a supermajority (Needed for liveness) *)
+
+(* The assumption that, with respect to a block b, adding more b-validators
+   to a supermajority with respect to b leaves a supermajority (Needed for 
+   liveness) *)
 Axiom quorum_2_upclosed:
-  forall (q q':{set Validator}), q \subset q' -> q \in quorum_2 -> q' \in quorum_2.
+  forall (b:Hash) (q q':{set Validator}), 
+    q \subset q' -> q' \subset vSet.[vs_fun b] -> quorum_2 q b -> 
+    quorum_2 q' b.
+

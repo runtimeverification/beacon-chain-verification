@@ -6,8 +6,8 @@ Set Warnings "parsing".
 From mathcomp.finmap
 Require Import finmap.
 
-From Casper
-Require Import Quorums HashTree.
+From Dynamic
+Require Import Validator HashTree.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

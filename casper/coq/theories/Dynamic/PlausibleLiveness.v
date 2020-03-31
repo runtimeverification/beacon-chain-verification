@@ -8,11 +8,11 @@ Require Import finmap.
 
 Require Import Classical.
 
-From Casper
+From Dynamic
 Require Import StrongInductionLtn.
 
-From Casper
-Require Import Quorums HashTree State Slashing Justification AccountableSafety.
+From Dynamic
+Require Import Validator HashTree State Slashing Quorums Justification AccountableSafety.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -58,15 +58,17 @@ Definition forward_link_votes st v :=
     vote_msg st v s t s_h t_h ->
     t_h > s_h /\ nth_ancestor (t_h - s_h) s t.
 
-(* Votes made by 2/3-quorum validators are all good *)
+(* Votes made by 2/3-quorum validators are all good
+   (holds globally for all blocks) *)
 Definition good_votes (st : State) :=
-  forall q2, q2 \in quorum_2 ->
+  forall b q2, quorum_2 q2 b ->
     forall v, v \in q2 ->
     justified_source_votes st v /\ forward_link_votes st v.
 
-(* There exists a 2/3-quorum that have behaved well *)
+(* There exists a 2/3-quorum that have behaved well
+   (for every block!) *)
 Definition two_thirds_good (st : State) :=
-  exists q2, q2 \in quorum_2 /\
+  forall b, exists q2, quorum_2 q2 b /\
     forall v, v \in q2 -> ~ slashed st v.
 
 (* Blocks exist sufficiently high over the given block *)
@@ -101,7 +103,7 @@ Proof.
   destruct Hjlink as [Hh [Hnth Hsm]].
   unfold supermajority_link in Hsm.
   specialize Hgood with (q2 := link_supporters st s t s_h t_h).
-  have Hstgood := (Hgood Hsm). clear Hgood.
+  have Hstgood := (Hgood t Hsm). clear Hgood.
   destruct (quorum_2_nonempty Hsm) as [v Hv].
   have [H _] := (Hstgood v Hv). clear Hstgood.
   rewrite in_set in Hv.
@@ -157,8 +159,11 @@ Proof.
   rewrite /maximal_justification_link. split.
     (* the link is a proper justification link *)
     rewrite /good_votes in Hgood. rewrite /supermajority_link in Hmax_sm.
-    specialize (Hgood (link_supporters st (vote_source maximal_vote) (vote_target maximal_vote)
-            (vote_source_height maximal_vote) (vote_target_height maximal_vote))).
+    specialize (Hgood (vote_target maximal_vote)
+                      (link_supporters st (vote_source maximal_vote)
+                                          (vote_target maximal_vote)
+                                          (vote_source_height maximal_vote)
+                                          (vote_target_height maximal_vote))).
     have Hvgood := (Hgood Hmax_sm).
     specialize Hvgood with (v := (vote_val maximal_vote)).
     unfold link_supporters, vote_msg in Hvgood.
@@ -185,7 +190,7 @@ Qed.
    is a maximal-hight justified block.
  *)
 Lemma maximal_link_highest_block: forall st s t s_h t_h b b_h,
-  ~ quorum_slashed st ->
+  ~ q_intersection_slashed st ->
   good_votes st ->
   maximal_justification_link st s t s_h t_h ->
   justified st b b_h ->
@@ -220,7 +225,7 @@ Qed.
 
 (* Assuming good behavior, the highest justified block exists. *)
 Lemma highest_exists: forall st,
-  ~ quorum_slashed st ->
+  ~ q_intersection_slashed st ->
   good_votes st ->
   exists b b_h,
     justified st b b_h /\
@@ -265,14 +270,14 @@ Definition no_new_slashed st st' :=
 (** And finally, the overall plausible liveness theorem **)
 (* In addition to gloabal axioms, the theorem requires the following
    assumptions:
-   (1) There exists a well behaving 2/3 quorum
-   (2) 2/3-quorum validators' votes are valid votes
-   (2) No 1/3 quorum is slashed
+   (1) There exists a well behaving 2/3 quorum (for every block)
+   (2) 2/3-quorum validators' votes are valid votes (with respect to all blocks)
+   (2) The conditions of slashing have not been met
    (3) Blocks exist sufficiently high over the highest justified block
  *)
 Theorem plausible_liveness : forall st,
   two_thirds_good st ->
-  ~ quorum_slashed st ->
+  ~ q_intersection_slashed st ->
   good_votes st ->
   (forall b b_h, highest_justified st b b_h -> blocks_exist_high_over b) ->
   exists st', unslashed_can_extend st st'
@@ -287,8 +292,6 @@ Proof.
   destruct (highest_exists Hunslashed Hgood_votes) as (just_max & just_max_h & [Hjust_max_just Hjust_max_max]).
   specialize (Hheight _ _ Hjust_max_max).
 
-  destruct Hgood as (good_quorum & Hgood_is_quorum & Hgood).
-
   pose targets := (0 |` [ fset vote_target_height vote | vote in st])%fset;
                     change {fset nat} in (type of targets).
 
@@ -296,22 +299,25 @@ Proof.
   destruct (Hheight ((highest_target.+1 - just_max_h)).+1) as [new_final_child [Hpath Hdist]].
   inversion Hpath;subst. rename h2 into new_finalized.
 
+  destruct (Hgood new_finalized) as (good_quorum_f & Hgood_is_quorum_f & Hgood_f).
+  destruct (Hgood new_final_child) as (good_quorum_c & Hgood_is_quorum_c & Hgood_c).
+    
   pose new_votes1 := [fset (v,just_max,new_finalized,just_max_h,highest_target.+1)
-                     | v in good_quorum]%fset; change {fset Vote} in (type of new_votes1).
+                     | v in good_quorum_f]%fset; change {fset Vote} in (type of new_votes1).
   pose new_votes2 := [fset (v,new_finalized,new_final_child,highest_target.+1,highest_target.+2)
-                     | v in good_quorum]%fset; change {fset Vote} in (type of new_votes2).
+                     | v in good_quorum_c]%fset; change {fset Vote} in (type of new_votes2).
 
   exists (st `|` new_votes1 `|` new_votes2)%fset.
   split;[|split].
 
   *
   unfold unslashed_can_extend.
-  clear -Hgood.
+  clear -Hgood Hgood_f Hgood_c.
   unfold vote_msg.
   intros v s t s_h t_h.
   rewrite in_fsetU. rewrite in_fsetU.
   rewrite !Bool.orb_true_iff.
-  move => [[H|H] | H];[tauto|right;apply Hgood..].
+  move => [[H|H] | H];[tauto|right;apply (Hgood_f)|right;apply Hgood_c].
   case/imfsetP: H => x Hx Heq. replace v with x. assumption. congruence.
   case/imfsetP: H => x Hx Heq. replace v with x. assumption. congruence.
 
@@ -423,10 +429,10 @@ Proof.
   split;[|assumption].
 
   new_vote_mem_tac Houter.
-  change (is_true (badV \in good_quorum)) in x_good.
+  change (is_true (badV \in good_quorum_f)) in x_good.
 
-  have Hnot_slashed := (Hgood badV x_good).
-  apply (Hgood_votes good_quorum) in x_good as HgoodbadV;try (repeat assumption).
+  have Hnot_slashed := (Hgood_f badV x_good).
+  apply (Hgood_votes new_finalized good_quorum_f) in x_good as HgoodbadV;try (repeat assumption).
   destruct HgoodbadV as [Hst2_justifiedvotes Hforward_links].
   apply Hst2_justifiedvotes in Hinner as Hst2_justified.
   clear -Hjust_max_max Hst2_justified Hstarts.
@@ -448,7 +454,7 @@ Proof.
   split;[|assumption].
 
   new_vote_mem_tac Houter.
-  apply (Hgood_votes good_quorum) in x_good as [Hst2_justifiedvotes Hforward_links]; last by assumption.
+  apply (Hgood_votes new_final_child good_quorum_c) in x_good as [Hst2_justifiedvotes Hforward_links]; last by assumption.
   apply Hst2_justifiedvotes in Hinner as Hs2_justified.
   apply Hjust_le_target in Hs2_justified.
   clear -Hstarts Hs2_justified.
@@ -477,6 +483,7 @@ Proof.
     apply (@justified_link _ just_max just_max_h).
       revert Hjust_max_just. apply justified_weaken.
       apply/fsubsetP. by eapply fsubset_trans;apply fsubsetUl.
+      (* intros. apply (votes_from_target_vset H). *)
 
     unfold justification_link. split.
     rewrite <- addn1 with (highest_target.+1 - just_max_h) in Hdist.
@@ -488,7 +495,7 @@ Proof.
     split. assumption.
 
     unfold supermajority_link, link_supporters, vote_msg.
-    apply quorum_2_upclosed with good_quorum;[|assumption].
+    apply quorum_2_upclosed with good_quorum_f.
     apply /subsetP.
     intros v Hv_good.
     rewrite in_set. rewrite in_fsetU.
@@ -496,6 +503,10 @@ Proof.
     apply/orP. right. unfold new_votes1.
     apply/imfsetP. exists v.
       assumption. reflexivity.
+    apply /subsetP.
+    intros v Hv_good.
+    apply (votes_from_target_vset Hv_good).
+    assumption.
 
     split.
     assert (0 <= highest_target).
@@ -505,12 +516,17 @@ Proof.
     (* split. assumption. *)
 
     unfold supermajority_link, link_supporters, vote_msg.
-    apply quorum_2_upclosed with good_quorum;[|assumption].
+    apply quorum_2_upclosed with good_quorum_c.
     apply /subsetP.
     intros v Hv_good.
     rewrite in_set. rewrite in_fsetU.
     apply/orP. right. unfold new_votes2.
     apply/imfsetP. exists v.
       assumption. reflexivity.
+    apply /subsetP.
+    intros v Hv_good.
+    apply (votes_from_target_vset Hv_good).
+    assumption.
+
 Qed.
 

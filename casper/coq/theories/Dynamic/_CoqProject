@@ -1,0 +1,11 @@
+-Q . Dynamic
+
+StrongInductionLtn.v
+Validator.v
+HashTree.v
+State.v
+Slashing.v
+Quorums.v
+Justification.v
+AccountableSafety.v
+PlausibleLiveness.v
