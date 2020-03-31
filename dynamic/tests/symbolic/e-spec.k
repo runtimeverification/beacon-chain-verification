@@ -50,7 +50,7 @@ rule
   </states>
   ...
 </T>
-requires isValidators(Vs)
+requires true
  andBool Epoch1 >=Int 1
  andBool Epoch1 ==Int epochOf(Slot) -Int 1
  andBool Epoch2 ==Int epochOf(Slot) -Int 2

@@ -67,7 +67,7 @@ rule
   </states>
   ...
 </T>
-requires isValidators(Vs)
+requires true
  andBool Epoch1 ==Int Epoch -Int 1
  andBool Epoch2 ==Int Epoch -Int 2
  andBool Epoch3 ==Int Epoch -Int 3

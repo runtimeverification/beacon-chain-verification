@@ -28,6 +28,9 @@ imports LEMMAS-JAVA
 rule #if _ #then I1 #else I2 #fi >=Int J => true requires I1 >=Int J andBool I2 >=Int J
 rule maxInt(I1, I2) >=Int J => true requires I1 ==Int J orBool I2 ==Int J
 rule I1 +Int I2 >=Int J => true requires (I1 >=Int J andBool I2 >=Int 0) orBool (I1 >=Int 0 andBool I2 >=Int J)
+//
+rule (_ withInt K = I).exit_epoch => I            requires K  ==String "exit_epoch"
+rule (V withInt K = _).exit_epoch => V.exit_epoch requires K =/=String "exit_epoch"
 
 syntax Tactic ::= case(Pred) // case analysis
 

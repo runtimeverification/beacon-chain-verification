@@ -38,7 +38,6 @@ rule
   </states>
   ...
 </T>
-requires isValidators(Vs)
 
 // for the given current epoch 2,
 // processJustification(0) followed by processJustification(1)
@@ -91,7 +90,7 @@ rule
   </states>
   ...
 </T>
-requires isValidators(Vs)
+requires true
  andBool isJustifiable(0, GenesisBlock, PrevAttestations0, Vs) // because the genesis block is justified by default
  andBool Attestations0 ==K super(PrevAttestations0)
  ensures isGoodState(0, GenesisBlock,        Attestations0, Vs, ?NewEpochJustified0,
@@ -178,7 +177,7 @@ rule
   </states>
   ...
 </T>
-requires isValidators(Vs)
+requires true
  andBool Epoch1 ==Int Epoch -Int 1
  andBool Epoch2 ==Int Epoch -Int 2
  andBool Epoch3 ==Int Epoch -Int 3

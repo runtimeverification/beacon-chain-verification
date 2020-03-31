@@ -142,7 +142,6 @@ rule
   ...
 </T>
 requires true
-andBool isValidators(Vs)
 andBool Epoch4 ==Int Epoch -Int 4
 andBool Epoch3 ==Int Epoch -Int 3
 andBool Epoch2 ==Int Epoch -Int 2

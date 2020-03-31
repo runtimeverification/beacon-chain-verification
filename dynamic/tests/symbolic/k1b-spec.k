@@ -45,7 +45,6 @@ requires true
 andBool TargetSlot ==Int Slot +Int 1
 andBool isFirstSlotOfEpoch(TargetSlot) ==K false
 // types
-andBool isValidators(Vs)
 andBool Slot >=Int 0
 andBool LastBlockSlot >=Int 0
 andBool LastJustifiedEpoch >=Int 0

@@ -35,7 +35,7 @@ rule
   </states>
   ...
 </T>
-requires isValidators(Vs)
+requires true
  andBool Epoch >=Int 1
  andBool Epoch ==Int epochOf(Slot) -Int 1
  andBool Epoch >Int LastJustifiedEpoch
@@ -80,7 +80,7 @@ rule
   </states>
   ...
 </T>
-requires isValidators(Vs)
+requires true
  andBool Epoch >=Int 1
  andBool Epoch ==Int epochOf(Slot) -Int 1
  andBool isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Vs)
