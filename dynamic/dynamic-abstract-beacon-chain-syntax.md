@@ -191,6 +191,40 @@ rule #Validator(A,S,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => 
 */
 ```
 
+```k
+syntax Validators ::= v(ValidatorMap, Set)
+syntax ValidatorMap ::= Validators ".vmap" [function]
+syntax Set          ::= Validators ".vset" [function]
+rule v(M,S).vmap => M
+rule v(M,S).vset => S
+```
+
+```k
+syntax ValidatorMap ::= ".ValidatorMap"                          [          klabel(emptyV),  smtlib(emptyV)]
+syntax ValidatorMap ::= ValidatorMap "[" Int "<-" Validator "]v" [function, klabel(storeV),  smtlib(storeV)]
+syntax Validator    ::= ValidatorMap "[" Int "]v"                [function, klabel(selectV), smtlib(selectV)]
+
+rule ( M [ K1 <- V ]v ) [ K2 ]v => V         requires K1  ==Int K2
+rule ( M [ K1 <- V ]v ) [ K2 ]v => M [ K2 ]v requires K1 =/=Int K2
+```
+
+```k
+/*
+// in-place update
+
+rule ( M [ K0 <- V0 ]v ) [ K1 <- V1 ]v => M [ K0 <- V1 ]v
+  requires K0 ==Int K1
+
+rule ( M [ K0 <- V0 ]v ) [ K1 <- V1 ]v => ( M [ K1 <- V1 ]v ) [ K0 <- V0 ]v
+  requires K0 =/=Int K1 andBool K1 in keys(M)
+
+syntax Set ::= keys(ValidatorMap) [function]
+
+rule K1 in keys(M [ K2 <- _ ]v) => true          requires K1  ==Int K2
+rule K1 in keys(M [ K2 <- _ ]v) => K1 in keys(M) requires K1 =/=Int K2
+*/
+```
+
 ## Constants
 
 ```k

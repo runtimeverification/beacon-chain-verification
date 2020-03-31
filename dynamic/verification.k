@@ -82,8 +82,8 @@ rule isJustifiable(E, B, super(As), Vs) => true
     requires isJustifiable(E, B, As, Vs)
     [simplification]
 
-syntax Pred ::= isValidState(Int, Int, Attestations, Map, Bool,
-                             Int, Int, Attestations, Map, Bool,
+syntax Pred ::= isValidState(Int, Int, Attestations, Validators, Bool,
+                             Int, Int, Attestations, Validators, Bool,
                              Int) [function, functional]
 rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
                   Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
@@ -107,8 +107,8 @@ rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justifi
      )
 
 
-syntax Bool ::= isGoodState(Int, Int, Attestations, Map, Bool,
-                            Int, Int, Attestations, Map, Bool,
+syntax Bool ::= isGoodState(Int, Int, Attestations, Validators, Bool,
+                            Int, Int, Attestations, Validators, Bool,
                             Int) [function, functional]
 rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
                  Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
