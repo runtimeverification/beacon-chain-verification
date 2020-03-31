@@ -706,7 +706,8 @@ rule computeExitEpochAux(Validators, ExitEpoch, ActiveValidatorSize)
      #fi
 
 syntax Int ::= maxExitEpoch(Validators) [function, functional, smtlib(maxExitEpoch)]
-rule maxExitEpoch(v(VM, SetItem(VID) VIDs:Set)) => maxInt(VM[VID]v.exit_epoch, maxExitEpoch(v(VM, VIDs)))
+rule maxExitEpoch(v(VM, SetItem(VID) VIDs:Set)) => maxInt(VM[VID]v.exit_epoch, maxExitEpoch(v(VM, VIDs))) requires VM[VID]v.exit_epoch =/=Int FAR_FUTURE_EPOCH
+rule maxExitEpoch(v(VM, SetItem(VID) VIDs:Set)) =>                             maxExitEpoch(v(VM, VIDs))  requires VM[VID]v.exit_epoch  ==Int FAR_FUTURE_EPOCH
 rule maxExitEpoch(v(_, .Set)) => 0
 
 syntax Int ::= countValidatorsToExit(Validators, Int) [function, functional, smtlib(countValidatorsToExit)]
