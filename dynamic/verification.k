@@ -29,8 +29,17 @@ rule #if _ #then I1 #else I2 #fi >=Int J => true requires I1 >=Int J andBool I2 
 rule maxInt(I1, I2) >=Int J => true requires I1 ==Int J orBool I2 ==Int J
 rule I1 +Int I2 >=Int J => true requires (I1 >=Int J andBool I2 >=Int 0) orBool (I1 >=Int 0 andBool I2 >=Int J)
 //
+/*
 rule (_ withInt K = I).exit_epoch => I            requires K  ==String "exit_epoch"
 rule (V withInt K = _).exit_epoch => V.exit_epoch requires K =/=String "exit_epoch"
+*/
+rule (V with slashed                      = _).exit_epoch => V.exit_epoch
+rule (V with balance                      = _).exit_epoch => V.exit_epoch
+rule (V with effective_balance            = _).exit_epoch => V.exit_epoch
+rule (V with activation_eligibility_epoch = _).exit_epoch => V.exit_epoch
+rule (V with activation_epoch             = _).exit_epoch => V.exit_epoch
+rule (V with exit_epoch                   = I).exit_epoch => I
+rule (V with withdrawable_epoch           = _).exit_epoch => V.exit_epoch
 
 syntax Tactic ::= case(Pred) // case analysis
 

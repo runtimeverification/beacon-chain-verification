@@ -164,6 +164,7 @@ rule #Validator(_,_,(_,_),(_,X),(_,_)).activation_epoch             => X
 rule #Validator(_,_,(_,_),(_,_),(X,_)).exit_epoch                   => X
 rule #Validator(_,_,(_,_),(_,_),(_,X)).withdrawable_epoch           => X
 
+/*
 syntax Validator ::= Validator "withBool" String "=" Bool [function, functional, klabel(v_with_bool) , smtlib(v_with_bool)]
 syntax Validator ::= Validator "withInt"  String "=" Int  [function, functional, klabel(v_with_int)  , smtlib(v_with_int)]
 rule #Validator(A,S,(B,C),(D,E),(F,G)) withBool "slashed"                      = V => #Validator(A,V,(B,C),(D,E),(F,G))
@@ -173,7 +174,8 @@ rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "activation_eligibility_epoch" =
 rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "activation_epoch"             = V => #Validator(A,S,(B,C),(D,V),(F,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "exit_epoch"                   = V => #Validator(A,S,(B,C),(D,E),(V,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "withdrawable_epoch"           = V => #Validator(A,S,(B,C),(D,E),(F,V))
-/*
+*/
+
 syntax Validator ::= Validator "with" "slashed"                      "=" Bool [function, functional, klabel(v_with_slashed)                     , smtlib(v_with_slashed)                     ]
 syntax Validator ::= Validator "with" "balance"                      "=" Int  [function, functional, klabel(v_with_balance)                     , smtlib(v_with_balance)                     ]
 syntax Validator ::= Validator "with" "effective_balance"            "=" Int  [function, functional, klabel(v_with_effective_balance)           , smtlib(v_with_effective_balance)           ]
@@ -188,15 +190,22 @@ rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_eligibility_epoch = V => 
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_epoch             = V => #Validator(A,S,(B,C),(D,V),(F,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with exit_epoch                   = V => #Validator(A,S,(B,C),(D,E),(V,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => #Validator(A,S,(B,C),(D,E),(F,V))
-*/
 ```
 
 ```k
-syntax Validators ::= v(ValidatorMap, Set)
+syntax Validators ::= v(ValidatorMap, Set) [smtlib(v)]
 syntax ValidatorMap ::= Validators ".vmap" [function]
 syntax Set          ::= Validators ".vset" [function]
 rule v(M,S).vmap => M
 rule v(M,S).vset => S
+```
+
+```k
+syntax ValidatorList ::= ".ValidatorList"        [klabel(nilV),  smtlib(nilV)]
+syntax ValidatorList ::= Validator ValidatorList [klabel(consV), smtlib(consV)]
+syntax Int ::= size(ValidatorList) [function, klabel(sizeV), smtlib(sizeV)]
+rule size(V Vs) => 1 +Int size(Vs)
+rule size(.ValidatorList) => 0
 ```
 
 ```k

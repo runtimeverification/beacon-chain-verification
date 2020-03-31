@@ -348,12 +348,12 @@ rule <k> updateActivationEligibility(v(VM0, SetItem(VID) VIDs:Set))
          VM
        =>
          #if isActivationEligible(VM[VID]v)
-         #then VM [ VID <- VM[VID]v withInt "activation_eligibility_epoch" = epochOf(Slot) ]v
+         #then VM [ VID <- VM[VID]v with activation_eligibility_epoch = epochOf(Slot) ]v
          #else VM
          #fi
        /*
          VM => VM [ VID <- #if isActivationEligible(VM[VID]v)
-                           #then VM[VID]v withInt "activation_eligibility_epoch" = epochOf(Slot)
+                           #then VM[VID]v with activation_eligibility_epoch = epochOf(Slot)
                            #else VM[VID]v
                            #fi ]v
        */
@@ -381,53 +381,53 @@ rule <k> processValidatorActivation()
        ...
      </state>
 
-syntax KItem ::= activateValidators(List)
-rule <k> activateValidators(ListItem(V:Validator) Vs)
-      => activateValidators(                      Vs) ... </k>
+syntax KItem ::= activateValidators(ValidatorList)
+rule <k> activateValidators(V Vs)
+      => activateValidators(  Vs) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
        <validators> v(
-         VM => VM [ V.id <- V withInt "activation_epoch" = delayedActivationExitEpoch(epochOf(Slot) -Int 1) ]v
+         VM => VM [ V.id <- V with activation_epoch = delayedActivationExitEpoch(epochOf(Slot) -Int 1) ]v
        ,
          _
        ) </validators>
        ...
      </state>
-rule activateValidators(.List) => .
+rule activateValidators(.ValidatorList) => .
 
-syntax List ::= activationQueueUptoChurnLimit(Validators, Int, Int) [function, functional]
+syntax ValidatorList ::= activationQueueUptoChurnLimit(Validators, Int, Int) [function, functional]
 rule activationQueueUptoChurnLimit(Validators, FinalizedEpoch, CurrentEpoch)
   => dropBeyondLimit(
        activationQueue(Validators, FinalizedEpoch),
        churnLimit(size(activeValidators(Validators, CurrentEpoch)))
      )
 
-syntax List ::= activationQueue(Validators, Int) [function, functional]
+syntax ValidatorList ::= activationQueue(Validators, Int) [function, functional]
 rule activationQueue(v(VM, SetItem(VID) VIDs:Set), FinalizedEpoch)
   => #if VM[VID]v.activation_eligibility_epoch <=Int FinalizedEpoch andBool // is_eligible_for_activation
          VM[VID]v.activation_epoch ==Int FAR_FUTURE_EPOCH
-     #then ListItem(VM[VID]v) activationQueue(v(VM, VIDs), FinalizedEpoch)
-     #else                    activationQueue(v(VM, VIDs), FinalizedEpoch)
+     #then VM[VID]v activationQueue(v(VM, VIDs), FinalizedEpoch)
+     #else          activationQueue(v(VM, VIDs), FinalizedEpoch)
      #fi
-rule activationQueue(v(_, .Set), _) => .List
+rule activationQueue(v(_, .Set), _) => .ValidatorList
 
-syntax List ::= dropBeyondLimit(List, Int) [function] // functional only for Validators
+syntax ValidatorList ::= dropBeyondLimit(ValidatorList, Int) [function, functional]
 rule dropBeyondLimit(Vs, Limit) => Vs requires size(Vs) <=Int Limit
 rule dropBeyondLimit(Vs, Limit)
   => dropBeyondLimit(dropLastActivationEligibleValidator(Vs), Limit)
      requires size(Vs) >Int Limit
 
-syntax List ::= dropLastActivationEligibleValidator(List)                     [function] // functional only for Validators
-              | dropLastActivationEligibleValidatorAux(List, Validator, List) [function] // functional only for Validators
-rule dropLastActivationEligibleValidator(ListItem(V:Validator) Vs)
-  => dropLastActivationEligibleValidatorAux(Vs, V, .List)
-rule dropLastActivationEligibleValidatorAux(ListItem(V:Validator) Vs, MaxV, AccVs)
+syntax ValidatorList ::= dropLastActivationEligibleValidator(ValidatorList)                     [function, functional]
+              | dropLastActivationEligibleValidatorAux(ValidatorList, Validator, ValidatorList) [function, functional]
+rule dropLastActivationEligibleValidator(V Vs)
+  => dropLastActivationEligibleValidatorAux(Vs, V, .ValidatorList)
+rule dropLastActivationEligibleValidatorAux(V:Validator Vs, MaxV, AccVs)
   => #if V.activation_eligibility_epoch >Int MaxV.activation_eligibility_epoch
-     #then dropLastActivationEligibleValidatorAux(Vs,    V, ListItem(MaxV) AccVs)
-     #else dropLastActivationEligibleValidatorAux(Vs, MaxV, ListItem(   V) AccVs)
+     #then dropLastActivationEligibleValidatorAux(Vs,    V, MaxV AccVs)
+     #else dropLastActivationEligibleValidatorAux(Vs, MaxV,    V AccVs)
      #fi
-rule dropLastActivationEligibleValidatorAux(.List, _, Vs) => Vs
+rule dropLastActivationEligibleValidatorAux(.ValidatorList, _, Vs) => Vs
 ```
 
 ## Block Processing
@@ -507,9 +507,9 @@ rule <k> slashValidator(V) => . ... </k>
        <slot> Slot </slot>
        <slashedBalance> S => S +Int V.effective_balance </slashedBalance> // TODO: store slashed balance for each epoch
        <validators> v(
-         VM => VM [ V.id <- V withBool "slashed" = true
-                              withInt  "withdrawable_epoch" = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
-                              withInt  "balance" = maxInt(0, V.balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]v
+         VM => VM [ V.id <- V with slashed = true
+                              with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
+                              with balance = maxInt(0, V.balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]v
        ,
          _
        ) </validators>
@@ -612,7 +612,7 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-         VM => VM [ D.sender <- VM[D.sender]v withInt "balance" = VM[D.sender]v.balance +Int D.amount ]v // no change to effective_balance
+         VM => VM [ D.sender <- VM[D.sender]v with balance = VM[D.sender]v.balance +Int D.amount ]v // no change to effective_balance
        ,
          VIDs
        ) </validators>
@@ -683,8 +683,8 @@ rule <k> setExitEpoch(V, ExitEpoch) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-         VM => VM [ V.id <- V withInt "exit_epoch"         = ExitEpoch
-                              withInt "withdrawable_epoch" = ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]v
+         VM => VM [ V.id <- V with exit_epoch         = ExitEpoch
+                              with withdrawable_epoch = ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]v
        ,
          _
        ) </validators>
@@ -705,22 +705,22 @@ rule computeExitEpochAux(Validators, ExitEpoch, ActiveValidatorSize)
      #else ExitEpoch
      #fi
 
-syntax Int ::= maxExitEpoch(Validators) [function, functional]
+syntax Int ::= maxExitEpoch(Validators) [function, functional, smtlib(maxExitEpoch)]
 rule maxExitEpoch(v(VM, SetItem(VID) VIDs:Set)) => maxInt(VM[VID]v.exit_epoch, maxExitEpoch(v(VM, VIDs)))
 rule maxExitEpoch(v(_, .Set)) => 0
 
-syntax Int ::= countValidatorsToExit(Validators, Int) [function, functional]
+syntax Int ::= countValidatorsToExit(Validators, Int) [function, functional, smtlib(countValidatorsToExit)]
 rule countValidatorsToExit(v(VM, SetItem(VID) VIDs:Set), ExitEpoch)
   => #if VM[VID]v.exit_epoch ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(v(VM, VIDs), ExitEpoch)
 rule countValidatorsToExit(v(_, .Set), _) => 0
 
-syntax List ::= activeValidators(Validators, Int) [function, functional]
+syntax ValidatorList ::= activeValidators(Validators, Int) [function, functional, smtlib(activeValidators)]
 rule activeValidators(v(VM, SetItem(VID) VIDs:Set), Epoch)
   => #if isActiveValidator(VM[VID]v, Epoch)
-     #then ListItem(VM[VID]v) activeValidators(v(VM, VIDs), Epoch)
-     #else                    activeValidators(v(VM, VIDs), Epoch)
+     #then VM[VID]v activeValidators(v(VM, VIDs), Epoch)
+     #else          activeValidators(v(VM, VIDs), Epoch)
      #fi
-rule activeValidators(v(_, .Set), _) => .List
+rule activeValidators(v(_, .Set), _) => .ValidatorList
 
 // compute_activation_exit_epoch
 syntax Int ::= delayedActivationExitEpoch(Int) [function, functional]
