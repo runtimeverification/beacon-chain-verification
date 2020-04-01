@@ -58,7 +58,6 @@ requires true
 andBool Slot <=Int TargetSlot
 andBool TargetSlot ==Int lastSlotOf(epochOf(Slot)) // NOTE: this already implies Slot <=Int TargetSlot
 // types
-andBool isValidators(Vs)
 andBool Slot >=Int 0
 andBool TargetSlot >=Int 0
 andBool LastBlockSlot >=Int 0

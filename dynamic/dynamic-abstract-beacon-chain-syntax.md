@@ -3,6 +3,7 @@
 ```k
 module DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
+imports STRING
 
 // libraries
 syntax Int ::= hash(Int) [function, functional, smtlib(hash)]
@@ -162,6 +163,19 @@ rule #Validator(_,_,(_,_),(X,_),(_,_)).activation_eligibility_epoch => X
 rule #Validator(_,_,(_,_),(_,X),(_,_)).activation_epoch             => X
 rule #Validator(_,_,(_,_),(_,_),(X,_)).exit_epoch                   => X
 rule #Validator(_,_,(_,_),(_,_),(_,X)).withdrawable_epoch           => X
+
+/*
+syntax Validator ::= Validator "withBool" String "=" Bool [function, functional, klabel(v_with_bool) , smtlib(v_with_bool)]
+syntax Validator ::= Validator "withInt"  String "=" Int  [function, functional, klabel(v_with_int)  , smtlib(v_with_int)]
+rule #Validator(A,S,(B,C),(D,E),(F,G)) withBool "slashed"                      = V => #Validator(A,V,(B,C),(D,E),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "balance"                      = V => #Validator(A,S,(V,C),(D,E),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "effective_balance"            = V => #Validator(A,S,(B,V),(D,E),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "activation_eligibility_epoch" = V => #Validator(A,S,(B,C),(V,E),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "activation_epoch"             = V => #Validator(A,S,(B,C),(D,V),(F,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "exit_epoch"                   = V => #Validator(A,S,(B,C),(D,E),(V,G))
+rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "withdrawable_epoch"           = V => #Validator(A,S,(B,C),(D,E),(F,V))
+*/
+
 syntax Validator ::= Validator "with" "slashed"                      "=" Bool [function, functional, klabel(v_with_slashed)                     , smtlib(v_with_slashed)                     ]
 syntax Validator ::= Validator "with" "balance"                      "=" Int  [function, functional, klabel(v_with_balance)                     , smtlib(v_with_balance)                     ]
 syntax Validator ::= Validator "with" "effective_balance"            "=" Int  [function, functional, klabel(v_with_effective_balance)           , smtlib(v_with_effective_balance)           ]
@@ -176,6 +190,48 @@ rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_eligibility_epoch = V => 
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_epoch             = V => #Validator(A,S,(B,C),(D,V),(F,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with exit_epoch                   = V => #Validator(A,S,(B,C),(D,E),(V,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => #Validator(A,S,(B,C),(D,E),(F,V))
+```
+
+```k
+syntax Validators ::= v(ValidatorMap, Set) [smtlib(v)]
+syntax ValidatorMap ::= Validators ".vmap" [function]
+syntax Set          ::= Validators ".vset" [function]
+rule v(M,S).vmap => M
+rule v(M,S).vset => S
+```
+
+```k
+syntax ValidatorList ::= ".ValidatorList"        [klabel(nilV),  smtlib(nilV)]
+syntax ValidatorList ::= Validator ValidatorList [klabel(consV), smtlib(consV)]
+syntax Int ::= size(ValidatorList) [function, klabel(sizeV), smtlib(sizeV)]
+rule size(V Vs) => 1 +Int size(Vs)
+rule size(.ValidatorList) => 0
+```
+
+```k
+syntax ValidatorMap ::= ".ValidatorMap"                          [          klabel(emptyV),  smtlib(emptyV)]
+syntax ValidatorMap ::= ValidatorMap "[" Int "<-" Validator "]v" [function, klabel(storeV),  smtlib(storeV)]
+syntax Validator    ::= ValidatorMap "[" Int "]v"                [function, klabel(selectV), smtlib(selectV)]
+
+rule ( M [ K1 <- V ]v ) [ K2 ]v => V         requires K1  ==Int K2
+rule ( M [ K1 <- V ]v ) [ K2 ]v => M [ K2 ]v requires K1 =/=Int K2
+```
+
+```k
+/*
+// in-place update
+
+rule ( M [ K0 <- V0 ]v ) [ K1 <- V1 ]v => M [ K0 <- V1 ]v
+  requires K0 ==Int K1
+
+rule ( M [ K0 <- V0 ]v ) [ K1 <- V1 ]v => ( M [ K1 <- V1 ]v ) [ K0 <- V0 ]v
+  requires K0 =/=Int K1 andBool K1 in keys(M)
+
+syntax Set ::= keys(ValidatorMap) [function]
+
+rule K1 in keys(M [ K2 <- _ ]v) => true          requires K1  ==Int K2
+rule K1 in keys(M [ K2 <- _ ]v) => K1 in keys(M) requires K1 =/=Int K2
+*/
 ```
 
 ## Constants
