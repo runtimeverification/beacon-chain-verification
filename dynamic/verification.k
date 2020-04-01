@@ -35,6 +35,8 @@ rule (V with withdrawable_epoch           = _).exit_epoch => V.exit_epoch
 // for l-spec
 rule countValidatorsToExit(v(VM [ VID <- V ]v, VIDs), E) => countValidatorsToExit(v(VM, VIDs), E) +Int 1
     requires V.exit_epoch =/=Int VM[VID]v.exit_epoch
+     andBool V.exit_epoch ==Int E
+     andBool VID in VIDs
 
 syntax Tactic ::= case(Pred) // case analysis
 

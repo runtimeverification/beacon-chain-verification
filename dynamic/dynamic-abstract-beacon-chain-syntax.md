@@ -3,7 +3,6 @@
 ```k
 module DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
-imports STRING
 
 // libraries
 syntax Int ::= hash(Int) [function, functional, smtlib(hash)]
@@ -163,19 +162,6 @@ rule #Validator(_,_,(_,_),(X,_),(_,_)).activation_eligibility_epoch => X
 rule #Validator(_,_,(_,_),(_,X),(_,_)).activation_epoch             => X
 rule #Validator(_,_,(_,_),(_,_),(X,_)).exit_epoch                   => X
 rule #Validator(_,_,(_,_),(_,_),(_,X)).withdrawable_epoch           => X
-
-/*
-syntax Validator ::= Validator "withBool" String "=" Bool [function, functional, klabel(v_with_bool) , smtlib(v_with_bool)]
-syntax Validator ::= Validator "withInt"  String "=" Int  [function, functional, klabel(v_with_int)  , smtlib(v_with_int)]
-rule #Validator(A,S,(B,C),(D,E),(F,G)) withBool "slashed"                      = V => #Validator(A,V,(B,C),(D,E),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "balance"                      = V => #Validator(A,S,(V,C),(D,E),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "effective_balance"            = V => #Validator(A,S,(B,V),(D,E),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "activation_eligibility_epoch" = V => #Validator(A,S,(B,C),(V,E),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "activation_epoch"             = V => #Validator(A,S,(B,C),(D,V),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "exit_epoch"                   = V => #Validator(A,S,(B,C),(D,E),(V,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) withInt  "withdrawable_epoch"           = V => #Validator(A,S,(B,C),(D,E),(F,V))
-*/
-
 syntax Validator ::= Validator "with" "slashed"                      "=" Bool [function, functional, klabel(v_with_slashed)                     , smtlib(v_with_slashed)                     ]
 syntax Validator ::= Validator "with" "balance"                      "=" Int  [function, functional, klabel(v_with_balance)                     , smtlib(v_with_balance)                     ]
 syntax Validator ::= Validator "with" "effective_balance"            "=" Int  [function, functional, klabel(v_with_effective_balance)           , smtlib(v_with_effective_balance)           ]
@@ -193,9 +179,9 @@ rule #Validator(A,S,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => 
 ```
 
 ```k
-syntax Validators ::= v(ValidatorMap, Set) [smtlib(v)]
+syntax Validators ::= v(ValidatorMap, IntList) [smtlib(v)]
 syntax ValidatorMap ::= Validators ".vmap" [function]
-syntax Set          ::= Validators ".vset" [function]
+syntax IntList      ::= Validators ".vset" [function]
 rule v(M,S).vmap => M
 rule v(M,S).vset => S
 ```
@@ -206,6 +192,15 @@ syntax ValidatorList ::= Validator ValidatorList [klabel(consV), smtlib(consV)]
 syntax Int ::= size(ValidatorList) [function, klabel(sizeV), smtlib(sizeV)]
 rule size(V Vs) => 1 +Int size(Vs)
 rule size(.ValidatorList) => 0
+```
+
+```k
+syntax IntList ::= ".IntList"   [klabel(nilI),  smtlib(nilI)]
+syntax IntList ::= Int IntList  [klabel(consI), smtlib(consI)]
+syntax Bool ::= Int "in" IntList [function, klabel(inI), smtlib(inI)]
+rule J in (I Is) => true    requires J  ==Int I
+rule J in (I Is) => J in Is requires J =/=Int I
+rule _ in .IntList => false
 ```
 
 ```k
