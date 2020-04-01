@@ -179,9 +179,9 @@ rule #Validator(A,S,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => 
 ```
 
 ```k
-syntax Validators ::= v(ValidatorMap, Set) [smtlib(v)]
+syntax Validators ::= v(ValidatorMap, IntList) [smtlib(v)]
 syntax ValidatorMap ::= Validators ".vmap" [function]
-syntax Set          ::= Validators ".vset" [function]
+syntax IntList      ::= Validators ".vset" [function]
 rule v(M,S).vmap => M
 rule v(M,S).vset => S
 ```
@@ -192,6 +192,15 @@ syntax ValidatorList ::= Validator ValidatorList [klabel(consV), smtlib(consV)]
 syntax Int ::= size(ValidatorList) [function, klabel(sizeV), smtlib(sizeV)]
 rule size(V Vs) => 1 +Int size(Vs)
 rule size(.ValidatorList) => 0
+```
+
+```k
+syntax IntList ::= ".IntList"   [klabel(nilI),  smtlib(nilI)]
+syntax IntList ::= Int IntList  [klabel(consI), smtlib(consI)]
+syntax Bool ::= Int "in" IntList [function, klabel(inI), smtlib(inI)]
+rule J in (I Is) => true    requires J  ==Int I
+rule J in (I Is) => J in Is requires J =/=Int I
+rule _ in .IntList => false
 ```
 
 ```k

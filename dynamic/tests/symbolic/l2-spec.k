@@ -31,6 +31,7 @@ andBool ?Epoch ==Int epochOf(Slot)
 andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(v(VM1,VIDs)), delayedActivationExitEpoch(?Epoch))
 andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(v(VM1,VIDs), ?Epoch)))
 // conditions
+andBool V.id in VIDs
 andBool V.exit_epoch ==Int FAR_FUTURE_EPOCH
 andBool VM1[V.id]v ==K V
 andBool ?LastExitEpoch +Int 1 <Int FAR_FUTURE_EPOCH
