@@ -233,21 +233,57 @@ rule K1 in keys(M [ K2 <- _ ]v) => K1 in keys(M) requires K1 =/=Int K2
 
 ```k
 // macros
-syntax Int ::= "SLOTS_PER_EPOCH"                        rule SLOTS_PER_EPOCH                     =>      4 /*    32 */    [macro]
-syntax Int ::= "MIN_ATTESTATION_INCLUSION_DELAY"        rule MIN_ATTESTATION_INCLUSION_DELAY     =>      1 /*     1 */    [macro]
-syntax Int ::= "MAX_ATTESTATION_INCLUSION_DELAY"        rule MAX_ATTESTATION_INCLUSION_DELAY     => SLOTS_PER_EPOCH       [macro]
-syntax Int ::= "FAR_FUTURE_EPOCH"                       rule FAR_FUTURE_EPOCH                    => 999999 /* 2^64 - 1 */ [macro]
-syntax Int ::= "MIN_DEPOSIT_AMOUNT"                     rule MIN_DEPOSIT_AMOUNT                  =>      1 /*     1 */    [macro]
-syntax Int ::= "MAX_EFFECTIVE_BALANCE"                  rule MAX_EFFECTIVE_BALANCE               =>      2 /*    32 */    [macro]
-syntax Int ::= "EJECTION_BALANCE"                       rule EJECTION_BALANCE                    =>      0 /*    16 */    [macro]
-syntax Int ::= "EFFECTIVE_BALANCE_INCREMENT"            rule EFFECTIVE_BALANCE_INCREMENT         =>      1 /*     1 */    [macro]
-syntax Int ::= "PERSISTENT_COMMITTEE_PERIOD"            rule PERSISTENT_COMMITTEE_PERIOD         =>      1 /*  2048 */    [macro]
-syntax Int ::= "ACTIVATION_EXIT_DELAY"                  rule ACTIVATION_EXIT_DELAY               =>      1 /*     4 */    [macro]
-syntax Int ::= "MIN_VALIDATOR_WITHDRAWABILITY_DELAY"    rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>      1 /*   256 */    [macro]
-syntax Int ::= "MIN_PER_EPOCH_CHURN_LIMIT"              rule MIN_PER_EPOCH_CHURN_LIMIT           =>      1 /*     4 */    [macro]
-syntax Int ::= "CHURN_LIMIT_QUOTIENT"                   rule CHURN_LIMIT_QUOTIENT                =>      1 /* 65536 */    [macro]
-syntax Int ::= "EPOCHS_PER_SLASHINGS_VECTOR"            rule EPOCHS_PER_SLASHINGS_VECTOR         =>      1 /*  8192 */    [macro]
-syntax Int ::= "MIN_SLASHING_PENALTY_QUOTIENT"          rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1 /*    32 */    [macro]
+syntax Int ::= "SLOTS_PER_EPOCH"
+syntax Int ::= "MIN_ATTESTATION_INCLUSION_DELAY"
+syntax Int ::= "MAX_ATTESTATION_INCLUSION_DELAY"
+syntax Int ::= "FAR_FUTURE_EPOCH"
+syntax Int ::= "MIN_DEPOSIT_AMOUNT"
+syntax Int ::= "MAX_EFFECTIVE_BALANCE"
+syntax Int ::= "EJECTION_BALANCE"
+syntax Int ::= "EFFECTIVE_BALANCE_INCREMENT"
+syntax Int ::= "PERSISTENT_COMMITTEE_PERIOD"
+syntax Int ::= "ACTIVATION_EXIT_DELAY"
+syntax Int ::= "MIN_VALIDATOR_WITHDRAWABILITY_DELAY"
+syntax Int ::= "MIN_PER_EPOCH_CHURN_LIMIT"
+syntax Int ::= "CHURN_LIMIT_QUOTIENT"
+syntax Int ::= "EPOCHS_PER_SLASHINGS_VECTOR"
+syntax Int ::= "MIN_SLASHING_PENALTY_QUOTIENT"
+```
+
+```{.k .concrete}
+rule SLOTS_PER_EPOCH                     =>      4          [macro]
+rule MIN_ATTESTATION_INCLUSION_DELAY     =>      1          [macro]
+rule MAX_ATTESTATION_INCLUSION_DELAY     => SLOTS_PER_EPOCH [macro]
+rule FAR_FUTURE_EPOCH                    => 999999          [macro]
+rule MIN_DEPOSIT_AMOUNT                  =>      1          [macro]
+rule MAX_EFFECTIVE_BALANCE               =>      2          [macro]
+rule EJECTION_BALANCE                    =>      0          [macro]
+rule EFFECTIVE_BALANCE_INCREMENT         =>      1          [macro]
+rule PERSISTENT_COMMITTEE_PERIOD         =>      1          [macro]
+rule ACTIVATION_EXIT_DELAY               =>      1          [macro]
+rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>      1          [macro]
+rule MIN_PER_EPOCH_CHURN_LIMIT           =>      1          [macro]
+rule CHURN_LIMIT_QUOTIENT                =>      1          [macro]
+rule EPOCHS_PER_SLASHINGS_VECTOR         =>      1          [macro]
+rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1          [macro]
+```
+
+```{.k .symbolic}
+rule SLOTS_PER_EPOCH                     =>    32            [macro]
+rule MIN_ATTESTATION_INCLUSION_DELAY     =>     1            [macro]
+rule MAX_ATTESTATION_INCLUSION_DELAY     => SLOTS_PER_EPOCH  [macro]
+rule FAR_FUTURE_EPOCH                    => 2 ^Int 64 -Int 1 [macro]
+rule MIN_DEPOSIT_AMOUNT                  =>     1            [macro] // TODO: Gwei
+rule MAX_EFFECTIVE_BALANCE               =>    32            [macro] // TODO: Gwei
+rule EJECTION_BALANCE                    =>    16            [macro] // TODO: Gwei
+rule EFFECTIVE_BALANCE_INCREMENT         =>     1            [macro] // TODO: Gwei
+rule PERSISTENT_COMMITTEE_PERIOD         =>  2048            [macro]
+rule ACTIVATION_EXIT_DELAY               =>     4            [macro] // MAX_SEED_LOOKAHEAD
+rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>   256            [macro]
+rule MIN_PER_EPOCH_CHURN_LIMIT           =>     4            [macro]
+rule CHURN_LIMIT_QUOTIENT                => 65536            [macro]
+rule EPOCHS_PER_SLASHINGS_VECTOR         =>  8192            [macro]
+rule MIN_SLASHING_PENALTY_QUOTIENT       =>    32            [macro]
 ```
 
 ## Macros
