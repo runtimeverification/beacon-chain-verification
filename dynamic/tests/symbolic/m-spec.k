@@ -30,4 +30,33 @@ ensures true
 andBool size(?ValidatorsToBeActivated) <=Int ?ChurnLimit
 andBool subset(?ValidatorsToBeActivated, activationQueue(Validators, FinalizedEpoch))
 
+rule
+<T>
+  <k> activateValidators(V Vs => Vs) </k>
+  <currentSlot> Slot </currentSlot>
+  <states>
+    <state>
+      <slot> Slot </slot>
+      <validators> v(VM1 => ?VM2, _) </validators>
+      ...
+    </state>
+    ...
+  </states>
+  ...
+</T>
+requires true
+// types
+andBool Slot >=Int 0
+// let-bindings
+andBool ?Epoch ==Int epochOf(Slot) -Int 1
+ensures true
+// ensures
+andBool ?VM2[V.id]v.activation_epoch ==Int delayedActivationExitEpoch(?Epoch)
+
+rule
+<T>
+  <k> activateValidators(.ValidatorList) => . </k>
+  ...
+</T>
+
 endmodule

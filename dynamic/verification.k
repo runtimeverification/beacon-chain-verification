@@ -38,6 +38,14 @@ rule (V with activation_epoch             = _).exit_epoch => V.exit_epoch
 rule (V with exit_epoch                   = I).exit_epoch => I
 rule (V with withdrawable_epoch           = _).exit_epoch => V.exit_epoch
 
+rule (V with slashed                      = _).activation_epoch => V.activation_epoch
+rule (V with balance                      = _).activation_epoch => V.activation_epoch
+rule (V with effective_balance            = _).activation_epoch => V.activation_epoch
+rule (V with activation_eligibility_epoch = _).activation_epoch => V.activation_epoch
+rule (V with activation_epoch             = I).activation_epoch => I
+rule (V with exit_epoch                   = _).activation_epoch => V.activation_epoch
+rule (V with withdrawable_epoch           = _).activation_epoch => V.activation_epoch
+
 // for l-spec
 rule countValidatorsToExit(v(VM [ VID <- V ]v, VIDs), E) => countValidatorsToExit(v(VM, VIDs), E) +Int 1
     requires V.exit_epoch =/=Int VM[VID]v.exit_epoch
