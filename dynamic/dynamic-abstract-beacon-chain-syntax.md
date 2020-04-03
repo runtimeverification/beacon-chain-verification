@@ -202,6 +202,10 @@ rule take(_, .ValidatorList) => .ValidatorList
 // sort in the order of activation_eligibility_epoch
 syntax ValidatorList ::= sort(ValidatorList) [function, klabel(sortV), smtlib(sortV)]
 // TODO: implement
+
+// subset in set-like view
+syntax Bool ::= subset(ValidatorList, ValidatorList) [function, klabel(subsetV), smtlib(subsetV)]
+// TODO: implement
 ```
 
 ```k
