@@ -14,6 +14,12 @@ rule (I1 -Int I2) -Int I3 => I1 -Int (I2 +Int I3) requires notBool #isConcrete(I
 
 rule (I1 *Int I2) /Int I3 => I1 requires I2 ==Int I3 andBool I3 =/=Int 0
 
+rule I >=Int I => true
+rule I <=Int I => true
+
+rule I >Int I => false
+rule I <Int I => false
+
 endmodule
 
 module VERIFICATION
@@ -32,11 +38,27 @@ rule (V with activation_epoch             = _).exit_epoch => V.exit_epoch
 rule (V with exit_epoch                   = I).exit_epoch => I
 rule (V with withdrawable_epoch           = _).exit_epoch => V.exit_epoch
 
+rule (V with slashed                      = _).activation_epoch => V.activation_epoch
+rule (V with balance                      = _).activation_epoch => V.activation_epoch
+rule (V with effective_balance            = _).activation_epoch => V.activation_epoch
+rule (V with activation_eligibility_epoch = _).activation_epoch => V.activation_epoch
+rule (V with activation_epoch             = I).activation_epoch => I
+rule (V with exit_epoch                   = _).activation_epoch => V.activation_epoch
+rule (V with withdrawable_epoch           = _).activation_epoch => V.activation_epoch
+
 // for l-spec
 rule countValidatorsToExit(v(VM [ VID <- V ]v, VIDs), E) => countValidatorsToExit(v(VM, VIDs), E) +Int 1
     requires V.exit_epoch =/=Int VM[VID]v.exit_epoch
      andBool V.exit_epoch ==Int E
      andBool VID in VIDs
+
+// for m-spec
+rule size(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
+rule size(_:ValidatorList) >=Int 0 => true [smt-lemma]
+
+rule subset(take(_, S1), S2) => true requires subset(S1, S2)
+rule subset(sort(S1), S2) => true requires subset(S1, S2)
+rule subset(S, S) => true
 
 syntax Tactic ::= case(Pred) // case analysis
 

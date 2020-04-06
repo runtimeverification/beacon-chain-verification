@@ -120,7 +120,9 @@ rule <k> stateTransition(NewBlock)
       => processSlots(NewBlock.slot)
       ~> processBlock(NewBlock) ... </k>
      <currentSlot> Slot </currentSlot>
-     requires Slot <Int NewBlock.slot
+     requires Slot <Int NewBlock.slot // TODO: <=Int or <Int ?
+// TODO:
+// rule stateTransition(NewBlock) => bottom [owise]
 ```
 
 The `process_epoch()` in the concrete model is called before increasing the slot number, while it is called after increasing `Slot` here.
@@ -146,6 +148,10 @@ rule <k> (. => processSlot()
 rule <k> processSlots(TargetSlot) => . ... </k>
      <currentSlot> Slot </currentSlot>
      requires Slot ==Int TargetSlot
+
+rule <k> processSlots(TargetSlot) => bottom ... </k>
+     <currentSlot> Slot </currentSlot>
+     requires Slot >Int TargetSlot
 ```
 
 Updating the cached history is not required here since the full history is recorded in the abstract model.
@@ -318,29 +324,39 @@ rule isJustified(Epoch, Epoch |-> false _:Map) => false
 // process_registry_updates
 syntax KItem ::= processValidatorUpdates()
 rule <k> processValidatorUpdates()
-      => processValidatorEjection(Validators)    // TODO: processValidatorEjection comes after updateActivationEligibility in the concrete model
-      ~> updateActivationEligibility(Validators)
+      => processValidatorEjections(VIDs)    // TODO: processValidatorEjection comes after updateActivationEligibility in the concrete model
+      ~> updateActivationEligibilities(VIDs)
       ~> processValidatorActivation() ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <validators> Validators </validators>
+       <validators> v(_, VIDs) </validators>
        ...
      </state>
 
-syntax KItem ::= processValidatorEjection(Validators)
-rule <k> processValidatorEjection(v(VM, VID VIDs))
+syntax KItem ::= processValidatorEjections(IntList)
+rule processValidatorEjections(VID VIDs) => processValidatorEjection(VID) ~> processValidatorEjections(VIDs)
+rule processValidatorEjections(.IntList) => .
+
+syntax KItem ::= processValidatorEjection(Int)
+rule <k> processValidatorEjection(VID)
       => #if isActiveValidator(VM[VID]v, epochOf(Slot) -Int 1) andBool VM[VID]v.effective_balance <=Int EJECTION_BALANCE
          #then initiateValidatorExit(VM[VID]v)
          #else .
-         #fi
-      ~> processValidatorEjection(v(VM, VIDs)) ... </k>
+         #fi ... </k>
      <currentSlot> Slot </currentSlot>
-rule processValidatorEjection(v(_, .IntList)) => .
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM, _) </validators>
+       ...
+     </state>
 
-syntax KItem ::= updateActivationEligibility(Validators)
-rule <k> updateActivationEligibility(v(VM0, VID VIDs))
-      => updateActivationEligibility(v(VM0, VIDs)) ... </k>
+syntax KItem ::= updateActivationEligibilities(IntList)
+rule updateActivationEligibilities(VID VIDs) => updateActivationEligibility(VID) ~> updateActivationEligibilities(VIDs)
+rule updateActivationEligibilities(.IntList) => .
+
+syntax KItem ::= updateActivationEligibility(Int)
+rule <k> updateActivationEligibility(VID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -351,18 +367,11 @@ rule <k> updateActivationEligibility(v(VM0, VID VIDs))
          #then VM [ VID <- VM[VID]v with activation_eligibility_epoch = epochOf(Slot) ]v
          #else VM
          #fi
-       /*
-         VM => VM [ VID <- #if isActivationEligible(VM[VID]v)
-                           #then VM[VID]v with activation_eligibility_epoch = epochOf(Slot)
-                           #else VM[VID]v
-                           #fi ]v
-       */
        ,
          _
        ) </validators>
        ...
      </state>
-rule updateActivationEligibility(v(_, .IntList)) => .
 
 // is_eligible_for_activation_queue
 syntax Bool ::= isActivationEligible(Validator) [function, functional]
@@ -382,8 +391,11 @@ rule <k> processValidatorActivation()
      </state>
 
 syntax KItem ::= activateValidators(ValidatorList)
-rule <k> activateValidators(V Vs)
-      => activateValidators(  Vs) ... </k>
+rule activateValidators(V Vs) => activateValidator(V) ~> activateValidators(Vs)
+rule activateValidators(.ValidatorList) => .
+
+syntax KItem ::= activateValidator(Validator)
+rule <k> activateValidator(V) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -394,13 +406,12 @@ rule <k> activateValidators(V Vs)
        ) </validators>
        ...
      </state>
-rule activateValidators(.ValidatorList) => .
 
 syntax ValidatorList ::= activationQueueUptoChurnLimit(Validators, Int, Int) [function, functional]
 rule activationQueueUptoChurnLimit(Validators, FinalizedEpoch, CurrentEpoch)
-  => dropBeyondLimit(
-       activationQueue(Validators, FinalizedEpoch),
-       churnLimit(size(activeValidators(Validators, CurrentEpoch)))
+  => take(
+       churnLimit(size(activeValidators(Validators, CurrentEpoch))),
+       sort(activationQueue(Validators, FinalizedEpoch))
      )
 
 syntax ValidatorList ::= activationQueue(Validators, Int) [function, functional]
@@ -411,23 +422,6 @@ rule activationQueue(v(VM, VID VIDs), FinalizedEpoch)
      #else          activationQueue(v(VM, VIDs), FinalizedEpoch)
      #fi
 rule activationQueue(v(_, .IntList), _) => .ValidatorList
-
-syntax ValidatorList ::= dropBeyondLimit(ValidatorList, Int) [function, functional]
-rule dropBeyondLimit(Vs, Limit) => Vs requires size(Vs) <=Int Limit
-rule dropBeyondLimit(Vs, Limit)
-  => dropBeyondLimit(dropLastActivationEligibleValidator(Vs), Limit)
-     requires size(Vs) >Int Limit
-
-syntax ValidatorList ::= dropLastActivationEligibleValidator(ValidatorList)                     [function, functional]
-              | dropLastActivationEligibleValidatorAux(ValidatorList, Validator, ValidatorList) [function, functional]
-rule dropLastActivationEligibleValidator(V Vs)
-  => dropLastActivationEligibleValidatorAux(Vs, V, .ValidatorList)
-rule dropLastActivationEligibleValidatorAux(V:Validator Vs, MaxV, AccVs)
-  => #if V.activation_eligibility_epoch >Int MaxV.activation_eligibility_epoch
-     #then dropLastActivationEligibleValidatorAux(Vs,    V, MaxV AccVs)
-     #else dropLastActivationEligibleValidatorAux(Vs, MaxV,    V AccVs)
-     #fi
-rule dropLastActivationEligibleValidatorAux(.ValidatorList, _, Vs) => Vs
 ```
 
 ## Block Processing
@@ -498,6 +492,8 @@ rule <k> processSlashing(#Slashing(A1, A2))
      </state>
      requires isSlashableAttestation(A1, A2) // assertion
       andBool A1.attester ==Int A2.attester
+// TODO:
+// rule processSlashing(#Slashing(A1, A2)) => bottom [owise]
 
 // slash_validator
 syntax KItem ::= slashValidator(Validator)
@@ -657,6 +653,8 @@ rule <k> processVoluntaryExit(E)
       andBool VM[E.validator]v.exit_epoch ==Int FAR_FUTURE_EPOCH
       andBool epochOf(Slot) >=Int E.epoch
       andBool epochOf(Slot) >=Int VM[E.validator]v.activation_epoch +Int PERSISTENT_COMMITTEE_PERIOD
+// TODO:
+// rule processVoluntaryExit(E) => bottom [owise]
 
 // is_active_validator
 syntax Bool ::= isActiveValidator(Validator, Int) [function, functional]

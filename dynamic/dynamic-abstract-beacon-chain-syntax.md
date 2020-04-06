@@ -192,6 +192,20 @@ syntax ValidatorList ::= Validator ValidatorList [klabel(consV), smtlib(consV)]
 syntax Int ::= size(ValidatorList) [function, klabel(sizeV), smtlib(sizeV)]
 rule size(V Vs) => 1 +Int size(Vs)
 rule size(.ValidatorList) => 0
+
+// take the first N elements at most
+syntax ValidatorList ::= take(Int, ValidatorList) [function, klabel(takeV), smtlib(takeV)]
+rule take(N, V Vs) => V take(N -Int 1, Vs) requires N >Int 0
+rule take(0, _) => .ValidatorList
+rule take(_, .ValidatorList) => .ValidatorList
+
+// sort in the order of activation_eligibility_epoch
+syntax ValidatorList ::= sort(ValidatorList) [function, klabel(sortV), smtlib(sortV)]
+// TODO: implement
+
+// subset in set-like view
+syntax Bool ::= subset(ValidatorList, ValidatorList) [function, klabel(subsetV), smtlib(subsetV)]
+// TODO: implement
 ```
 
 ```k
