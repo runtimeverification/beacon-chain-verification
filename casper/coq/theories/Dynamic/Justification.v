@@ -31,14 +31,14 @@ Definition link_supporters st s t s_h t_h : {set Validator} :=
 (* The assumption that votes originate only from the vset of the target block
    being voted for (Needed for liveness) *)
 Axiom votes_from_target_vset: forall x st s s_h t t_h, 
-  x \in link_supporters st s t s_h t_h -> x \in vSet.[vs_fun t].
+  x \in link_supporters st s t s_h t_h -> x \in vset.[vs_fun t].
 
 (* The voter set for a link constitute a supermajority *)
 Definition supermajority_link (st:State) (s t : Hash) (s_h t_h : nat) : bool :=
   quorum_2 (link_supporters st s t s_h t_h) t.
 
 (* Adding more votes (from the same validators) to a state preserves supermajority links *)
-(** Note: Needed the assumption that the extra votes must have come from vSet.[target] **)
+(** Note: Needed the assumption that the extra votes must have come from vset.[target] **)
 Lemma supermajority_weaken: forall (st st':State) s t s_h t_h
   (HSub:forall (v: Vote), v \in st -> v \in st'),
       supermajority_link st s t s_h t_h
