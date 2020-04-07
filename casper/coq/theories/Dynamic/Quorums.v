@@ -21,25 +21,32 @@ Parameter vset : {fmap Hash -> {set Validator}}.
 (* We assume the map vset is total *)
 Axiom vs_fun : forall h : Hash, h \in vset.
 
+(* A finite map defining the stake (weight) of a validator *)
+(* Note: weight is currently nat (will probably use reals in the future) *)
+Parameter stake : {fmap Validator -> nat}.
+
+(* We assume the map stake is total *)
+Axiom st_fun : forall v : Validator, v \in stake.
+
 (* A finite map defining the weight of a given set of validators 
-   Note: weight is currently nat (will probably use real in the future)
  *)
-Parameter wt : {fmap {set Validator} -> nat}.
+Definition wt (vs:{set Validator}) : nat := \sum_(v in vs) stake.[st_fun v].
 
 (* We assume the map weight is both total and zero at the empty set *)
-Axiom wt_fun  : forall s : {set Validator}, s \in wt.
+(* Axiom wt_fun  : forall s : {set Validator}, s \in wt.
 Axiom wt_zero : forall s : {set Validator}, wt.[wt_fun s] == 0 <-> s == set0.
+*)
 
-(** Quorums **)
+(** Quorum Predicates **)
 (* A predicate for an "at least 1/3 weight" set of validators *)
 Definition quorum_1 (vs : {set Validator}) (b : Hash) : bool :=
   (vs \subset vset.[vs_fun b]) && 
-  (wt.[wt_fun vs] >= (wt.[wt_fun vset.[vs_fun b]] %/ 3)).
+  (wt vs >= (wt vset.[vs_fun b] %/ 3)).
 
 (* A predicate for an "at least 2/3 weight" set of validators *)
 Definition quorum_2 (vs : {set Validator}) (b : Hash) : bool :=
   (vs \subset vset.[vs_fun b]) && 
-  (wt.[wt_fun vs] >= (2 * wt.[wt_fun vset.[vs_fun b]] %/ 3)).
+  (wt vs >= (2 * wt vset.[vs_fun b] %/ 3)).
 
 (* Meaning of a validator set being slashed in thr context of dynamic validator sets *)
 Definition q_intersection_slashed st :=
