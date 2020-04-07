@@ -175,6 +175,7 @@ rule <k> processEpoch()
       ~> processFinalization(epochOf(Slot) -Int 1)
 ```
 ```{.k .dynamic}
+      ~> processRewardsPenalties(VIDs)
       ~> processValidatorUpdates()
 ```
 ```k
@@ -185,6 +186,7 @@ rule <k> processEpoch()
        <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
        <justified> J => J[epochOf(Slot) <- false] </justified>
        <finalized> F => F[epochOf(Slot) <- false] </finalized>
+       <validators> v(_, VIDs) </validators>
        ...
      </state>
      requires isFirstSlotOfEpoch(Slot)
@@ -315,6 +317,36 @@ rule isJustified(Epoch, Justified) => {Justified[Epoch]}:>Bool
 rule isJustified(Epoch, Epoch |-> true  _:Map) => true
 rule isJustified(Epoch, Epoch |-> false _:Map) => false
 */
+```
+
+### Rewards and Penalties
+
+```{.k .dynamic}
+// process_rewards_and_penalties
+syntax KItem ::= processRewardsPenalties(IntList)
+rule processRewardsPenalties(VID VIDs) => processRewardPenalty(VID) ~> processRewardsPenalties(VIDs)
+rule processRewardsPenalties(.IntList) => .
+
+syntax KItem ::= processRewardPenalty(Int)
+rule <k> processRewardPenalty(VID)
+      => . ... </k>
+
+// get_base_reward
+syntax Int ::= getBaseReward(Validator, Int) [function]
+rule getBaseReward(V, SafeTotalActiveBalance)
+  => V.effective_balance *Int BASE_REWARD_FACTOR
+     /Int sqrtInt(SafeTotalActiveBalance)
+     /Int BASE_REWARDS_PER_EPOCH
+
+syntax Int ::= totalActiveBalance(Validators, Int) [function]
+rule totalActiveBalance(v(VM, VID VIDs), Epoch) => #if isActiveValidator(VM[VID]v, Epoch)
+                                                   #then VM[VID]v.effective_balance
+                                                   #else 0
+                                                   #fi +Int totalActiveBalance(v(VM, VIDs), Epoch)
+rule totalActiveBalance(v(_, .IntList), _) => 0
+
+syntax Int ::= safeTotalActiveBalance(Validators, Int) [function]
+rule safeTotalActiveBalance(VS, Epoch) => maxInt(EFFECTIVE_BALANCE_INCREMENT, totalActiveBalance(VS, Epoch))
 ```
 
 ### Validator Updates

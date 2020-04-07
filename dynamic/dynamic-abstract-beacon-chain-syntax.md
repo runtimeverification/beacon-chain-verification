@@ -262,6 +262,8 @@ syntax Int ::= "MIN_PER_EPOCH_CHURN_LIMIT"
 syntax Int ::= "CHURN_LIMIT_QUOTIENT"
 syntax Int ::= "EPOCHS_PER_SLASHINGS_VECTOR"
 syntax Int ::= "MIN_SLASHING_PENALTY_QUOTIENT"
+syntax Int ::= "BASE_REWARD_FACTOR"
+syntax Int ::= "BASE_REWARDS_PER_EPOCH"
 ```
 
 ```{.k .concrete}
@@ -298,6 +300,13 @@ rule MIN_PER_EPOCH_CHURN_LIMIT           =>     4            [macro]
 rule CHURN_LIMIT_QUOTIENT                => 65536            [macro]
 rule EPOCHS_PER_SLASHINGS_VECTOR         =>  8192            [macro]
 rule MIN_SLASHING_PENALTY_QUOTIENT       =>    32            [macro]
+rule BASE_REWARD_FACTOR                  =>    64            [macro]
+rule BASE_REWARDS_PER_EPOCH              =>     4            [macro]
+```
+
+```k
+syntax Int ::= sqrtInt(Int) [function, klabel(sqrtInt), smtlib(sqrtInt)]
+// TODO: implement
 ```
 
 ## Macros
