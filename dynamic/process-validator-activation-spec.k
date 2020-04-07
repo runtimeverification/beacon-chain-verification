@@ -30,6 +30,7 @@ ensures true
 andBool size(?ValidatorsToBeActivated) <=Int ?ChurnLimit
 andBool subset(?ValidatorsToBeActivated, activationQueue(Validators, FinalizedEpoch))
 
+// inductive case
 rule
 <T>
   <k> activateValidators(V Vs => Vs) </k>
@@ -53,6 +54,7 @@ ensures true
 // ensures
 andBool ?VM2[V.id]v.activation_epoch ==Int delayedActivationExitEpoch(?Epoch)
 
+// base case
 rule
 <T>
   <k> activateValidators(.ValidatorList) => . </k>
