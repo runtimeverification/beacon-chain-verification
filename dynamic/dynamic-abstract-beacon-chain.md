@@ -166,7 +166,6 @@ rule <k> processEpoch()
        <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
        <justified> J => J[epochOf(Slot) <- false] </justified>
        <finalized> F => F[epochOf(Slot) <- false] </finalized>
-       <validators> v(_, VIDs) </validators>
        ...
      </state>
      requires isFirstSlotOfEpoch(Slot)
