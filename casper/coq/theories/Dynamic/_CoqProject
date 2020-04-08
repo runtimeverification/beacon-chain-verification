@@ -9,3 +9,4 @@ Quorums.v
 Justification.v
 AccountableSafety.v
 PlausibleLiveness.v
+Weight.v

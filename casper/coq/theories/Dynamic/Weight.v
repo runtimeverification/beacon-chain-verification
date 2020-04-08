@@ -20,7 +20,6 @@ Proof. by []. Qed.
 
 Lemma wt_mt_zero : wt set0 = 0.
 Proof. 
-
 Admitted.
 
 Lemma wt_ext : forall v vs, wt (v |: vs) = wt [set v] + wt vs. 
@@ -65,9 +64,9 @@ Definition exited (vs1 vs2: {set Validator}): {set Validator} :=
 
 (* The weight of new activations from vs1 to vs2 *)
 Definition activated_weight (vs1 vs2: {set Validator}): nat :=
-  wt.[wt_fun (activated vs1 vs2)].
+  wt (activated vs1 vs2).
 
 (* The weight of validators who exited from vs1 to vs2 *)
 Definition exited_weight (vs1 vs2: {set Validator}): nat :=
-  wt.[wt_fun (exited vs1 vs2)].
+  wt (exited vs1 vs2).
 
