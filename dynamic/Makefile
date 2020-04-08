@@ -89,7 +89,8 @@ dynamic_java_symbolic_kompiled := $(dynamic_java_symbolic_dir)/verification-komp
 
 .PHONY: build build-static build-static-verification build-static-java build-dynamic build-dynamic-java-concrete build-dynamic-java-symbolic
 
-build: build-static build-static-java build-dynamic build-dynamic-java-concrete build-dynamic-java-symbolic
+build: build-dynamic-java-concrete build-dynamic-java-symbolic
+#build: build-static build-static-java build-dynamic build-dynamic-java-concrete build-dynamic-java-symbolic
 build-static:                $(static_kompiled)
 build-static-verification:   $(static_verification_kompiled)
 build-static-java:           $(static_java_kompiled)
