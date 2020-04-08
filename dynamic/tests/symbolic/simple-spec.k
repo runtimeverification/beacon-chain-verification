@@ -23,17 +23,7 @@ rule
       <lastFinalized> LastFinalizedEpoch </lastFinalized>
     </state>
   </states>
-  <blocks>
-    ...
-    <block>
-      <bSlot> LastBlockSlot </bSlot> <bID> LastBlockID </bID>
-      <parent> (ParentSlot, ParentID) </parent>
-      <slashings> .Slashings </slashings>
-      <attestations> .Attestations </attestations>
-      <deposits> .Deposits </deposits>
-      <exits> .VoluntaryExits </exits>
-    </block>
-  </blocks>
+  ...
 </T>
 
 // processSlots(s) does nothing if s is the current slot.
@@ -55,17 +45,7 @@ rule
       <lastFinalized> LastFinalizedEpoch </lastFinalized>
     </state>
   </states>
-  <blocks>
-    ...
-    <block>
-      <bSlot> LastBlockSlot </bSlot> <bID> LastBlockID </bID>
-      <parent> (ParentSlot, ParentID) </parent>
-      <slashings> .Slashings </slashings>
-      <attestations> .Attestations </attestations>
-      <deposits> .Deposits </deposits>
-      <exits> .VoluntaryExits </exits>
-    </block>
-  </blocks>
+  ...
 </T>
 
 // processJustification(e) does nothing if no validator exist.
