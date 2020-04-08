@@ -14,6 +14,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Open Scope fmap_scope.
+Open Scope big_scope.
 
 (* A finite map vset defining the set of validators for a given block *)
 Parameter vset : {fmap Hash -> {set Validator}}.
@@ -22,7 +23,7 @@ Parameter vset : {fmap Hash -> {set Validator}}.
 Axiom vs_fun : forall h : Hash, h \in vset.
 
 (* A finite map defining the stake (weight) of a validator *)
-(* Note: weight is currently nat (will probably use reals in the future) *)
+(* Note: weight is a nat *)
 Parameter stake : {fmap Validator -> nat}.
 
 (* We assume the map stake is total *)
@@ -30,12 +31,8 @@ Axiom st_fun : forall v : Validator, v \in stake.
 
 (* A finite map defining the weight of a given set of validators 
  *)
-Definition wt (vs:{set Validator}) : nat := \sum_(v in vs) stake.[st_fun v].
-
-(* We assume the map weight is both total and zero at the empty set *)
-(* Axiom wt_fun  : forall s : {set Validator}, s \in wt.
-Axiom wt_zero : forall s : {set Validator}, wt.[wt_fun s] == 0 <-> s == set0.
-*)
+Definition wt (vs:{set Validator}) : nat := 
+  \sum_(v in vs) stake.[st_fun v].
 
 (** Quorum Predicates **)
 (* A predicate for an "at least 1/3 weight" set of validators *)
