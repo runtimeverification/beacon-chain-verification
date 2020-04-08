@@ -53,8 +53,8 @@ rule countValidatorsToExit(v(VM [ VID <- V ]v, VIDs), E) => countValidatorsToExi
      andBool VID in VIDs
 
 // for m-spec
-rule size(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
-rule size(_:ValidatorList) >=Int 0 => true [smt-lemma]
+rule sizeV(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
+rule sizeV(_:ValidatorList) >=Int 0 => true [smt-lemma]
 
 rule subset(take(_, S1), S2) => true requires subset(S1, S2)
 rule subset(sort(S1), S2) => true requires subset(S1, S2)

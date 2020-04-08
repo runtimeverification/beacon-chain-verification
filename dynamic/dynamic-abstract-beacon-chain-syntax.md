@@ -22,7 +22,15 @@ rule C:Cmd Cs:Cmds => C ~> Cs
 syntax Pair ::= "(" Int "," Int ")"
 syntax Option ::= "none" | "some" Int
 
-syntax KItem ::= "bottom"
+syntax KItem ::= "#bottom"
+
+syntax KItem ::= #ite(Bool, K, K)
+rule #ite(true,  K, _) => K
+rule #ite(false, _, K) => K
+
+syntax KItem ::= #it(Bool, K)
+rule #it(true,  K) => K
+rule #it(false, _) => .
 ```
 
 ## Abstract Blocks
@@ -56,6 +64,15 @@ rule #Block((_,_),_,_,_,X,_).deposits        => X
 rule #Block((_,_),_,_,_,_,X).voluntary_exits => X
 ```
 
+```k
+syntax BlockMap ::= ".BlockMap"                          [          klabel(emptyB),  smtlib(emptyB)]
+syntax BlockMap ::= BlockMap "[" Int "<-" Block "]b"     [function, klabel(storeB),  smtlib(storeB)]
+syntax Block    ::= BlockMap "[" Int "]b"                [function, klabel(selectB), smtlib(selectB)]
+
+rule ( M [ K1 <- V ]b ) [ K2 ]b => V         requires K1  ==Int K2
+rule ( M [ K1 <- V ]b ) [ K2 ]b => M [ K2 ]b requires K1 =/=Int K2
+```
+
 ## Abstract Slashings
 
 An abstract slashing evidence is a pair of two conflict attestations.
@@ -81,21 +98,36 @@ An abstract attestation denotes a single attestation, consisting of an attester,
 The `Attestation` of the concrete model can be represented as a set of abstract attestations whose slot, source, and target are the same.
 
 ```k
-// beacon_block_root (LMD GHOST vote) is omitted
 syntax Attestations ::= List{Attestation,""}
-syntax Attestation  ::= #Attestation(Int,Int,Pair,Pair) // attester, assigned slot, source epoch/block, target epoch/block
-syntax Int ::= Attestation ".attester"     [function, functional]
-syntax Int ::= Attestation ".slot"         [function, functional]
-syntax Int ::= Attestation ".source_epoch" [function, functional]
-syntax Int ::= Attestation ".source_block" [function, functional]
-syntax Int ::= Attestation ".target_epoch" [function, functional]
-syntax Int ::= Attestation ".target_block" [function, functional]
-rule #Attestation(X,_,(_,_),(_,_)).attester     => X
-rule #Attestation(_,X,(_,_),(_,_)).slot         => X
-rule #Attestation(_,_,(X,_),(_,_)).source_epoch => X
-rule #Attestation(_,_,(_,X),(_,_)).source_block => X
-rule #Attestation(_,_,(_,_),(X,_)).target_epoch => X
-rule #Attestation(_,_,(_,_),(_,X)).target_block => X
+syntax Attestation  ::= #Attestation(Int,Int,Pair,Pair,Int,Int,Int) // attester, assigned slot, source epoch/block, target epoch/block, head block (LMD GHOST vote), proposer, inclusion delay
+syntax Int ::= Attestation ".attester"        [function, functional]
+syntax Int ::= Attestation ".slot"            [function, functional]
+syntax Int ::= Attestation ".source_epoch"    [function, functional]
+syntax Int ::= Attestation ".source_block"    [function, functional]
+syntax Int ::= Attestation ".target_epoch"    [function, functional]
+syntax Int ::= Attestation ".target_block"    [function, functional]
+syntax Int ::= Attestation ".head_block"      [function, functional]
+syntax Int ::= Attestation ".proposer"        [function, functional]
+syntax Int ::= Attestation ".inclusion_delay" [function, functional]
+rule #Attestation(X,_,(_,_),(_,_),_,_,_).attester        => X
+rule #Attestation(_,X,(_,_),(_,_),_,_,_).slot            => X
+rule #Attestation(_,_,(X,_),(_,_),_,_,_).source_epoch    => X
+rule #Attestation(_,_,(_,X),(_,_),_,_,_).source_block    => X
+rule #Attestation(_,_,(_,_),(X,_),_,_,_).target_epoch    => X
+rule #Attestation(_,_,(_,_),(_,X),_,_,_).target_block    => X
+rule #Attestation(_,_,(_,_),(_,_),X,_,_).head_block      => X
+rule #Attestation(_,_,(_,_),(_,_),_,X,_).proposer        => X
+rule #Attestation(_,_,(_,_),(_,_),_,_,X).inclusion_delay => X
+```
+
+```k
+syntax Int ::= sizeA(Attestations) [function, smtlib(sizeA)]
+rule sizeA(_ As) => 1 +Int sizeA(As)
+rule sizeA(.Attestations) => 0
+
+// sort in the order of inclusion_delay
+syntax Attestations ::= sortByInclusionDelay(Attestations) [function, klabel(sortA), smtlib(sortA)]
+// TODO: implement
 ```
 
 ## Abstract Deposits
@@ -189,9 +221,9 @@ rule v(M,S).vset => S
 ```k
 syntax ValidatorList ::= ".ValidatorList"        [klabel(nilV),  smtlib(nilV)]
 syntax ValidatorList ::= Validator ValidatorList [klabel(consV), smtlib(consV)]
-syntax Int ::= size(ValidatorList) [function, klabel(sizeV), smtlib(sizeV)]
-rule size(V Vs) => 1 +Int size(Vs)
-rule size(.ValidatorList) => 0
+syntax Int ::= sizeV(ValidatorList) [function, smtlib(sizeV)]
+rule sizeV(_ Vs) => 1 +Int sizeV(Vs)
+rule sizeV(.ValidatorList) => 0
 
 // take the first N elements at most
 syntax ValidatorList ::= take(Int, ValidatorList) [function, klabel(takeV), smtlib(takeV)]
@@ -211,6 +243,10 @@ syntax Bool ::= subset(ValidatorList, ValidatorList) [function, klabel(subsetV),
 ```k
 syntax IntList ::= ".IntList"   [klabel(nilI),  smtlib(nilI)]
 syntax IntList ::= Int IntList  [klabel(consI), smtlib(consI)]
+syntax Int ::= size(IntList) [function, klabel(sizeI), smtlib(sizeI)]
+rule size(_ Is) => 1 +Int size(Is)
+rule size(.IntList) => 0
+
 syntax Bool ::= Int "in" IntList [function, klabel(inI), smtlib(inI)]
 rule J in (I Is) => true    requires J  ==Int I
 rule J in (I Is) => J in Is requires J =/=Int I
@@ -264,24 +300,9 @@ syntax Int ::= "EPOCHS_PER_SLASHINGS_VECTOR"
 syntax Int ::= "MIN_SLASHING_PENALTY_QUOTIENT"
 syntax Int ::= "BASE_REWARD_FACTOR"
 syntax Int ::= "BASE_REWARDS_PER_EPOCH"
-```
-
-```{.k .concrete}
-rule SLOTS_PER_EPOCH                     =>      4          [macro]
-rule MIN_ATTESTATION_INCLUSION_DELAY     =>      1          [macro]
-rule MAX_ATTESTATION_INCLUSION_DELAY     => SLOTS_PER_EPOCH [macro]
-rule FAR_FUTURE_EPOCH                    => 999999          [macro]
-rule MIN_DEPOSIT_AMOUNT                  =>      1          [macro]
-rule MAX_EFFECTIVE_BALANCE               =>      2          [macro]
-rule EJECTION_BALANCE                    =>      0          [macro]
-rule EFFECTIVE_BALANCE_INCREMENT         =>      1          [macro]
-rule PERSISTENT_COMMITTEE_PERIOD         =>      1          [macro]
-rule ACTIVATION_EXIT_DELAY               =>      1          [macro]
-rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>      1          [macro]
-rule MIN_PER_EPOCH_CHURN_LIMIT           =>      1          [macro]
-rule CHURN_LIMIT_QUOTIENT                =>      1          [macro]
-rule EPOCHS_PER_SLASHINGS_VECTOR         =>      1          [macro]
-rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1          [macro]
+syntax Int ::= "INACTIVITY_PENALTY_QUOTIENT"
+syntax Int ::= "MIN_EPOCHS_TO_INACTIVITY_PENALTY"
+syntax Int ::= "PROPOSER_REWARD_QUOTIENT"
 ```
 
 ```{.k .symbolic}
@@ -302,10 +323,31 @@ rule EPOCHS_PER_SLASHINGS_VECTOR         =>  8192            [macro]
 rule MIN_SLASHING_PENALTY_QUOTIENT       =>    32            [macro]
 rule BASE_REWARD_FACTOR                  =>    64            [macro]
 rule BASE_REWARDS_PER_EPOCH              =>     4            [macro]
+rule INACTIVITY_PENALTY_QUOTIENT         => 2 ^Int 25        [macro]
+rule MIN_EPOCHS_TO_INACTIVITY_PENALTY    =>     4            [macro]
+rule PROPOSER_REWARD_QUOTIENT            =>     8            [macro]
+```
+
+```{.k .concrete}
+rule SLOTS_PER_EPOCH                     =>      4          [macro]
+rule MIN_ATTESTATION_INCLUSION_DELAY     =>      1          [macro]
+rule MAX_ATTESTATION_INCLUSION_DELAY     => SLOTS_PER_EPOCH [macro]
+rule FAR_FUTURE_EPOCH                    => 999999          [macro]
+rule MIN_DEPOSIT_AMOUNT                  =>      1          [macro]
+rule MAX_EFFECTIVE_BALANCE               =>      2          [macro]
+rule EJECTION_BALANCE                    =>      0          [macro]
+rule EFFECTIVE_BALANCE_INCREMENT         =>      1          [macro]
+rule PERSISTENT_COMMITTEE_PERIOD         =>      1          [macro]
+rule ACTIVATION_EXIT_DELAY               =>      1          [macro]
+rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>      1          [macro]
+rule MIN_PER_EPOCH_CHURN_LIMIT           =>      1          [macro]
+rule CHURN_LIMIT_QUOTIENT                =>      1          [macro]
+rule EPOCHS_PER_SLASHINGS_VECTOR         =>      1          [macro]
+rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1          [macro]
 ```
 
 ```k
-syntax Int ::= sqrtInt(Int) [function, klabel(sqrtInt), smtlib(sqrtInt)]
+syntax Int ::= sqrtInt(Int) [function, smtlib(sqrtInt)]
 // TODO: implement
 ```
 
