@@ -27,7 +27,7 @@ andBool ?Epoch ==Int epochOf(Slot) -Int 1
 andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(Validators, ?Epoch)))
 ensures true
 // ensures
-andBool size(?ValidatorsToBeActivated) <=Int ?ChurnLimit
+andBool sizeV(?ValidatorsToBeActivated) <=Int ?ChurnLimit
 andBool subset(?ValidatorsToBeActivated, activationQueue(Validators, FinalizedEpoch))
 
 rule

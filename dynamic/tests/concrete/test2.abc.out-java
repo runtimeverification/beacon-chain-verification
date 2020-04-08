@@ -178,7 +178,7 @@
       </slashedBalance>
       <attested>
         0 |-> .Slashings
-        1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Slashings
+        1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
       </attested>
       <justified>
         0 |-> true
@@ -212,7 +212,7 @@
       </slashedBalance>
       <attested>
         0 |-> .Slashings
-        1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Slashings
+        1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
       </attested>
       <justified>
         0 |-> true
@@ -246,7 +246,7 @@
       </slashedBalance>
       <attested>
         0 |-> .Slashings
-        1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Slashings
+        1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
       </attested>
       <justified>
         0 |-> true
@@ -280,7 +280,7 @@
       </slashedBalance>
       <attested>
         0 |-> .Slashings
-        1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Slashings
+        1 |-> #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
         2 |-> .Slashings
       </attested>
       <justified>
@@ -305,105 +305,6 @@
     </state>
   </states>
   <blocks>
-    <bSlot>
-      0
-    </bSlot> |-> <block>
-      <bSlot>
-        0
-      </bSlot>
-      <bID>
-        0
-      </bID>
-      <parent>
-        ( -1 , -1 )
-      </parent>
-      <slashings>
-        .Slashings
-      </slashings>
-      <attestations>
-        .Slashings
-      </attestations>
-      <deposits>
-        .Slashings
-      </deposits>
-      <exits>
-        .Slashings
-      </exits>
-    </block>
-    <bSlot>
-      1
-    </bSlot> |-> <block>
-      <bSlot>
-        1
-      </bSlot>
-      <bID>
-        10001
-      </bID>
-      <parent>
-        ( 0 , 0 )
-      </parent>
-      <slashings>
-        .Slashings
-      </slashings>
-      <attestations>
-        .Slashings
-      </attestations>
-      <deposits>
-        .Slashings
-      </deposits>
-      <exits>
-        .Slashings
-      </exits>
-    </block>
-    <bSlot>
-      4
-    </bSlot> |-> <block>
-      <bSlot>
-        4
-      </bSlot>
-      <bID>
-        10004
-      </bID>
-      <parent>
-        ( 1 , 10001 )
-      </parent>
-      <slashings>
-        .Slashings
-      </slashings>
-      <attestations>
-        .Slashings
-      </attestations>
-      <deposits>
-        .Slashings
-      </deposits>
-      <exits>
-        .Slashings
-      </exits>
-    </block>
-    <bSlot>
-      5
-    </bSlot> |-> <block>
-      <bSlot>
-        5
-      </bSlot>
-      <bID>
-        10005
-      </bID>
-      <parent>
-        ( 4 , 10004 )
-      </parent>
-      <slashings>
-        .Slashings
-      </slashings>
-      <attestations>
-        #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) )  .Slashings
-      </attestations>
-      <deposits>
-        .Slashings
-      </deposits>
-      <exits>
-        .Slashings
-      </exits>
-    </block>
+    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]b [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]b [ 4 <- #Block ( ( 4 , 10004 ) , ( 1 , 10001 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]b [ 5 <- #Block ( ( 5 , 10005 ) , ( 4 , 10004 ) , .Slashings , #Attestation ( 90000 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90001 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90002 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90003 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 90004 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings , .Slashings , .Slashings ) ]b
   </blocks>
 </T>

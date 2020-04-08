@@ -4,8 +4,6 @@ This presents an abstract model of the Beacon chain state transition system.
 
 This model is designed for the safety and liveness proofs of the Beacon chain finality mechanism. It abstracts aways certain unnecessary details of the system, including the cached history mechanism for the space efficiency, validation of cryptographic data (public keys, signatures, commitments, etc.), and the committee assignment mechanism.
 
-The reward and penalty mechanism is not yet modeled here.
-
 ## Data Types
 
 The data types used in this model are defiend [here](dynamic-abstract-beacon-chain-syntax.md).
@@ -53,16 +51,7 @@ configuration <T>
     </state>
   </states>
   // blockchain
-  <blocks>
-    <block multiplicity="*" type="Map">
-      <bSlot> 0 </bSlot> <bID> 0 </bID> // unique block id (e.g., hash)
-      <parent> (0,0) </parent> // parent block (slot, id)
-      <slashings> .Slashings </slashings>
-      <attestations> .Attestations </attestations>
-      <deposits> .Deposits </deposits>
-      <exits> .VoluntaryExits </exits>
-    </block>
-  </blocks>
+  <blocks> .BlockMap </blocks>
 </T>
 ```
 
@@ -96,16 +85,7 @@ rule <k> init => . ... </k>
          <lastFinalized> 0 </lastFinalized>
        </state>
      </states>
-     <blocks> .Bag =>
-       <block>
-         <bSlot> 0 </bSlot> <bID> 0 </bID>
-         <parent> (-1,-1) </parent>
-         <slashings> .Slashings </slashings>
-         <attestations> .Attestations </attestations>
-         <deposits> .Deposits </deposits>
-         <exits> .VoluntaryExits </exits>
-       </block>
-     </blocks>
+     <blocks> .BlockMap => .BlockMap [ 0 <- #Block((0,0),(-1,-1),.Slashings,.Attestations,.Deposits,.VoluntaryExits) ]b </blocks>
 ```
 
 ## State Transition
@@ -122,7 +102,7 @@ rule <k> stateTransition(NewBlock)
      <currentSlot> Slot </currentSlot>
      requires Slot <Int NewBlock.slot // TODO: <=Int or <Int ?
 // TODO:
-// rule stateTransition(NewBlock) => bottom [owise]
+// rule stateTransition(NewBlock) => #bottom [owise]
 ```
 
 The `process_epoch()` in the concrete model is called before increasing the slot number, while it is called after increasing `Slot` here.
@@ -149,7 +129,7 @@ rule <k> processSlots(TargetSlot) => . ... </k>
      <currentSlot> Slot </currentSlot>
      requires Slot ==Int TargetSlot
 
-rule <k> processSlots(TargetSlot) => bottom ... </k>
+rule <k> processSlots(TargetSlot) => #bottom ... </k>
      <currentSlot> Slot </currentSlot>
      requires Slot >Int TargetSlot
 ```
@@ -166,7 +146,7 @@ rule <k> processSlot() => . ... </k>
 Note that `Slot` is equal to `state.slot + 1` of the concrete model.
 
 ```k
-// TODO: add process_rewards_and_penalties, process_slashings, process_final_updates (for updating effective balances with hysteresis)
+// TODO: add process_slashings, process_final_updates (for updating effective balances with hysteresis)
 // process_epoch
 rule <k> processEpoch()
       => processJustification(epochOf(Slot) -Int 2)
@@ -175,6 +155,7 @@ rule <k> processEpoch()
       ~> processFinalization(epochOf(Slot) -Int 1)
 ```
 ```{.k .dynamic}
+      ~> processRewardsPenalties(epochOf(Slot) -Int 2)
       ~> processValidatorUpdates()
 ```
 ```k
@@ -234,7 +215,7 @@ rule <k> false ~> justify(_) => . ... </k>
 
 syntax Bool ::= isJustifiable(Int, Int, Attestations, Validators) [function, functional]
 rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Validators)
-  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(Validators))
+  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(Validators.vmap, Validators.vset))
      orBool Epoch ==Int 0 // the genesis block is justified by default
 ```
 ```{.k .kast}
@@ -256,10 +237,6 @@ rule attestationsBalance(Target, A Attestations, Validators)
      #else 0
      #fi +Int attestationsBalance(Target, Attestations, Validators)
 rule attestationsBalance(_, .Attestations, _) => 0
-
-syntax Int ::= totalBalance(Validators) [function, functional]
-rule totalBalance(v(VM, VID VIDs)) => VM[VID]v.effective_balance +Int totalBalance(v(VM, VIDs))
-rule totalBalance(v(_, .IntList)) => 0
 ```
 
 ### Finalization
@@ -315,6 +292,203 @@ rule isJustified(Epoch, Justified) => {Justified[Epoch]}:>Bool
 rule isJustified(Epoch, Epoch |-> true  _:Map) => true
 rule isJustified(Epoch, Epoch |-> false _:Map) => false
 */
+```
+
+### Rewards and Penalties
+
+```{.k .dynamic}
+// process_rewards_and_penalties
+syntax KItem ::= processRewardsPenalties(Int)
+rule <k> processRewardsPenalties(Epoch)
+      => processRewardsPenaltiesAux1(
+           VIDs, VM, Epoch, Epoch -Int LastFinalizedEpoch,
+                                                               Attestations  ,
+                            filterByTarget(EpochBoundaryBlock, Attestations ),
+           filterByHead(BM, filterByTarget(EpochBoundaryBlock, Attestations))
+         ) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM, VIDs) </validators>
+       <attested>
+         Epoch |-> Attestations:Attestations
+         ...
+       </attested>
+       <lastFinalized> LastFinalizedEpoch </lastFinalized>
+       ...
+     </state>
+     <state>
+       <slot> firstSlotOf(Epoch) </slot>
+       <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
+       ...
+     </state>
+     <blocks> BM </blocks>
+     requires Epoch >=Int 2
+rule processRewardsPenalties(Epoch) => .
+     requires Epoch <Int 2
+
+syntax KItem ::= processRewardsPenaltiesAux1(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations)
+rule processRewardsPenaltiesAux1(VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations)
+  => processRewardsPenaltiesAux2(VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations,
+       lift(totalBalance(VM, getValidators(SourceAttestations))),
+       lift(totalBalance(VM, getValidators(TargetAttestations))),
+       lift(totalBalance(VM, getValidators(HeadAttestations))),
+       lift(totalBalance(VM, activeValidators(v(VM,VIDs), Epoch)))
+     )
+
+syntax KItem ::= processRewardsPenaltiesAux2(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
+rule processRewardsPenaltiesAux2(VIDs, VM, Epoch, FinalityDelay, SourceAttestations,     TargetAttestations,     HeadAttestations,
+                                                                 SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+  => processMatchingRewardsPenalties(VIDs, VM, Epoch,            SourceAttestations,     TargetAttestations,     HeadAttestations,
+                                                                 SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+  ~> processProposerRewards(VIDs, VM, SourceAttestations, TotalActiveBalance)
+  ~> processInactivityPenalties(VIDs, VM, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
+
+// Matching Rewards and Penalties
+
+syntax KItem ::= processMatchingRewardsPenalties(IntList, ValidatorMap, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
+rule (. => processMatchingRewardPenalty(VM[VID]v, Epoch,          SourceAttestations,     TargetAttestations,     HeadAttestations,
+                                                                  SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance))
+  ~> processMatchingRewardsPenalties(VID VIDs => VIDs, VM, Epoch, SourceAttestations,     TargetAttestations,     HeadAttestations,
+                                                                  SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+rule processMatchingRewardsPenalties(.IntList, _, _, _, _, _, _, _, _, _) => .
+
+syntax KItem ::= processMatchingRewardPenalty(Validator, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
+rule processMatchingRewardPenalty(V, Epoch, SourceAttestations,     TargetAttestations,     HeadAttestations,
+                                            SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+  => #it(
+       isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
+     ,
+       #ite(
+         sizeA(filterByAttester(V.id, SourceAttestations)) >Int 0
+       ,
+         increaseBalance(V.id, getBaseReward(V, TotalActiveBalance) *Int (SourceAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
+                                                                    /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
+       ,
+         increaseBalance(V.id, 0 -Int getBaseReward(V, TotalActiveBalance))
+       )
+       ~>
+       #ite(
+         sizeA(filterByAttester(V.id, TargetAttestations)) >Int 0
+       ,
+         increaseBalance(V.id, getBaseReward(V, TotalActiveBalance) *Int (TargetAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
+                                                                    /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
+       ,
+         increaseBalance(V.id, 0 -Int getBaseReward(V, TotalActiveBalance))
+       )
+       ~>
+       #ite(
+         sizeA(filterByAttester(V.id, HeadAttestations)) >Int 0
+       ,
+         increaseBalance(V.id, getBaseReward(V, TotalActiveBalance) *Int (HeadAttestingBalance   /Int EFFECTIVE_BALANCE_INCREMENT)
+                                                                    /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
+       ,
+         increaseBalance(V.id, 0 -Int getBaseReward(V, TotalActiveBalance))
+       )
+     )
+
+// Proposer Rewards
+
+syntax KItem ::= processProposerRewards(IntList, ValidatorMap, Attestations, Int)
+rule (. => processProposerReward(VM[VID]v, sortByInclusionDelay(filterByAttester(VID, SourceAttestations)), TotalActiveBalance))
+  ~> processProposerRewards(VID VIDs => VIDs, VM, SourceAttestations, TotalActiveBalance)
+rule processProposerRewards(.IntList, _, _, _) => .
+
+syntax KItem ::= processProposerReward(Validator, Attestations, Int)
+rule processProposerReward(V, A _, TotalActiveBalance) => processProposerRewardAux(V, A, getBaseReward(V, TotalActiveBalance))
+rule processProposerReward(_, .Attestations, _) => .
+
+syntax KItem ::= processProposerRewardAux(Validator, Attestation, Int)
+rule processProposerRewardAux(V, A, BaseReward)
+  => increaseBalance(A.proposer, BaseReward /Int PROPOSER_REWARD_QUOTIENT)
+  ~> increaseBalance(V.id, (BaseReward -Int BaseReward /Int PROPOSER_REWARD_QUOTIENT) /Int A.inclusion_delay)
+
+// Inactivity Penalties
+
+syntax KItem ::= processInactivityPenalties(IntList, ValidatorMap, Int, Int, Attestations, Int)
+rule processInactivityPenalties(VIDs, VM, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
+  => #it(
+       FinalityDelay >Int MIN_EPOCHS_TO_INACTIVITY_PENALTY
+     ,
+       processInactivityPenaltiesAux(VIDs, VM, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
+     )
+
+syntax KItem ::= processInactivityPenaltiesAux(IntList, ValidatorMap, Int, Int, Attestations, Int)
+rule (. => processInactivityPenalty(VM[VID]v, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance))
+  ~> processInactivityPenaltiesAux(VID VIDs => VIDs, VM, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
+rule processInactivityPenaltiesAux(.IntList, _, _, _, _, _) => .
+
+syntax KItem ::= processInactivityPenalty(Validator, Int, Int, Attestations, Int)
+rule processInactivityPenalty(V, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
+  => #it(
+       isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
+     ,
+       increaseBalance(V.id, 0 -Int BASE_REWARDS_PER_EPOCH *Int getBaseReward(V, TotalActiveBalance))
+       ~>
+       #it(
+         sizeA(filterByAttester(V.id, TargetAttestations)) ==Int 0
+       ,
+         increaseBalance(V.id, 0 -Int V.effective_balance *Int FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT)
+       )
+     )
+
+// get_base_reward
+syntax Int ::= getBaseReward(Validator, Int) [function]
+rule getBaseReward(V, SafeTotalActiveBalance)
+  => V.effective_balance *Int BASE_REWARD_FACTOR
+     /Int sqrtInt(SafeTotalActiveBalance)
+     /Int BASE_REWARDS_PER_EPOCH
+
+// increase_balance, decrease_balance
+syntax KItem ::= increaseBalance(Int, Int)
+rule <k> increaseBalance(VID, N) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM => VM [ VID <- VM[VID]v with balance = VM[VID]v.balance +Int N ]v, VIDs) </validators>
+       ...
+     </state>
+     requires VID in VIDs
+rule <k> increaseBalance(VID, N) => #bottom ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(_, VIDs) </validators>
+       ...
+     </state>
+     requires notBool VID in VIDs
+
+syntax Int ::= totalBalance(ValidatorMap, IntList) [function, smtlib(totalBalance)]
+rule totalBalance(VM, VID VIDs) => VM[VID]v.effective_balance +Int totalBalance(VM, VIDs)
+rule totalBalance(_, .IntList) => 0
+
+syntax Int ::= lift(Int) [function, smtlib(lift)]
+rule lift(B) => maxInt(EFFECTIVE_BALANCE_INCREMENT, B)
+
+syntax Attestations ::= filterByAttester(Int, Attestations) [function]
+rule filterByAttester(V, A As) => #if A.attester ==Int V
+                                  #then A filterByAttester(V, As)
+                                  #else   filterByAttester(V, As)
+                                  #fi
+rule filterByAttester(_, .Attestations) => .Attestations
+
+syntax Attestations ::= filterByTarget(Int, Attestations) [function]
+rule filterByTarget(T, A As) => #if A.target_block ==Int T
+                                #then A filterByTarget(T, As)
+                                #else   filterByTarget(T, As)
+                                #fi
+rule filterByTarget(_, .Attestations) => .Attestations
+
+syntax Attestations ::= filterByHead(BlockMap, Attestations) [function]
+rule filterByHead(BM, A As) => #if A.head_block ==Int BM[A.slot]b.id
+                               #then A filterByHead(BM, As)
+                               #else   filterByHead(BM, As)
+                               #fi
+rule filterByHead(_, .Attestations) => .Attestations
+
+syntax IntList ::= getValidators(Attestations) [function]
+rule getValidators(A As) => A.attester getValidators(A As) // TODO: drop duplicates
+rule getValidators(.Attestations) => .IntList
 ```
 
 ### Validator Updates
@@ -447,19 +621,7 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposi
        ...
      </state>
      <blocks>
-     (
-       .Bag
-     =>
-       <block>
-         <bSlot> Slot </bSlot> <bID> ID </bID>
-         <parent> Parent </parent>
-         <slashings> Slashings </slashings>
-         <attestations> Attestations </attestations>
-         <deposits> Deposits </deposits>
-         <exits> VoluntaryExits </exits>
-       </block>
-     )
-       ...
+       BM => BM [ Slot <- #Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits) ]b
      </blocks>
      // TODO: check if the block proposer is valid (assigned, not slashed)
 ```
@@ -493,7 +655,7 @@ rule <k> processSlashing(#Slashing(A1, A2))
      requires isSlashableAttestation(A1, A2) // assertion
       andBool A1.attester ==Int A2.attester
 // TODO:
-// rule processSlashing(#Slashing(A1, A2)) => bottom [owise]
+// rule processSlashing(#Slashing(A1, A2)) => #bottom [owise]
 
 // slash_validator
 syntax KItem ::= slashValidator(Validator)
@@ -547,7 +709,7 @@ rule <k> true ~> addAttestation(A) => . ... </k>
        </attested>
        ...
      </state>
-rule <k> false ~> addAttestation(_) => bottom ... </k>
+rule <k> false ~> addAttestation(_) => #bottom ... </k>
 
 syntax KItem ::= checkAttestation(Attestation)
 rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch, JBlock, VM[A.attester]v) ... </k>
@@ -654,7 +816,7 @@ rule <k> processVoluntaryExit(E)
       andBool epochOf(Slot) >=Int E.epoch
       andBool epochOf(Slot) >=Int VM[E.validator]v.activation_epoch +Int PERSISTENT_COMMITTEE_PERIOD
 // TODO:
-// rule processVoluntaryExit(E) => bottom [owise]
+// rule processVoluntaryExit(E) => #bottom [owise]
 
 // is_active_validator
 syntax Bool ::= isActiveValidator(Validator, Int) [function, functional]
@@ -713,13 +875,13 @@ rule countValidatorsToExit(v(VM, VID VIDs), ExitEpoch)
   => #if VM[VID]v.exit_epoch ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(v(VM, VIDs), ExitEpoch)
 rule countValidatorsToExit(v(_, .IntList), _) => 0
 
-syntax ValidatorList ::= activeValidators(Validators, Int) [function, functional, smtlib(activeValidators)]
+syntax IntList ::= activeValidators(Validators, Int) [function, functional, smtlib(activeValidators)]
 rule activeValidators(v(VM, VID VIDs), Epoch)
   => #if isActiveValidator(VM[VID]v, Epoch)
-     #then VM[VID]v activeValidators(v(VM, VIDs), Epoch)
-     #else          activeValidators(v(VM, VIDs), Epoch)
+     #then VID activeValidators(v(VM, VIDs), Epoch)
+     #else     activeValidators(v(VM, VIDs), Epoch)
      #fi
-rule activeValidators(v(_, .IntList), _) => .ValidatorList
+rule activeValidators(v(_, .IntList), _) => .IntList
 
 // compute_activation_exit_epoch
 syntax Int ::= delayedActivationExitEpoch(Int) [function, functional]
