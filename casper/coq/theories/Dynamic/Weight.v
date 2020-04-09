@@ -20,12 +20,13 @@ Proof. by []. Qed.
 
 Lemma wt_mt_zero : wt set0 = 0.
 Proof. 
+
 Admitted.
 
-Lemma wt_ext : forall v vs, wt (v |: vs) = wt [set v] + wt vs. 
+Lemma wt_ext : forall v vs, wt (v |: vs) = stake.[st_fun v] + wt vs. 
 Proof. Admitted. 
 
-Lemma wt_drop : forall v vs, wt (vs :\ v) = wt vs - wt [set v].
+Lemma wt_drop : forall v vs, wt (vs :\ v) = wt vs - stake.[st_fun v].
 Proof. Admitted.
 
 Lemma wt_ext_monotonic : forall v vs, wt vs <= wt (v |: vs).
@@ -50,23 +51,9 @@ Lemma wt_diff : forall s1 s2,
   wt (s1 :\: s2) = wt s1 - wt (s1 :&: s2).
 Proof. Admitted.
   
+Lemma wt_inc_leq : forall (s1 s2:{set Validator}),
+  s1 \subset s2 -> wt s1 <= wt s2.
+Proof. Admitted.
 
 
-
-(** Activation and Exit Sets **)
-(* The set of validators who activated from vs1 to vs2 *)
-Definition activated (vs1 vs2: {set Validator}): {set Validator} :=
-  vs2 :\: vs1.
-
-(* The set of validators who exited from vs1 to vs2 *)
-Definition exited (vs1 vs2: {set Validator}): {set Validator} :=
-  vs1 :\: vs2.
-
-(* The weight of new activations from vs1 to vs2 *)
-Definition activated_weight (vs1 vs2: {set Validator}): nat :=
-  wt (activated vs1 vs2).
-
-(* The weight of validators who exited from vs1 to vs2 *)
-Definition exited_weight (vs1 vs2: {set Validator}): nat :=
-  wt (exited vs1 vs2).
 
