@@ -25,9 +25,44 @@ Definition exited (vs1 vs2: {set Validator}): {set Validator} :=
   vs1 :\: vs2.
 
 (* The weight of new activations from vs1 to vs2 *)
-Definition activated_weight (vs1 vs2: {set Validator}): nat :=
+Definition actwt (vs1 vs2: {set Validator}): nat :=
   wt (activated vs1 vs2).
 
 (* The weight of validators who exited from vs1 to vs2 *)
-Definition exited_weight (vs1 vs2: {set Validator}): nat :=
+Definition extwt (vs1 vs2: {set Validator}): nat :=
   wt (exited vs1 vs2).
+  
+Lemma wt_meet_bound : forall (s1 s2 s1' s2':{set Validator}),
+  s1 \subset s1' -> 
+  s2 \subset s2' ->
+  let s12' := (s1' :&: s2') in 
+    wt (s1 :&: s2) >= wt (s1 :&: s12') + wt (s2 :&: s12') - wt s12'.
+Proof. Admitted.
+
+Lemma wt_meet_subbound : forall (s1 s1' s2':{set Validator}),
+  s1 \subset s1' -> 
+  wt (s1 :&: (s1' :&: s2')) >= wt s1 - wt (s1' :\: s2').
+Proof. Admitted.
+
+Theorem slashable_bound : forall st b0 b1 b2 b0_h b1_h b2_h k0 k1 k2,
+  k_finalized st b0 b0_h k0 ->
+  k_finalized st b1 b1_h k1 ->
+  k_finalized st b2 b2_h k2 ->
+  b0 <~* b1 -> b0 <> b1 ->
+  b0 <~* b2 -> b0 <> b2 ->
+  b1 </~* b2 -> b2 </~* b1 ->
+  exists (bL bR:Hash) (qL qR:{set Validator}),
+    let v0 := vset.[vs_fun b0] in
+    let vL := vset.[vs_fun bL] in
+    let vR := vset.[vs_fun bR] in
+    let aL := actwt v0 vL in
+    let eL := extwt v0 vL in
+    let aR := actwt v0 vR in
+    let eR := extwt v0 vR in
+    let xM := maxn (wt vL - aL - eR)  (wt vR - aR - eL) in
+      qL \subset vL /\
+      qR \subset vR /\
+      wt (qL :&: qR) >= xM - (wt vL) %/ 3 - (wt vR) %/ 3.
+Proof. Admitted.
+
+

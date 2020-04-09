@@ -55,5 +55,3 @@ Lemma wt_inc_leq : forall (s1 s2:{set Validator}),
   s1 \subset s2 -> wt s1 <= wt s2.
 Proof. Admitted.
 
-
-
