@@ -337,99 +337,70 @@ rule processRewardsPenaltiesAux1(VIDs, VM, Epoch, FinalityDelay, SourceAttestati
      )
 
 syntax KItem ::= processRewardsPenaltiesAux2(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
-rule processRewardsPenaltiesAux2(VIDs, VM, Epoch, FinalityDelay, SourceAttestations,     TargetAttestations,     HeadAttestations,
-                                                                 SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
-  => processMatchingRewardsPenalties(VIDs, VM, Epoch,            SourceAttestations,     TargetAttestations,     HeadAttestations,
-                                                                 SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
-  ~> processProposerRewards(VIDs, VM, SourceAttestations, TotalActiveBalance)
-  ~> processInactivityPenalties(VIDs, VM, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
-
-// Matching Rewards and Penalties
-
-syntax KItem ::= processMatchingRewardsPenalties(IntList, ValidatorMap, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
-rule (. => processMatchingRewardPenalty(VM[VID]v, Epoch,          SourceAttestations,     TargetAttestations,     HeadAttestations,
+rule (. => processRewardPenalty(VM[VID]v, Epoch, FinalityDelay, getBaseReward(VM[VID]v, TotalActiveBalance),
+                                                                  SourceAttestations,     TargetAttestations,     HeadAttestations,
                                                                   SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance))
-  ~> processMatchingRewardsPenalties(VID VIDs => VIDs, VM, Epoch, SourceAttestations,     TargetAttestations,     HeadAttestations,
-                                                                  SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
-rule processMatchingRewardsPenalties(.IntList, _, _, _, _, _, _, _, _, _) => .
+  ~> processRewardsPenaltiesAux2(VID VIDs => VIDs, VM, Epoch, FinalityDelay, SourceAttestations,     TargetAttestations,     HeadAttestations,
+                                                                             SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+rule processRewardsPenaltiesAux2(.IntList, _, _, _, _, _, _, _, _, _, _) => .
 
-syntax KItem ::= processMatchingRewardPenalty(Validator, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
-rule processMatchingRewardPenalty(V, Epoch, SourceAttestations,     TargetAttestations,     HeadAttestations,
+syntax KItem ::= processRewardPenalty(Validator, Int, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
+rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
+                                            SourceAttestations,     TargetAttestations,     HeadAttestations,
                                             SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
   => #it(
        isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
      ,
+       // Matching Rewards and Penalties
        #ite(
-         sizeA(filterByAttester(V.id, SourceAttestations)) >Int 0
+         V.id inA SourceAttestations
        ,
-         increaseBalance(V.id, getBaseReward(V, TotalActiveBalance) *Int (SourceAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
-                                                                    /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
+         increaseBalance(V.id, BaseReward *Int (SourceAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
+                                          /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
        ,
-         decreaseBalance(V.id, getBaseReward(V, TotalActiveBalance))
+         decreaseBalance(V.id, BaseReward)
        )
        ~>
        #ite(
-         sizeA(filterByAttester(V.id, TargetAttestations)) >Int 0
+         V.id inA TargetAttestations
        ,
-         increaseBalance(V.id, getBaseReward(V, TotalActiveBalance) *Int (TargetAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
-                                                                    /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
+         increaseBalance(V.id, BaseReward *Int (TargetAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
+                                          /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
        ,
-         decreaseBalance(V.id, getBaseReward(V, TotalActiveBalance))
+         decreaseBalance(V.id, BaseReward)
        )
        ~>
        #ite(
-         sizeA(filterByAttester(V.id, HeadAttestations)) >Int 0
+         V.id inA HeadAttestations
        ,
-         increaseBalance(V.id, getBaseReward(V, TotalActiveBalance) *Int (HeadAttestingBalance   /Int EFFECTIVE_BALANCE_INCREMENT)
-                                                                    /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
+         increaseBalance(V.id, BaseReward *Int (HeadAttestingBalance   /Int EFFECTIVE_BALANCE_INCREMENT)
+                                          /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
        ,
-         decreaseBalance(V.id, getBaseReward(V, TotalActiveBalance))
+         decreaseBalance(V.id, BaseReward)
        )
-     )
-
-// Proposer Rewards
-
-syntax KItem ::= processProposerRewards(IntList, ValidatorMap, Attestations, Int)
-rule (. => processProposerReward(VM[VID]v, sortByInclusionDelay(filterByAttester(VID, SourceAttestations)), TotalActiveBalance))
-  ~> processProposerRewards(VID VIDs => VIDs, VM, SourceAttestations, TotalActiveBalance)
-rule processProposerRewards(.IntList, _, _, _) => .
-
-syntax KItem ::= processProposerReward(Validator, Attestations, Int)
-rule processProposerReward(V, A _, TotalActiveBalance) => processProposerRewardAux(V, A, getBaseReward(V, TotalActiveBalance))
-rule processProposerReward(_, .Attestations, _) => .
-
-syntax KItem ::= processProposerRewardAux(Validator, Attestation, Int)
-rule processProposerRewardAux(V, A, BaseReward)
-  => increaseBalance(A.proposer, BaseReward /Int PROPOSER_REWARD_QUOTIENT)
-  ~> increaseBalance(V.id, (BaseReward -Int BaseReward /Int PROPOSER_REWARD_QUOTIENT) /Int A.inclusion_delay)
-
-// Inactivity Penalties
-
-syntax KItem ::= processInactivityPenalties(IntList, ValidatorMap, Int, Int, Attestations, Int)
-rule processInactivityPenalties(VIDs, VM, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
-  => #it(
-       FinalityDelay >Int MIN_EPOCHS_TO_INACTIVITY_PENALTY
-     ,
-       processInactivityPenaltiesAux(VIDs, VM, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
-     )
-
-syntax KItem ::= processInactivityPenaltiesAux(IntList, ValidatorMap, Int, Int, Attestations, Int)
-rule (. => processInactivityPenalty(VM[VID]v, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance))
-  ~> processInactivityPenaltiesAux(VID VIDs => VIDs, VM, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
-rule processInactivityPenaltiesAux(.IntList, _, _, _, _, _) => .
-
-syntax KItem ::= processInactivityPenalty(Validator, Int, Int, Attestations, Int)
-rule processInactivityPenalty(V, Epoch, FinalityDelay, TargetAttestations, TotalActiveBalance)
-  => #it(
-       isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
-     ,
-       decreaseBalance(V.id, BASE_REWARDS_PER_EPOCH *Int getBaseReward(V, TotalActiveBalance))
        ~>
+       // Proposer Rewards
        #it(
-         sizeA(filterByAttester(V.id, TargetAttestations)) ==Int 0
+         V.id inA SourceAttestations
        ,
-         decreaseBalance(V.id, V.effective_balance *Int FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT)
+         increaseBalance(minByInclusionDelay(V.id, SourceAttestations).proposer, BaseReward /Int PROPOSER_REWARD_QUOTIENT)
+         ~>
+         increaseBalance(V.id, (BaseReward -Int BaseReward /Int PROPOSER_REWARD_QUOTIENT) /Int minByInclusionDelay(V.id, SourceAttestations).inclusion_delay)
        )
+       ~>
+       // Inactivity Penalties
+       #it(
+         FinalityDelay >Int MIN_EPOCHS_TO_INACTIVITY_PENALTY
+       ,
+         decreaseBalance(V.id, BASE_REWARDS_PER_EPOCH *Int BaseReward)
+         ~>
+         #it(
+           V.id inA TargetAttestations
+         ,
+           decreaseBalance(V.id, V.effective_balance *Int FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT)
+         )
+       )
+
      )
 
 // get_base_reward

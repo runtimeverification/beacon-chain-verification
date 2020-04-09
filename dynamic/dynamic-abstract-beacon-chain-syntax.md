@@ -128,6 +128,16 @@ rule sizeA(.Attestations) => 0
 // sort in the order of inclusion_delay
 syntax Attestations ::= sortByInclusionDelay(Attestations) [function, klabel(sortA), smtlib(sortA)]
 // TODO: implement
+
+// `minByInclusionDelay(V, As)` returns the first included attestation attested by V
+// it is defined only when `V inA As`
+syntax Attestation ::= minByInclusionDelay(Int, Attestations) [function, klabel(minA), smtlib(minA)]
+// TODO: implement
+
+syntax Bool ::= Int "inA" Attestations [function, klabel(inA), smtlib(inA)]
+rule V inA (A As) => true     requires V  ==Int A.attester
+rule V inA (A As) => V inA As requires V =/=Int A.attester
+rule V inA .Attestations => false
 ```
 
 ## Abstract Deposits
