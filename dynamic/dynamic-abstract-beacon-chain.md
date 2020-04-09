@@ -338,16 +338,16 @@ rule processRewardsPenaltiesAux1(VIDs, VM, Epoch, FinalityDelay, SourceAttestati
 
 syntax KItem ::= processRewardsPenaltiesAux2(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
 rule (. => processRewardPenalty(VM[VID]v, Epoch, FinalityDelay, getBaseReward(VM[VID]v, TotalActiveBalance),
-                                                                  SourceAttestations,     TargetAttestations,     HeadAttestations,
-                                                                  SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance))
+                                                                             SourceAttestations,     TargetAttestations,     HeadAttestations,
+                                                                             SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance))
   ~> processRewardsPenaltiesAux2(VID VIDs => VIDs, VM, Epoch, FinalityDelay, SourceAttestations,     TargetAttestations,     HeadAttestations,
                                                                              SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
 rule processRewardsPenaltiesAux2(.IntList, _, _, _, _, _, _, _, _, _, _) => .
 
 syntax KItem ::= processRewardPenalty(Validator, Int, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
 rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
-                                            SourceAttestations,     TargetAttestations,     HeadAttestations,
-                                            SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+                          SourceAttestations,     TargetAttestations,     HeadAttestations,
+                          SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
   => #it(
        isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
      ,
@@ -409,6 +409,7 @@ rule getBaseReward(V, SafeTotalActiveBalance)
   => V.effective_balance *Int BASE_REWARD_FACTOR
      /Int sqrtInt(SafeTotalActiveBalance)
      /Int BASE_REWARDS_PER_EPOCH
+     [concrete]
 
 // increase_balance
 syntax KItem ::= increaseBalance(Int, Int)
@@ -439,6 +440,7 @@ rule totalBalance(_, .IntList) => 0
 
 syntax Int ::= lift(Int) [function, smtlib(lift)]
 rule lift(B) => maxInt(EFFECTIVE_BALANCE_INCREMENT, B)
+     [concrete]
 
 syntax Attestations ::= filterByAttester(Int, Attestations) [function]
 rule filterByAttester(V, A As) => #if A.attester ==Int V
