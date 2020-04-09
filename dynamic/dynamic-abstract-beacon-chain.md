@@ -365,7 +365,7 @@ rule processMatchingRewardPenalty(V, Epoch, SourceAttestations,     TargetAttest
          increaseBalance(V.id, getBaseReward(V, TotalActiveBalance) *Int (SourceAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
                                                                     /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
        ,
-         increaseBalance(V.id, 0 -Int getBaseReward(V, TotalActiveBalance))
+         decreaseBalance(V.id, getBaseReward(V, TotalActiveBalance))
        )
        ~>
        #ite(
@@ -374,7 +374,7 @@ rule processMatchingRewardPenalty(V, Epoch, SourceAttestations,     TargetAttest
          increaseBalance(V.id, getBaseReward(V, TotalActiveBalance) *Int (TargetAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
                                                                     /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
        ,
-         increaseBalance(V.id, 0 -Int getBaseReward(V, TotalActiveBalance))
+         decreaseBalance(V.id, getBaseReward(V, TotalActiveBalance))
        )
        ~>
        #ite(
@@ -383,7 +383,7 @@ rule processMatchingRewardPenalty(V, Epoch, SourceAttestations,     TargetAttest
          increaseBalance(V.id, getBaseReward(V, TotalActiveBalance) *Int (HeadAttestingBalance   /Int EFFECTIVE_BALANCE_INCREMENT)
                                                                     /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
        ,
-         increaseBalance(V.id, 0 -Int getBaseReward(V, TotalActiveBalance))
+         decreaseBalance(V.id, getBaseReward(V, TotalActiveBalance))
        )
      )
 
@@ -423,12 +423,12 @@ rule processInactivityPenalty(V, Epoch, FinalityDelay, TargetAttestations, Total
   => #it(
        isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
      ,
-       increaseBalance(V.id, 0 -Int BASE_REWARDS_PER_EPOCH *Int getBaseReward(V, TotalActiveBalance))
+       decreaseBalance(V.id, BASE_REWARDS_PER_EPOCH *Int getBaseReward(V, TotalActiveBalance))
        ~>
        #it(
          sizeA(filterByAttester(V.id, TargetAttestations)) ==Int 0
        ,
-         increaseBalance(V.id, 0 -Int V.effective_balance *Int FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT)
+         decreaseBalance(V.id, V.effective_balance *Int FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT)
        )
      )
 
@@ -439,7 +439,7 @@ rule getBaseReward(V, SafeTotalActiveBalance)
      /Int sqrtInt(SafeTotalActiveBalance)
      /Int BASE_REWARDS_PER_EPOCH
 
-// increase_balance, decrease_balance
+// increase_balance
 syntax KItem ::= increaseBalance(Int, Int)
 rule <k> increaseBalance(VID, N) => . ... </k>
      <currentSlot> Slot </currentSlot>
@@ -457,6 +457,10 @@ rule <k> increaseBalance(VID, N) => #bottom ... </k>
        ...
      </state>
      requires notBool VID in VIDs
+
+// decrease_balance
+syntax KItem ::= decreaseBalance(Int, Int)
+rule decreaseBalance(VID, N) => increaseBalance(VID, 0 -Int N)
 
 syntax Int ::= totalBalance(ValidatorMap, IntList) [function, smtlib(totalBalance)]
 rule totalBalance(VM, VID VIDs) => VM[VID]v.effective_balance +Int totalBalance(VM, VIDs)
