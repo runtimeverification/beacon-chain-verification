@@ -100,15 +100,15 @@ The `Attestation` of the concrete model can be represented as a set of abstract 
 ```k
 syntax Attestations ::= List{Attestation,""}
 syntax Attestation  ::= #Attestation(Int,Int,Pair,Pair,Int,Int,Int) // attester, assigned slot, source epoch/block, target epoch/block, head block (LMD GHOST vote), proposer, inclusion delay
-syntax Int ::= Attestation ".attester"        [function, functional]
-syntax Int ::= Attestation ".slot"            [function, functional]
-syntax Int ::= Attestation ".source_epoch"    [function, functional]
-syntax Int ::= Attestation ".source_block"    [function, functional]
-syntax Int ::= Attestation ".target_epoch"    [function, functional]
-syntax Int ::= Attestation ".target_block"    [function, functional]
-syntax Int ::= Attestation ".head_block"      [function, functional]
-syntax Int ::= Attestation ".proposer"        [function, functional]
-syntax Int ::= Attestation ".inclusion_delay" [function, functional]
+syntax Int ::= Attestation ".attester"        [function, functional, klabel(a_attester)       , smtlib(a_attester)       ]
+syntax Int ::= Attestation ".slot"            [function, functional, klabel(a_slot)           , smtlib(a_slot)           ]
+syntax Int ::= Attestation ".source_epoch"    [function, functional, klabel(a_source_epoch)   , smtlib(a_source_epoch)   ]
+syntax Int ::= Attestation ".source_block"    [function, functional, klabel(a_source_block)   , smtlib(a_source_block)   ]
+syntax Int ::= Attestation ".target_epoch"    [function, functional, klabel(a_target_epoch)   , smtlib(a_target_epoch)   ]
+syntax Int ::= Attestation ".target_block"    [function, functional, klabel(a_target_block)   , smtlib(a_target_block)   ]
+syntax Int ::= Attestation ".head_block"      [function, functional, klabel(a_head_block)     , smtlib(a_head_block)     ]
+syntax Int ::= Attestation ".proposer"        [function, functional, klabel(a_proposer)       , smtlib(a_proposer)       ]
+syntax Int ::= Attestation ".inclusion_delay" [function, functional, klabel(a_inclusion_delay), smtlib(a_inclusion_delay)]
 rule #Attestation(X,_,(_,_),(_,_),_,_,_).attester        => X
 rule #Attestation(_,X,(_,_),(_,_),_,_,_).slot            => X
 rule #Attestation(_,_,(X,_),(_,_),_,_,_).source_epoch    => X

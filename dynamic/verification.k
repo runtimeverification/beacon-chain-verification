@@ -46,6 +46,21 @@ rule (V with activation_epoch             = I).activation_epoch => I
 rule (V with exit_epoch                   = _).activation_epoch => V.activation_epoch
 rule (V with withdrawable_epoch           = _).activation_epoch => V.activation_epoch
 
+rule (V with slashed                      = _).balance => V.balance
+rule (V with balance                      = I).balance => I
+rule (V with effective_balance            = _).balance => V.balance
+rule (V with activation_eligibility_epoch = _).balance => V.balance
+rule (V with activation_epoch             = _).balance => V.balance
+rule (V with exit_epoch                   = _).balance => V.balance
+rule (V with withdrawable_epoch           = _).balance => V.balance
+
+rule (V with balance                      = _) with balance = I => V with balance = I
+rule (V with effective_balance            = J) with balance = I => V with balance = I with effective_balance            = J
+rule (V with activation_eligibility_epoch = J) with balance = I => V with balance = I with activation_eligibility_epoch = J
+rule (V with activation_epoch             = J) with balance = I => V with balance = I with activation_epoch             = J
+rule (V with exit_epoch                   = J) with balance = I => V with balance = I with exit_epoch                   = J
+rule (V with withdrawable_epoch           = J) with balance = I => V with balance = I with withdrawable_epoch           = J
+
 // for l-spec
 rule countValidatorsToExit(v(VM [ VID <- V ]v, VIDs), E) => countValidatorsToExit(v(VM, VIDs), E) +Int 1
     requires V.exit_epoch =/=Int VM[VID]v.exit_epoch
@@ -59,6 +74,19 @@ rule sizeV(_:ValidatorList) >=Int 0 => true [smt-lemma]
 rule subset(take(_, S1), S2) => true requires subset(S1, S2)
 rule subset(sort(S1), S2) => true requires subset(S1, S2)
 rule subset(S, S) => true
+
+// for n-spec
+rule X1 +Int Y1 <=Int X2 +Int Y2 => true requires X1 <=Int X2 andBool Y1 <=Int Y2
+rule X /Int Y <=Int Z => true requires X <=Int Z
+                               andBool X >=Int 0 andBool Y >Int 0 andBool Z >=Int 0
+rule X *Int Y /Int Z <=Int X => true requires Y <=Int Z
+                                      andBool X >=Int 0 andBool Y >=Int 0 andBool Z >Int 0
+rule X /Int N <=Int Y /Int N => true requires X <=Int Y
+                                      andBool X >=Int 0 andBool Y >=Int 0 andBool N >Int 0
+rule X /Int Y >Int 0 => true requires X >=Int Y
+                              andBool X >Int 0 andBool Y >Int 0
+
+rule lift(X) >=Int EFFECTIVE_BALANCE_INCREMENT => true [smt-lemma]
 
 syntax Tactic ::= case(Pred) // case analysis
 
