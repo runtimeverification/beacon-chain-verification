@@ -395,7 +395,7 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
          decreaseBalance(V.id, BASE_REWARDS_PER_EPOCH *Int BaseReward)
          ~>
          #it(
-           V.id inA TargetAttestations
+           notBool (V.id inA TargetAttestations)
          ,
            decreaseBalance(V.id, V.effective_balance *Int FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT)
          )
@@ -404,7 +404,7 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
      )
 
 // get_base_reward
-syntax Int ::= getBaseReward(Validator, Int) [function]
+syntax Int ::= getBaseReward(Validator, Int) [function, smtlib(getBaseReward)]
 rule getBaseReward(V, SafeTotalActiveBalance)
   => V.effective_balance *Int BASE_REWARD_FACTOR
      /Int sqrtInt(SafeTotalActiveBalance)
@@ -442,28 +442,28 @@ syntax Int ::= lift(Int) [function, smtlib(lift)]
 rule lift(B) => maxInt(EFFECTIVE_BALANCE_INCREMENT, B)
      [concrete]
 
-syntax Attestations ::= filterByAttester(Int, Attestations) [function]
+syntax Attestations ::= filterByAttester(Int, Attestations) [function, smtlib(filterByAttester)]
 rule filterByAttester(V, A As) => #if A.attester ==Int V
                                   #then A filterByAttester(V, As)
                                   #else   filterByAttester(V, As)
                                   #fi
 rule filterByAttester(_, .Attestations) => .Attestations
 
-syntax Attestations ::= filterByTarget(Int, Attestations) [function]
+syntax Attestations ::= filterByTarget(Int, Attestations) [function, smtlib(filterByTarget)]
 rule filterByTarget(T, A As) => #if A.target_block ==Int T
                                 #then A filterByTarget(T, As)
                                 #else   filterByTarget(T, As)
                                 #fi
 rule filterByTarget(_, .Attestations) => .Attestations
 
-syntax Attestations ::= filterByHead(BlockMap, Attestations) [function]
+syntax Attestations ::= filterByHead(BlockMap, Attestations) [function, smtlib(filterByHead)]
 rule filterByHead(BM, A As) => #if A.head_block ==Int BM[A.slot]b.id
                                #then A filterByHead(BM, As)
                                #else   filterByHead(BM, As)
                                #fi
 rule filterByHead(_, .Attestations) => .Attestations
 
-syntax IntList ::= getValidators(Attestations) [function]
+syntax IntList ::= getValidators(Attestations) [function, smtlib(getValidators)]
 rule getValidators(A As) => A.attester getValidators(A As) // TODO: drop duplicates
 rule getValidators(.Attestations) => .IntList
 ```

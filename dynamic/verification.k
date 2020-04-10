@@ -77,6 +77,9 @@ rule subset(S, S) => true
 
 // for n-spec
 rule X1 +Int Y1 <=Int X2 +Int Y2 => true requires X1 <=Int X2 andBool Y1 <=Int Y2
+rule X1 +Int Y1 >=Int X2 +Int Y2 => true requires X1 >=Int X2 andBool Y1 >=Int Y2
+
+/*
 rule X /Int Y <=Int Z => true requires X <=Int Z
                                andBool X >=Int 0 andBool Y >Int 0 andBool Z >=Int 0
 rule X *Int Y /Int Z <=Int X => true requires Y <=Int Z
@@ -85,6 +88,7 @@ rule X /Int N <=Int Y /Int N => true requires X <=Int Y
                                       andBool X >=Int 0 andBool Y >=Int 0 andBool N >Int 0
 rule X /Int Y >Int 0 => true requires X >=Int Y
                               andBool X >Int 0 andBool Y >Int 0
+*/
 
 rule lift(X) >=Int EFFECTIVE_BALANCE_INCREMENT => true [smt-lemma]
 
