@@ -471,8 +471,16 @@ rule filterNotSlashed(VM, A As) => #if VM[A.attester]v.slashed
 rule filterNotSlashed(_, .Attestations) => .Attestations
 
 syntax IntList ::= getValidators(Attestations) [function, smtlib(getValidators)]
-rule getValidators(A As) => A.attester getValidators(A As) // TODO: drop duplicates
-rule getValidators(.Attestations) => .IntList
+rule getValidators(As) => getValidatorsAux2(getValidatorsAux1(As, .Map))
+     [concrete]
+
+syntax Map ::= getValidatorsAux1(Attestations, Map) [function]
+rule getValidatorsAux1(A As => As, M => M [ A.attester <- true ])
+rule getValidatorsAux1(.Attestations, M) => M
+
+syntax IntList ::= getValidatorsAux2(Map) [function]
+rule getValidatorsAux2(V |-> true M) => V getValidatorsAux2(M)
+rule getValidatorsAux2(.Map) => .IntList
 ```
 
 ### Validator Updates
