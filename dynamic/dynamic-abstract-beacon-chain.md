@@ -302,9 +302,9 @@ syntax KItem ::= processRewardsPenalties(Int)
 rule <k> processRewardsPenalties(Epoch)
       => processRewardsPenaltiesAux1(
            VIDs, VM, Epoch, Epoch -Int LastFinalizedEpoch,
-                                                               Attestations  ,
-                            filterByTarget(EpochBoundaryBlock, Attestations ),
-           filterByHead(BM, filterByTarget(EpochBoundaryBlock, Attestations))
+                                                               filterNotSlashed(VM, Attestations)  ,
+                            filterByTarget(EpochBoundaryBlock, filterNotSlashed(VM, Attestations)) ,
+           filterByHead(BM, filterByTarget(EpochBoundaryBlock, filterNotSlashed(VM, Attestations)))
          ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -462,6 +462,13 @@ rule filterByHead(BM, A As) => #if A.head_block ==Int BM[A.slot]b.id
                                #else   filterByHead(BM, As)
                                #fi
 rule filterByHead(_, .Attestations) => .Attestations
+
+syntax Attestations ::= filterNotSlashed(ValidatorMap, Attestations) [function, smtlib(filterNotSlashed)]
+rule filterNotSlashed(VM, A As) => #if VM[A.attester]v.slashed
+                                   #then   filterNotSlashed(VM, As)
+                                   #else A filterNotSlashed(VM, As)
+                                   #fi
+rule filterNotSlashed(_, .Attestations) => .Attestations
 
 syntax IntList ::= getValidators(Attestations) [function, smtlib(getValidators)]
 rule getValidators(A As) => A.attester getValidators(A As) // TODO: drop duplicates

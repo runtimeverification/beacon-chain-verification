@@ -54,7 +54,7 @@ andBool     ?TotalActiveBalance >=Int 0
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
 andBool ?BaseReward ==Int getBaseReward(V, ?TotalActiveBalance)
-andBool ?SourceAttestations ==K Attestations
+andBool ?SourceAttestations ==K filterNotSlashed(VM1, Attestations)
 andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
 andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
 andBool ?SourceAttestingBalance ==Int lift(totalBalance(VM1, getValidators(?SourceAttestations)))
