@@ -302,9 +302,9 @@ syntax KItem ::= processRewardsPenalties(Int)
 rule <k> processRewardsPenalties(Epoch)
       => processRewardsPenaltiesAux1(
            VIDs, VM, Epoch, Epoch -Int LastFinalizedEpoch,
-                                                               Attestations  ,
-                            filterByTarget(EpochBoundaryBlock, Attestations ),
-           filterByHead(BM, filterByTarget(EpochBoundaryBlock, Attestations))
+                                                               filterNotSlashed(VM, Attestations)  ,
+                            filterByTarget(EpochBoundaryBlock, filterNotSlashed(VM, Attestations)) ,
+           filterByHead(BM, filterByTarget(EpochBoundaryBlock, filterNotSlashed(VM, Attestations)))
          ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -463,9 +463,24 @@ rule filterByHead(BM, A As) => #if A.head_block ==Int BM[A.slot]b.id
                                #fi
 rule filterByHead(_, .Attestations) => .Attestations
 
+syntax Attestations ::= filterNotSlashed(ValidatorMap, Attestations) [function, smtlib(filterNotSlashed)]
+rule filterNotSlashed(VM, A As) => #if VM[A.attester]v.slashed
+                                   #then   filterNotSlashed(VM, As)
+                                   #else A filterNotSlashed(VM, As)
+                                   #fi
+rule filterNotSlashed(_, .Attestations) => .Attestations
+
 syntax IntList ::= getValidators(Attestations) [function, smtlib(getValidators)]
-rule getValidators(A As) => A.attester getValidators(A As) // TODO: drop duplicates
-rule getValidators(.Attestations) => .IntList
+rule getValidators(As) => getValidatorsAux2(getValidatorsAux1(As, .Map))
+     [concrete]
+
+syntax Map ::= getValidatorsAux1(Attestations, Map) [function]
+rule getValidatorsAux1(A As => As, M => M [ A.attester <- true ])
+rule getValidatorsAux1(.Attestations, M) => M
+
+syntax IntList ::= getValidatorsAux2(Map) [function]
+rule getValidatorsAux2(V |-> true M) => V getValidatorsAux2(M)
+rule getValidatorsAux2(.Map) => .IntList
 ```
 
 ### Validator Updates
