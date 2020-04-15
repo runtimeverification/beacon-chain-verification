@@ -42,8 +42,8 @@ configuration <T>
       <validators> v(.ValidatorMap, .IntList) </validators> // ValidatorID -> ValidatorState
       <slashedBalance> 0 </slashedBalance> // slashed balance
       <attested> .Map </attested> // Epoch -> Attestations
-      <justified> .Map </justified> // Epoch -> Block option
-      <finalized> .Map </finalized> // Epoch -> Block option
+      <justified> .Map </justified> // Epoch -> bool
+      <finalized> .Map </finalized> // Epoch -> bool
       // derived info
       <lastBlock> (0,0) </lastBlock> // last block (slot, id)
       <lastJustified> 0 </lastJustified> // last justified (epoch, block id)
@@ -51,7 +51,7 @@ configuration <T>
     </state>
   </states>
   // blockchain
-  <blocks> .BlockMap </blocks>
+  <blocks> .BlockMap </blocks> // slot -> block
 </T>
 ```
 
@@ -796,19 +796,23 @@ rule processVoluntaryExits(.VoluntaryExits) => .
 
 syntax KItem ::= processVoluntaryExit(VoluntaryExit)
 rule <k> processVoluntaryExit(E)
-      => initiateValidatorExit(VM[E.validator]v) ... </k>
+      => #if isValidVoluntaryExit(E, VM[E.validator]v, epochOf(Slot))
+         #then initiateValidatorExit(VM[E.validator]v)
+         #else #bottom
+         #fi ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
        <validators> v(VM, _) </validators>
        ...
      </state>
-     requires isActiveValidator(VM[E.validator]v, epochOf(Slot))
-      andBool VM[E.validator]v.exit_epoch ==Int FAR_FUTURE_EPOCH
-      andBool epochOf(Slot) >=Int E.epoch
-      andBool epochOf(Slot) >=Int VM[E.validator]v.activation_epoch +Int PERSISTENT_COMMITTEE_PERIOD
-// TODO:
-// rule processVoluntaryExit(E) => #bottom [owise]
+
+syntax Bool ::= isValidVoluntaryExit(VoluntaryExit, Validator, Int) [function]
+rule isValidVoluntaryExit(E, V, CurrEpoch)
+  => isActiveValidator(V, CurrEpoch)
+     andBool V.exit_epoch ==Int FAR_FUTURE_EPOCH
+     andBool CurrEpoch >=Int E.epoch
+     andBool CurrEpoch >=Int V.activation_epoch +Int PERSISTENT_COMMITTEE_PERIOD
 
 // is_active_validator
 syntax Bool ::= isActiveValidator(Validator, Int) [function, functional]
@@ -845,7 +849,8 @@ rule <k> setExitEpoch(V, ExitEpoch) => . ... </k>
 
 syntax Int ::= computeExitEpoch(Validators, Int) [function, functional]
              | computeExitEpochAux(Validators, Int, Int) [function, functional]
-rule computeExitEpoch(Validators, CurrentEpoch)
+rule [computeExitEpoch]:
+     computeExitEpoch(Validators, CurrentEpoch)
   => computeExitEpochAux(
        Validators,
        maxInt(maxExitEpoch(Validators), delayedActivationExitEpoch(CurrentEpoch)),
