@@ -11,7 +11,7 @@ rule
       ,
         countValidatorsToExit(v(VM1,VIDs), ?LastExitEpoch)  <Int ?ChurnLimit
       ))
-   ~> */ initiateValidatorExit(V) => . </k>
+   ~> */ initiateValidatorExit(V) => .K ... </k>
   <currentSlot> Slot </currentSlot>
   <states>
     <state>
