@@ -107,8 +107,8 @@ syntax Bool ::= distinct(IntList) [function]
 
 syntax Validators ::= storeValidatorExits(Validators, VoluntaryExits, Int) [function]
 rule storeValidatorExits(v(VM, VIDs), E Es, Epoch)
-  => storeValidatorExits(v(VM [ VM[E.validator]v.id <- VM[E.validator]v with exit_epoch         = computeExitEpoch(v(VM, VIDs), Epoch)
-                                                                        with withdrawable_epoch = computeExitEpoch(v(VM, VIDs), Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]v, VIDs), Es, Epoch)
+  => storeValidatorExits(v(VM [ E.validator <- VM[E.validator]v with exit_epoch         = computeExitEpoch(v(VM, VIDs), Epoch)
+                                                                with withdrawable_epoch = computeExitEpoch(v(VM, VIDs), Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]v, VIDs), Es, Epoch)
 rule storeValidatorExits(Vs, .VoluntaryExits, _) => Vs
 
 syntax ValidatorMap ::= sss(ValidatorMap, VoluntaryExits, IntList, Int) [function]
