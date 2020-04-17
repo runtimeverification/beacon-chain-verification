@@ -1,4 +1,5 @@
-requires "dynamic-abstract-beacon-chain.k"
+require "dynamic-abstract-beacon-chain.k"
+require "substitution.k"
 
 module LEMMAS-JAVA [kast]
 
@@ -26,6 +27,27 @@ module VERIFICATION
 
 imports DYNAMIC-ABSTRACT-BEACON-CHAIN
 imports LEMMAS-JAVA
+imports SUBSTITUTION
+
+syntax KVar ::= "x" [token]
+
+syntax VoluntaryExit ::= KVar
+syntax Bool ::= forall(KVar, VoluntaryExits, Bool) [binder, function]
+rule forall(X, V Vs, E) => E[V / X] andBool forall(X, Vs, E)
+rule forall(_, .VoluntaryExits, _) => true
+
+/*
+syntax Int ::= KVar
+syntax Int ::= lambda(KVar, Int) [binder, function]
+
+syntax Bool ::= forall(KVar, IntList, Bool) [binder, function]
+rule forall(X, V Vs, E) => E[V / X] andBool forall(X, Vs, E)
+rule forall(_, .IntList, _) => true
+
+syntax ValidatorMap ::= ValidatorMap "[" IntList ":=" Validator "]v" [function]
+rule M [ (K Ks) := lambda(X, V) ]v => ( M [ K <- V[K / X] ]v ) [ Ks := lambda(X, V) ]v
+rule M [ .IntList := _ ]v => M
+*/
 
 // rule maxInt(I1, I2) => I1 requires I1 >=Int I2
 // rule maxInt(I1, I2) => I2 requires I1 <Int I2
@@ -72,7 +94,7 @@ rule isValidVoluntaryExits(E Es, VM, Epoch) => isValidVoluntaryExit(E, VM[E.vali
                                                andBool distinctVoluntaryExits(E Es)
 rule isValidVoluntaryExits(.VoluntaryExits, _, _) => true
 
-rule isValidVoluntaryExits(Es, VM [ VM[E.validator]v.id <- _ ]v, Epoch) => true
+rule isValidVoluntaryExits(Es, VM [ E.validator <- _ ]v, Epoch) => true
     requires isValidVoluntaryExits(Es, VM, Epoch)
      andBool distinctVoluntaryExits(E Es)
 
@@ -88,6 +110,31 @@ rule storeValidatorExits(v(VM, VIDs), E Es, Epoch)
   => storeValidatorExits(v(VM [ VM[E.validator]v.id <- VM[E.validator]v with exit_epoch         = computeExitEpoch(v(VM, VIDs), Epoch)
                                                                         with withdrawable_epoch = computeExitEpoch(v(VM, VIDs), Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]v, VIDs), Es, Epoch)
 rule storeValidatorExits(Vs, .VoluntaryExits, _) => Vs
+
+syntax ValidatorMap ::= sss(ValidatorMap, VoluntaryExits, IntList, Int) [function]
+rule sss(VM, E Es, VIDs, Epoch) => sss(VM [ E.validator <- eee(VM[E.validator]v, v(VM,VIDs), Epoch) ]v, Es, VIDs, Epoch)
+rule sss(VM, .VoluntaryExits, _, _) => VM
+
+rule countValidatorsToExit(v(sss(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), E) <=Int ChurnLimit => true
+     requires countValidatorsToExit(v(VM [ VE.validator <- V ]v, VIDs), E) <=Int ChurnLimit
+      andBool forall(x, VEs, countValidatorsToExit(v(sss(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), sss(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch)[x.validator]v.exit_epoch) <=Int ChurnLimit)
+      andBool distinctVoluntaryExits(VE VEs)
+
+rule activeValidators(v(sss(VM, VEs, _, _), VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch) // TODO: restrict
+     requires isValidVoluntaryExits(VEs, VM, Epoch)
+rule activeValidators(v(VM [ VID <- V ]v, VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch)
+     requires V.exit_epoch >Int Epoch
+      andBool VM[VID]v.exit_epoch ==Int FAR_FUTURE_EPOCH
+      andBool VM[VID]v.activation_epoch ==Int V.activation_epoch
+
+rule sss(VM, Es, _, _) [ E.validator ]v => VM [ E.validator ]v
+     requires distinctVoluntaryExits(E Es)
+
+rule VM[VID]v.id => VID
+
+syntax Validator ::= eee(Validator, Validators, Int) [function]
+rule [eee]: eee(V, Vs, Epoch) => V with exit_epoch         = computeExitEpoch(Vs, Epoch)
+                                   with withdrawable_epoch = computeExitEpoch(Vs, Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY
 
 // for m-spec
 rule sizeV(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
