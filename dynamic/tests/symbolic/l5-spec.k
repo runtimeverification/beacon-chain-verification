@@ -12,7 +12,7 @@ rule
   <states>
     <state>
       <slot> Slot </slot>
-      <validators> v(VM => ?VM2, VIDs) </validators>
+      <validators> v(VM1 => ?VM2, VIDs) </validators>
       ...
     </state>
     ...
@@ -24,12 +24,12 @@ requires true
 andBool Slot >=Int 0
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot)
-andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(v(VM,VIDs), ?Epoch)))
+andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(v(VM1,VIDs), ?Epoch)))
 // conditions
-andBool isValidVoluntaryExits(VEs, VM, ?Epoch)
+andBool isValidVoluntaryExits(VEs, VM1, ?Epoch)
 ensures true
 // ensures
-andBool ?VM2 ==K sss(VM, VEs, VIDs, ?Epoch)
+andBool ?VM2 ==K sss(VM1, VEs, VIDs, ?Epoch)
 andBool forall(x, VEs, countValidatorsToExit(v(?VM2, VIDs), ?VM2[x.validator]v.exit_epoch) <=Int ?ChurnLimit)
 [matching(sss,eee,storeV)]
 
