@@ -580,14 +580,18 @@ rule activationQueueUptoChurnLimit(Validators, FinalizedEpoch, CurrentEpoch)
        sort(activationQueue(Validators, FinalizedEpoch))
      )
 
-syntax ValidatorList ::= activationQueue(Validators, Int) [function, functional]
+syntax ValidatorList ::= activationQueue(Validators, Int) [function, functional, smtlib(activationQueue)]
 rule activationQueue(v(VM, VID VIDs), FinalizedEpoch)
-  => #if VM[VID]v.activation_eligibility_epoch <=Int FinalizedEpoch andBool // is_eligible_for_activation
-         VM[VID]v.activation_epoch ==Int FAR_FUTURE_EPOCH
+  => #if isValidValidatorToActivate(VM[VID]v, FinalizedEpoch)
      #then VM[VID]v activationQueue(v(VM, VIDs), FinalizedEpoch)
      #else          activationQueue(v(VM, VIDs), FinalizedEpoch)
      #fi
 rule activationQueue(v(_, .IntList), _) => .ValidatorList
+
+syntax Bool ::= isValidValidatorToActivate(Validator, Int) [function]
+rule isValidValidatorToActivate(V, FinalizedEpoch)
+  => V.activation_eligibility_epoch <=Int FinalizedEpoch andBool // is_eligible_for_activation
+     V.activation_epoch ==Int FAR_FUTURE_EPOCH
 ```
 
 ## Block Processing

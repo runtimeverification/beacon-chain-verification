@@ -154,7 +154,10 @@ rule maxExitEpoch(v(VM [ VID <- V ]v, VIDs)) => maxInt(maxExitEpoch(v(VM, VIDs))
       andBool VID in VIDs
 
 // for m-spec
+/*
 rule sizeV(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
+*/
+rule sizeV(take(N, _)) <=Int N => true requires N >=Int 0 [smt-lemma]
 rule sizeV(_:ValidatorList) >=Int 0 => true [smt-lemma]
 
 rule subset(take(_, S1), S2) => true requires subset(S1, S2)
@@ -172,10 +175,16 @@ syntax Bool ::= distinctValidators(ValidatorList) [function]
 // TODO: implement
 // rule distinctValidators(Vs) => distinct(Vs.id)
 
-syntax Bool ::= isValidValidators(ValidatorList, IntList) [function]
-rule isValidValidators(V Vs, VIDs) => V.id in VIDs andBool isValidValidators(Vs, VIDs)
-                                                   andBool distinctValidators(V Vs)
-rule isValidValidators(.ValidatorList, _) => true
+syntax Bool ::= isValidValidatorsToActivate(ValidatorList, Validators, Int) [function]
+rule isValidValidatorsToActivate(V Vs, v(VM, VIDs), FinalizedEpoch) => isValidValidatorToActivate(V, FinalizedEpoch) andBool isValidValidatorsToActivate(Vs, v(VM, VIDs), FinalizedEpoch)
+                                                                       andBool distinctValidators(V Vs)
+                                                                       andBool V.id in VIDs
+                                                                       andBool VM[V.id]v ==K V
+rule isValidValidatorsToActivate(.ValidatorList, _, _) => true
+
+rule isValidValidatorsToActivate(Vs, v(VM [ V.id <- _ ]v, VIDs), FinalizedEpoch) => true
+    requires isValidValidatorsToActivate(Vs, v(VM, VIDs), FinalizedEpoch)
+     andBool distinctValidators(V Vs)
 
 syntax Int ::= countValidatorsToActivate(Validators, Int) [function, smtlib(countValidatorsToActivate)]
 rule countValidatorsToActivate(v(VM, VID VIDs), ActivationEpoch)
@@ -187,16 +196,13 @@ rule countValidatorsToActivate(v(VM [ VID <- V ]v, VIDs), E) => countValidatorsT
      andBool V.activation_epoch ==Int E
      andBool VID in VIDs
 
-/*
-rule countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), E) <=Int ChurnLimit => true
-     requires countValidatorsToExit(v(VM [ VE.validator <- V ]v, VIDs), E) <=Int ChurnLimit
-      andBool forall(x, VEs, countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch)[x.validator]v.exit_epoch) <=Int ChurnLimit)
-      andBool distinctVoluntaryExits(VE VEs)
+rule activeValidators(v(VM [ VID <- V ]v, VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch)
+     requires V.activation_epoch >Int Epoch
+      andBool VM[VID]v.activation_epoch ==Int FAR_FUTURE_EPOCH
+      andBool VM[VID]v.exit_epoch ==Int V.exit_epoch
 
-rule countValidatorsToExit(Vs, E) => 0
-     requires maxExitEpoch(Vs) <Int E andBool E <Int FAR_FUTURE_EPOCH
-     [smt-lemma]
-*/
+rule isValidValidatorsToActivate(take(_, sort(activationQueue(Vs, FinalizedEpoch))), Vs, FinalizedEpoch) => true
+// TODO: proof
 
 // for n-spec
 rule X1 +Int Y1 <=Int X2 +Int Y2 => true requires X1 <=Int X2 andBool Y1 <=Int Y2
