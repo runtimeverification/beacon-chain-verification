@@ -156,6 +156,10 @@ rule subset(take(_, S1), S2) => true requires subset(S1, S2)
 rule subset(sort(S1), S2) => true requires subset(S1, S2)
 rule subset(S, S) => true
 
+syntax ValidatorMap ::= updateActivations(ValidatorMap, ValidatorList, Int) [function]
+rule updateActivations(VM, V Vs, Epoch) => updateActivations(VM [ V.id <- V with activation_epoch = delayedActivationExitEpoch(Epoch) ]v, Vs, Epoch)
+rule updateActivations(VM, .ValidatorList, _) => VM
+
 // for n-spec
 rule X1 +Int Y1 <=Int X2 +Int Y2 => true requires X1 <=Int X2 andBool Y1 <=Int Y2
 rule X1 +Int Y1 >=Int X2 +Int Y2 => true requires X1 >=Int X2 andBool Y1 >=Int Y2
