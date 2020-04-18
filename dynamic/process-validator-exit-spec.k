@@ -6,7 +6,7 @@ imports VERIFICATION
 
 rule
 <T>
-  <k> processVoluntaryExits(VEs) => . </k>
+  <k> processVoluntaryExits(VEs) => .K ... </k>
   <currentSlot> Slot </currentSlot>
   <states>
     <state>

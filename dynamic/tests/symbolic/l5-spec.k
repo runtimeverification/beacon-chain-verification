@@ -8,7 +8,7 @@ imports L3-SPEC
 
 rule
 <T>
-  <k> processVoluntaryExits(VEs) => . </k>
+  <k> processVoluntaryExits(VEs) => .K ... </k>
   <currentSlot> Slot </currentSlot>
   <states>
     <state>
