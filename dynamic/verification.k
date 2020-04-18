@@ -36,6 +36,11 @@ syntax Bool ::= forall(KVar, VoluntaryExits, Bool) [binder, function]
 rule forall(X, V Vs, E) => E[V / X] andBool forall(X, Vs, E)
 rule forall(_, .VoluntaryExits, _) => true
 
+syntax Validator ::= KVar
+syntax Bool ::= forallV(KVar, ValidatorList, Bool) [binder, function]
+rule forallV(X, V Vs, E) => E[V / X] andBool forallV(X, Vs, E)
+rule forallV(_, .ValidatorList, _) => true
+
 /*
 syntax Int ::= KVar
 syntax Int ::= lambda(KVar, Int) [binder, function]
@@ -159,6 +164,18 @@ rule subset(S, S) => true
 syntax ValidatorMap ::= updateActivations(ValidatorMap, ValidatorList, Int) [function]
 rule updateActivations(VM, V Vs, Epoch) => updateActivations(VM [ V.id <- V with activation_epoch = delayedActivationExitEpoch(Epoch) ]v, Vs, Epoch)
 rule updateActivations(VM, .ValidatorList, _) => VM
+
+rule updateActivations(VM, Vs, _) [ V.id ]v => VM [ V.id ]v
+     requires distinctValidators(V Vs)
+
+syntax Bool ::= distinctValidators(ValidatorList) [function]
+// TODO: implement
+// rule distinctValidators(Vs) => distinct(Vs.id)
+
+syntax Bool ::= isValidValidators(ValidatorList, IntList) [function]
+rule isValidValidators(V Vs, VIDs) => V.id in VIDs andBool isValidValidators(Vs, VIDs)
+                                                   andBool distinctValidators(V Vs)
+rule isValidValidators(.ValidatorList, _) => true
 
 // for n-spec
 rule X1 +Int Y1 <=Int X2 +Int Y2 => true requires X1 <=Int X2 andBool Y1 <=Int Y2
