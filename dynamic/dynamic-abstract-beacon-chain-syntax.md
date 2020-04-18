@@ -168,6 +168,10 @@ syntax Int ::= VoluntaryExit ".validator" [function, functional]
 syntax Int ::= VoluntaryExit ".epoch"     [function, functional]
 rule #VoluntaryExit(X,_).validator => X
 rule #VoluntaryExit(_,X).epoch     => X
+
+syntax Int ::= sizeE(VoluntaryExits) [function, smtlib(sizeE)]
+rule sizeE(_ Es) => 1 +Int sizeE(Es)
+rule sizeE(.VoluntaryExits) => 0
 ```
 
 ## Abstract Validators

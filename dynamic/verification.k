@@ -89,13 +89,14 @@ rule countValidatorsToExit(v(VM [ VID <- V ]v, VIDs), E) => countValidatorsToExi
      andBool V.exit_epoch ==Int E
      andBool VID in VIDs
 
-syntax Bool ::= isValidVoluntaryExits(VoluntaryExits, ValidatorMap, Int) [function]
-rule isValidVoluntaryExits(E Es, VM, Epoch) => isValidVoluntaryExit(E, VM[E.validator]v, Epoch) andBool isValidVoluntaryExits(Es, VM, Epoch)
-                                               andBool distinctVoluntaryExits(E Es)
-rule isValidVoluntaryExits(.VoluntaryExits, _, _) => true
+syntax Bool ::= isValidVoluntaryExits(VoluntaryExits, ValidatorMap, Int, IntList) [function]
+rule isValidVoluntaryExits(E Es, VM, Epoch, VIDs) => isValidVoluntaryExit(E, VM[E.validator]v, Epoch) andBool isValidVoluntaryExits(Es, VM, Epoch, VIDs)
+                                                     andBool distinctVoluntaryExits(E Es)
+                                                     andBool E.validator in VIDs
+rule isValidVoluntaryExits(.VoluntaryExits, _, _, _) => true
 
-rule isValidVoluntaryExits(Es, VM [ E.validator <- _ ]v, Epoch) => true
-    requires isValidVoluntaryExits(Es, VM, Epoch)
+rule isValidVoluntaryExits(Es, VM [ E.validator <- _ ]v, Epoch, VIDs) => true
+    requires isValidVoluntaryExits(Es, VM, Epoch, VIDs)
      andBool distinctVoluntaryExits(E Es)
 
 syntax Bool ::= distinctVoluntaryExits(VoluntaryExits) [function]
@@ -111,30 +112,41 @@ rule storeValidatorExits(v(VM, VIDs), E Es, Epoch)
                                                                 with withdrawable_epoch = computeExitEpoch(v(VM, VIDs), Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]v, VIDs), Es, Epoch)
 rule storeValidatorExits(Vs, .VoluntaryExits, _) => Vs
 
-syntax ValidatorMap ::= sss(ValidatorMap, VoluntaryExits, IntList, Int) [function]
-rule sss(VM, E Es, VIDs, Epoch) => sss(VM [ E.validator <- eee(VM[E.validator]v, v(VM,VIDs), Epoch) ]v, Es, VIDs, Epoch)
-rule sss(VM, .VoluntaryExits, _, _) => VM
+syntax ValidatorMap ::= updateValidatorExits(ValidatorMap, VoluntaryExits, IntList, Int) [function]
+rule updateValidatorExits(VM, E Es, VIDs, Epoch) => updateValidatorExits(VM [ E.validator <- updateExitEpoch(VM[E.validator]v, v(VM,VIDs), Epoch) ]v, Es, VIDs, Epoch)
+rule updateValidatorExits(VM, .VoluntaryExits, _, _) => VM
 
-rule countValidatorsToExit(v(sss(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), E) <=Int ChurnLimit => true
+rule countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), E) <=Int ChurnLimit => true
      requires countValidatorsToExit(v(VM [ VE.validator <- V ]v, VIDs), E) <=Int ChurnLimit
-      andBool forall(x, VEs, countValidatorsToExit(v(sss(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), sss(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch)[x.validator]v.exit_epoch) <=Int ChurnLimit)
+      andBool forall(x, VEs, countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch)[x.validator]v.exit_epoch) <=Int ChurnLimit)
       andBool distinctVoluntaryExits(VE VEs)
 
-rule activeValidators(v(sss(VM, VEs, _, _), VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch) // TODO: restrict
-     requires isValidVoluntaryExits(VEs, VM, Epoch)
+rule activeValidators(v(updateValidatorExits(VM, VEs, _, _), VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch) // TODO: proof
+     requires isValidVoluntaryExits(VEs, VM, Epoch, VIDs)
 rule activeValidators(v(VM [ VID <- V ]v, VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch)
      requires V.exit_epoch >Int Epoch
       andBool VM[VID]v.exit_epoch ==Int FAR_FUTURE_EPOCH
       andBool VM[VID]v.activation_epoch ==Int V.activation_epoch
 
-rule sss(VM, Es, _, _) [ E.validator ]v => VM [ E.validator ]v
+rule updateValidatorExits(VM, Es, _, _) [ E.validator ]v => VM [ E.validator ]v
      requires distinctVoluntaryExits(E Es)
 
 rule VM[VID]v.id => VID
 
-syntax Validator ::= eee(Validator, Validators, Int) [function]
-rule [eee]: eee(V, Vs, Epoch) => V with exit_epoch         = computeExitEpoch(Vs, Epoch)
-                                   with withdrawable_epoch = computeExitEpoch(Vs, Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY
+syntax Validator ::= updateExitEpoch(Validator, Validators, Int) [function]
+rule [updateExitEpoch]:
+     updateExitEpoch(V, Vs, Epoch) => V with exit_epoch         = computeExitEpoch(Vs, Epoch)
+                                        with withdrawable_epoch = computeExitEpoch(Vs, Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY
+
+rule sizeE(_) >=Int 0 => true [smt-lemma]
+
+rule countValidatorsToExit(Vs, E) => 0
+     requires maxExitEpoch(Vs) <Int E andBool E <Int FAR_FUTURE_EPOCH
+     [smt-lemma]
+
+rule maxExitEpoch(v(VM [ VID <- V ]v, VIDs)) => maxInt(maxExitEpoch(v(VM, VIDs)), V.exit_epoch)
+     requires V.exit_epoch =/=Int FAR_FUTURE_EPOCH
+      andBool VID in VIDs
 
 // for m-spec
 rule sizeV(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M

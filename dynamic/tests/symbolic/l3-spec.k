@@ -39,7 +39,7 @@ andBool ?LastExitEpoch +Int 1 <Int FAR_FUTURE_EPOCH
 andBool countValidatorsToExit(v(VM1,VIDs), ?LastExitEpoch +Int 1) ==Int 0
 ensures true
 // ensures
-andBool ?V2 ==K eee(V, v(VM1,VIDs), ?Epoch)
+andBool ?V2 ==K updateExitEpoch(V, v(VM1,VIDs), ?Epoch)
 andBool ?V2.exit_epoch >=Int delayedActivationExitEpoch(?Epoch)
 andBool countValidatorsToExit(v(VM1 [ V.id <- ?V2 ]v, VIDs), ?V2.exit_epoch) <=Int ?ChurnLimit
 /*
