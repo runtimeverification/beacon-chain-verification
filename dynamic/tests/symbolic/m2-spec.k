@@ -1,6 +1,6 @@
-require "verification.k"
+require "../../verification.k"
 
-module PROCESS-VALIDATOR-ACTIVATION-SPEC
+module M2-SPEC
 
 imports VERIFICATION
 
