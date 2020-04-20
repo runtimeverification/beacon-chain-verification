@@ -7,7 +7,7 @@ From mathcomp.finmap
 Require Import finmap.
 
 From Dynamic
-Require Import Validator HashTree State Slashing.
+Require Import NatExt Validator Weight HashTree State Slashing.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -22,28 +22,16 @@ Parameter vset : {fmap Hash -> {set Validator}}.
 (* We assume the map vset is total *)
 Axiom vs_fun : forall h : Hash, h \in vset.
 
-(* A finite map defining the stake (weight) of a validator *)
-(* Note: weight is a nat *)
-Parameter stake : {fmap Validator -> nat}.
-
-(* We assume the map stake is total *)
-Axiom st_fun : forall v : Validator, v \in stake.
-
-(* A finite map defining the weight of a given set of validators 
- *)
-Definition wt (vs:{set Validator}) : nat := 
-  \sum_(v in vs) stake.[st_fun v].
-
 (** Quorum Predicates **)
 (* A predicate for an "at least 1/3 weight" set of validators *)
 Definition quorum_1 (vs : {set Validator}) (b : Hash) : bool :=
   (vs \subset vset.[vs_fun b]) && 
-  (wt vs >= (wt vset.[vs_fun b] %/ 3)).
+  (wt vs >= one_third (wt vset.[vs_fun b])).
 
 (* A predicate for an "at least 2/3 weight" set of validators *)
 Definition quorum_2 (vs : {set Validator}) (b : Hash) : bool :=
   (vs \subset vset.[vs_fun b]) && 
-  (wt vs >= (2 * wt vset.[vs_fun b] %/ 3)).
+  (wt vs >= two_third (wt vset.[vs_fun b])).
 
 (* Meaning of a validator set being slashed in thr context of dynamic validator sets *)
 Definition q_intersection_slashed st :=

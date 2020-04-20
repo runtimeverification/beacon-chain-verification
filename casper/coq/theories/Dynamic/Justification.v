@@ -8,7 +8,7 @@ From mathcomp.finmap
 Require Import finmap.
 
 From Dynamic
-Require Import Validator HashTree State Slashing Quorums.
+Require Import Validator Weight HashTree State Slashing Quorums.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

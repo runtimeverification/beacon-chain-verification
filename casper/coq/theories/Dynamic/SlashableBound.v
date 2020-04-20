@@ -7,7 +7,7 @@ From mathcomp.finmap
 Require Import finmap.
 
 From Dynamic
-Require Import Validator HashTree State Slashing Quorums Weight Justification AccountableSafety.
+Require Import NatExt Validator Weight HashTree State Slashing Quorums Justification AccountableSafety.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -31,17 +31,29 @@ Definition actwt (vs1 vs2: {set Validator}): nat :=
 (* The weight of validators who exited from vs1 to vs2 *)
 Definition extwt (vs1 vs2: {set Validator}): nat :=
   wt (exited vs1 vs2).
+
+Lemma wt_meetC : forall vs1 vs2,
+  wt (vs1 :&: vs2) = wt (vs2 :&: vs1).
+Proof. by [rewrite /wt => vs1 vs2;rewrite setIC]. Qed.
+
+Lemma wt_join_partition : forall vs1 vs2,
+  wt (vs1 :|: vs2) = wt (vs1 :\: vs2) + wt (vs2 :\: vs1) + wt (vs1 :&: vs2).
+Proof. Admitted.
   
 Lemma wt_meet_bound : forall (s1 s2 s1' s2':{set Validator}),
   s1 \subset s1' -> 
   s2 \subset s2' ->
   let s12' := (s1' :&: s2') in 
-    wt (s1 :&: s2) >= wt (s1 :&: s12') + wt (s2 :&: s12') - wt s12'.
+    wt (s1 :&: s2) + wt s12' >= wt (s1 :&: s12') + wt (s2 :&: s12').
 Proof. Admitted.
 
 Lemma wt_meet_subbound : forall (s1 s1' s2':{set Validator}),
   s1 \subset s1' -> 
-  wt (s1 :&: (s1' :&: s2')) >= wt s1 - wt (s1' :\: s2').
+  wt (s1 :&: (s1' :&: s2')) + wt (s1' :\: s2') >= wt s1.
+Proof. Admitted.
+
+Lemma wt_meet_tri_bound : forall vs0 vs1 vs2,
+  wt (vs1 :\: vs2) <= wt (vs0 :\: vs2) + wt (vs1 :\: vs0).
 Proof. Admitted.
 
 Theorem slashable_bound : forall st b0 b1 b2 b0_h b1_h b2_h k0 k1 k2,
@@ -62,7 +74,8 @@ Theorem slashable_bound : forall st b0 b1 b2 b0_h b1_h b2_h k0 k1 k2,
     let xM := maxn (wt vL - aL - eR)  (wt vR - aR - eL) in
       qL \subset vL /\
       qR \subset vR /\
-      wt (qL :&: qR) >= xM - (wt vL) %/ 3 - (wt vR) %/ 3.
-Proof. Admitted.
+      wt (qL :&: qR) >= xM - one_third (wt vL) - one_third (wt vR).
+Proof.
+Admitted.
 
 

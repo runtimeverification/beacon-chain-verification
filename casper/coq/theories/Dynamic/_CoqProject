@@ -1,13 +1,14 @@
 -Q . Dynamic
 
-StrongInductionLtn.v
+NatExt.v
 Validator.v
+Weight.v
 HashTree.v
 State.v
 Slashing.v
 Quorums.v
 Justification.v
+StrongInductionLtn.v
 AccountableSafety.v
 PlausibleLiveness.v
-Weight.v
 SlashableBound.v

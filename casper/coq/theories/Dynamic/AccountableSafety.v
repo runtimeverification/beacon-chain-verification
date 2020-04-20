@@ -15,7 +15,7 @@ From Dynamic
 Require Import StrongInductionLtn.
 
 From Dynamic
-Require Import Validator HashTree State Slashing Quorums Justification.
+Require Import Validator Weight HashTree State Slashing Quorums Justification.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
