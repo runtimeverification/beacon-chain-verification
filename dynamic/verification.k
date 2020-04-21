@@ -205,10 +205,11 @@ rule isValidValidatorsToActivate(take(_, sort(activationQueue(Vs, FinalizedEpoch
 // TODO: proof
 
 // for n-spec
+
+/*
 rule X1 +Int Y1 <=Int X2 +Int Y2 => true requires X1 <=Int X2 andBool Y1 <=Int Y2
 rule X1 +Int Y1 >=Int X2 +Int Y2 => true requires X1 >=Int X2 andBool Y1 >=Int Y2
 
-/*
 rule X /Int Y <=Int Z => true requires X <=Int Z
                                andBool X >=Int 0 andBool Y >Int 0 andBool Z >=Int 0
 rule X *Int Y /Int Z <=Int X => true requires Y <=Int Z
@@ -220,6 +221,14 @@ rule X /Int Y >Int 0 => true requires X >=Int Y
 */
 
 rule lift(X) >=Int EFFECTIVE_BALANCE_INCREMENT => true [smt-lemma]
+
+rule getMatchingReward(B, A, T) <=Int B => true requires B >=Int 0 andBool A >=Int 0 andBool T >=Int EFFECTIVE_BALANCE_INCREMENT andBool A <=Int T [smt-lemma]
+rule getMatchingReward(B, A, T) >=Int 0 => true requires B >=Int 0 andBool A >=Int 0 andBool T >=Int EFFECTIVE_BALANCE_INCREMENT                   [smt-lemma]
+
+rule getInclusionReward(B, D) <=Int B => true requires B >=Int 0 andBool D >=Int 1 [smt-lemma]
+rule getInclusionReward(B, D) >=Int 0 => true requires B >=Int 0 andBool D >=Int 1 [smt-lemma]
+
+rule getInactivityPenalty(B, D) >=Int 0 => true requires B >=Int 0 andBool D >=Int 0 [smt-lemma]
 
 syntax Tactic ::= case(Pred) // case analysis
 

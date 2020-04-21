@@ -355,8 +355,7 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
        #ite(
          V.id inA SourceAttestations
        ,
-         increaseBalance(V.id, BaseReward *Int (SourceAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
-                                          /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
+         increaseBalance(V.id, getMatchingReward(BaseReward, SourceAttestingBalance, TotalActiveBalance))
        ,
          decreaseBalance(V.id, BaseReward)
        )
@@ -364,8 +363,7 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
        #ite(
          V.id inA TargetAttestations
        ,
-         increaseBalance(V.id, BaseReward *Int (TargetAttestingBalance /Int EFFECTIVE_BALANCE_INCREMENT)
-                                          /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
+         increaseBalance(V.id, getMatchingReward(BaseReward, TargetAttestingBalance, TotalActiveBalance))
        ,
          decreaseBalance(V.id, BaseReward)
        )
@@ -373,8 +371,7 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
        #ite(
          V.id inA HeadAttestations
        ,
-         increaseBalance(V.id, BaseReward *Int (HeadAttestingBalance   /Int EFFECTIVE_BALANCE_INCREMENT)
-                                          /Int (TotalActiveBalance     /Int EFFECTIVE_BALANCE_INCREMENT))
+         increaseBalance(V.id, getMatchingReward(BaseReward, HeadAttestingBalance, TotalActiveBalance))
        ,
          decreaseBalance(V.id, BaseReward)
        )
@@ -385,7 +382,7 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
        ,
          increaseBalance(minByInclusionDelay(V.id, SourceAttestations).proposer, BaseReward /Int PROPOSER_REWARD_QUOTIENT)
          ~>
-         increaseBalance(V.id, (BaseReward -Int BaseReward /Int PROPOSER_REWARD_QUOTIENT) /Int minByInclusionDelay(V.id, SourceAttestations).inclusion_delay)
+         increaseBalance(V.id, getInclusionReward(BaseReward, minByInclusionDelay(V.id, SourceAttestations).inclusion_delay))
        )
        ~>
        // Inactivity Penalties
@@ -397,10 +394,9 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
          #it(
            notBool (V.id inA TargetAttestations)
          ,
-           decreaseBalance(V.id, V.effective_balance *Int FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT)
+           decreaseBalance(V.id, getInactivityPenalty(V.effective_balance, FinalityDelay))
          )
        )
-
      )
 
 // get_base_reward
@@ -409,6 +405,22 @@ rule getBaseReward(V, SafeTotalActiveBalance)
   => V.effective_balance *Int BASE_REWARD_FACTOR
      /Int sqrtInt(SafeTotalActiveBalance)
      /Int BASE_REWARDS_PER_EPOCH
+     [concrete]
+
+syntax Int ::= getMatchingReward(Int, Int, Int) [function, smtlib(getMatchingReward)]
+rule getMatchingReward(BaseReward, AttestingBalance, TotalActiveBalance)
+  => BaseReward *Int (AttestingBalance   /Int EFFECTIVE_BALANCE_INCREMENT)
+                /Int (TotalActiveBalance /Int EFFECTIVE_BALANCE_INCREMENT)
+     [concrete]
+
+syntax Int ::= getInclusionReward(Int, Int) [function, smtlib(getInclusionReward)]
+rule getInclusionReward(BaseReward, InclusionDelay)
+  => (BaseReward -Int BaseReward /Int PROPOSER_REWARD_QUOTIENT) /Int InclusionDelay
+     [concrete]
+
+syntax Int ::= getInactivityPenalty(Int, Int) [function, smtlib(getInactivityPenalty)]
+rule getInactivityPenalty(EffectiveBalance, FinalityDelay)
+  => EffectiveBalance *Int FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT
      [concrete]
 
 // increase_balance

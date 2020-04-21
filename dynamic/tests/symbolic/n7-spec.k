@@ -62,6 +62,7 @@ andBool ?SourceAttestingBalance <=Int ?TotalActiveBalance
 andBool ?TargetAttestingBalance <=Int ?TotalActiveBalance
 andBool   ?HeadAttestingBalance <=Int ?TotalActiveBalance
 andBool implies(V.id inA ?SourceAttestations, minByInclusionDelay(V.id, ?SourceAttestations).inclusion_delay >=Int 1)
+andBool V.effective_balance >=Int 0
 // consistency conditions
 andBool V.id in VIDs andBool VM1[V.id]v ==K V
 andBool implies(V.id inA ?SourceAttestations, minByInclusionDelay(V.id, ?SourceAttestations).proposer in VIDs)
@@ -82,10 +83,10 @@ andBool implies(
             ?FinalityDelay <=Int MIN_EPOCHS_TO_INACTIVITY_PENALTY
           ,
             // max: + 4 * BaseReward
-            ?VM2[V.id]v.balance <=Int VM1[V.id]v.balance +Int ?BaseReward +Int ?BaseReward +Int ?BaseReward +Int ?BaseReward
+            ?VM2[V.id]v.balance <=Int VM1[V.id]v.balance +Int (4 *Int ?BaseReward)
           andBool
             // min: - 3 * BaseReward
-            ?VM2[V.id]v.balance >=Int VM1[V.id]v.balance +Int (0 -Int ?BaseReward) +Int (0 -Int ?BaseReward) +Int (0 -Int ?BaseReward)
+            ?VM2[V.id]v.balance >=Int VM1[V.id]v.balance -Int (3 *Int ?BaseReward)
           )
         andBool
           implies(
@@ -93,21 +94,17 @@ andBool implies(
             ?FinalityDelay >Int MIN_EPOCHS_TO_INACTIVITY_PENALTY
           ,
             // max: + 0
-            ?VM2[V.id]v.balance <=Int VM1[V.id]v.balance +Int ?BaseReward +Int ?BaseReward +Int ?BaseReward +Int ?BaseReward
-                                                         +Int (0 -Int BASE_REWARDS_PER_EPOCH *Int ?BaseReward)
-                                                         +Int #if V.id inA ?TargetAttestations
-                                                              #then 0
-                                                              #else (0 -Int V.effective_balance *Int ?FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT)
-                                                              #fi
+            ?VM2[V.id]v.balance <=Int VM1[V.id]v.balance
           andBool
             // min: - 7 * BaseReward - (EffectiveBalance * FinalityDelay / 33,554,432)
-            ?VM2[V.id]v.balance >=Int VM1[V.id]v.balance +Int (0 -Int ?BaseReward) +Int (0 -Int ?BaseReward) +Int (0 -Int ?BaseReward)
-                                                         +Int (0 -Int BASE_REWARDS_PER_EPOCH *Int ?BaseReward)
-                                                         +Int #if V.id inA ?TargetAttestations
-                                                              #then 0
-                                                              #else (0 -Int V.effective_balance *Int ?FinalityDelay /Int INACTIVITY_PENALTY_QUOTIENT)
-                                                              #fi
+            ?VM2[V.id]v.balance >=Int VM1[V.id]v.balance -Int (7 *Int ?BaseReward) -Int getInactivityPenalty(V.effective_balance, ?FinalityDelay)
           )
         )
+
+// max: + 4 * BaseReward
+andBool ?VM2[V.id]v.balance <=Int VM1[V.id]v.balance +Int (4 *Int ?BaseReward)
+
+// min: - 7 * BaseReward - (EffectiveBalance * FinalityDelay / 33,554,432)
+andBool ?VM2[V.id]v.balance >=Int VM1[V.id]v.balance -Int (7 *Int ?BaseReward) -Int getInactivityPenalty(V.effective_balance, ?FinalityDelay)
 
 endmodule
