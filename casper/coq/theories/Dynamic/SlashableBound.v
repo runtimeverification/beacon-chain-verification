@@ -52,12 +52,9 @@ Lemma wt_meet_tri_bound : forall vs0 vs1 vs2,
   wt (vs1 :\: vs2) <= wt (vs0 :\: vs2) + wt (vs1 :\: vs0).
 Proof. Admitted.
 
-Theorem slashable_bound : forall st b0 b1 b2 b0_h b1_h b2_h k0 k1 k2,
-  k_finalized st b0 b0_h k0 ->
+Theorem slashable_bound : forall st b0 b1 b2 b1_h b2_h k1 k2,
   k_finalized st b1 b1_h k1 ->
   k_finalized st b2 b2_h k2 ->
-  b0 <~* b1 -> b0 <> b1 ->
-  b0 <~* b2 -> b0 <> b2 ->
   b1 </~* b2 -> b2 </~* b1 ->
   exists (bL bR:Hash) (qL qR:{set Validator}),
     let v0 := vset.[vs_fun b0] in
@@ -72,8 +69,7 @@ Theorem slashable_bound : forall st b0 b1 b2 b0_h b1_h b2_h k0 k1 k2,
       qR \subset vR /\
       wt (qL :&: qR) >= xM - one_third (wt vL) - one_third (wt vR).
 Proof. 
-intros st b0 b1 b2 b0_h b1_h b2_h k0 k1 k2 
-       Hb0f Hb1f Hb2f Hdesc1 Hneq1 Hdesc2 Hneq2 Hconf1 Hconf2. 
+intros st b0 b1 b2 b1_h b2_h k1 k2 Hb1f Hb2f Hconf1 Hconf2. 
 have [bL [bR [qL [qR [HqLsubset [HqRsubset [HqLq2 [HqRq2 Hqslashed]]]]]]]] := 
    (k_safety' Hb1f Hb2f Hconf2 Hconf1).
 clear Hb1f Hb2f Hconf2 Hconf1.
