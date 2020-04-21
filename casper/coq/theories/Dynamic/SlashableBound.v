@@ -36,10 +36,6 @@ Lemma wt_meetC : forall vs1 vs2,
   wt (vs1 :&: vs2) = wt (vs2 :&: vs1).
 Proof. by [rewrite /wt => vs1 vs2;rewrite setIC]. Qed.
 
-Lemma wt_join_partition : forall vs1 vs2,
-  wt (vs1 :|: vs2) = wt (vs1 :\: vs2) + wt (vs2 :\: vs1) + wt (vs1 :&: vs2).
-Proof. Admitted.
-  
 Lemma wt_meet_bound : forall (s1 s2 s1' s2':{set Validator}),
   s1 \subset s1' -> 
   s2 \subset s2' ->

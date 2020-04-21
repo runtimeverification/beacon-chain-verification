@@ -27,6 +27,7 @@ Qed.
 
 Parameter one_third : nat -> nat.
 Parameter two_third : nat -> nat.
+
 Axiom thirds_def : forall n, n - two_third n = one_third n.
 Axiom leq_two_thrids : forall n, two_third n <= n.
 

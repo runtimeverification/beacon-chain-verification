@@ -25,7 +25,8 @@ Proof. by []. Qed.
 
 Lemma wt_mt_zero : wt set0 = 0.
 Proof.
-Admitted.
+by rewrite /wt big_set0.
+Qed.
 
 Lemma wt_aidem : forall v (vs:{set Validator}), 
   v \in vs -> wt (v |: vs) = wt vs.
@@ -72,7 +73,13 @@ Proof. Admitted.
   
 Lemma wt_inc_leq : forall (vs1 vs2:{set Validator}),
   vs1 \subset vs2 -> wt vs1 <= wt vs2.
-Proof. Admitted.
+Proof. 
+  move=> vs1 vs2.
+  rewrite /wt.
+  rewrite [\sum_(v in vs2) _](big_setID vs1) //=.
+  move/setIidPr => ->.
+  apply: leq_addr.
+Qed.
 
 Lemma wt_meet_leq : forall vs1 vs2,
   wt (vs1 :&: vs2) <= wt vs1 + wt vs2.
@@ -81,4 +88,10 @@ Proof. Admitted.
 Lemma wt_meet_leq1 : forall vs1 vs2,
   wt (vs1 :&: vs2) <= wt vs1.
 Proof. Admitted.
+
+Lemma wt_join_partition : forall vs1 vs2,
+  wt (vs1 :|: vs2) = wt (vs1 :\: vs2) + wt (vs2 :\: vs1) + wt (vs1 :&: vs2).
+Proof. Admitted.
+  
+
 
