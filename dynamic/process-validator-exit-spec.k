@@ -31,7 +31,7 @@ andBool ?LastExitEpoch +Int sizeE(VEs) <Int FAR_FUTURE_EPOCH
 ensures true
 // ensures
 andBool ?VM2 ==K updateValidatorExits(VM1, VEs, VIDs, ?Epoch)
-andBool forall(x, VEs, countValidatorsToExit(v(?VM2, VIDs), ?VM2[x.validator]v.exit_epoch) <=Int ?ChurnLimit)
+andBool forallE(x, VEs, countValidatorsToExit(v(?VM2, VIDs), ?VM2[x.validator]v.exit_epoch) <=Int ?ChurnLimit)
 [matching(updateValidatorExits,updateExitEpoch,storeV)]
 
 rule

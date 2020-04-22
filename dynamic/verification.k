@@ -31,10 +31,15 @@ imports SUBSTITUTION
 
 syntax KVar ::= "x" [token]
 
-syntax VoluntaryExit ::= KVar
-syntax Bool ::= forall(KVar, VoluntaryExits, Bool) [binder, function]
+syntax Int ::= KVar
+syntax Bool ::= forall(KVar, IntList, Bool) [binder, function]
 rule forall(X, V Vs, E) => E[V / X] andBool forall(X, Vs, E)
-rule forall(_, .VoluntaryExits, _) => true
+rule forall(_, .IntList, _) => true
+
+syntax VoluntaryExit ::= KVar
+syntax Bool ::= forallE(KVar, VoluntaryExits, Bool) [binder, function]
+rule forallE(X, V Vs, E) => E[V / X] andBool forallE(X, Vs, E)
+rule forallE(_, .VoluntaryExits, _) => true
 
 syntax Validator ::= KVar
 syntax Bool ::= forallV(KVar, ValidatorList, Bool) [binder, function]
@@ -123,7 +128,7 @@ rule updateValidatorExits(VM, .VoluntaryExits, _, _) => VM
 
 rule countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), E) <=Int ChurnLimit => true
      requires countValidatorsToExit(v(VM [ VE.validator <- V ]v, VIDs), E) <=Int ChurnLimit
-      andBool forall(x, VEs, countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch)[x.validator]v.exit_epoch) <=Int ChurnLimit)
+      andBool forallE(x, VEs, countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch)[x.validator]v.exit_epoch) <=Int ChurnLimit)
       andBool distinctVoluntaryExits(VE VEs)
 
 rule activeValidators(v(updateValidatorExits(VM, VEs, _, _), VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch) // TODO: proof
