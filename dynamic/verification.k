@@ -257,12 +257,12 @@ rule forall(X, rev(V Vs), E) => E[V / X] andBool forall(X, rev(Vs), E)
 
 syntax Bool ::= disjoint(IntList, IntList) [function, smtlib(disjointI)]
               | disjoint1(IntList, Int)    [function, smtlib(disjointI1)]
-rule disjoint(Ls, R Rs) => disjoint(Ls, Rs) andBool disjoint1(Ls, R)
+rule disjoint(Ls, R Rs) => disjoint1(Ls, R) andBool disjoint(Ls, Rs)
 rule disjoint(.IntList, _) => true
 rule disjoint(_, .IntList) => true
 
 rule disjoint(R Ls, Rs) => true
-     requires disjoint(Ls, Rs) andBool distinct(R Rs)
+     requires distinct(R Rs) andBool disjoint(Ls, Rs)
 
 rule forall(X, rev(L), (M [ Y <- _ ]v)[X]v.balance <=Int E)
   => forall(X, rev(L),  M             [X]v.balance <=Int E)
