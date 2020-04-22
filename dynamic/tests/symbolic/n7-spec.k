@@ -8,27 +8,27 @@ rule
 <T>
   <k> processRewardPenalty(V, ?Epoch, ?FinalityDelay, ?BaseReward,
                            ?SourceAttestations,     ?TargetAttestations,     ?HeadAttestations,
-                           ?SourceAttestingBalance, ?TargetAttestingBalance, ?HeadAttestingBalance, ?TotalActiveBalance) => . </k>
+                           ?SourceAttestingBalance, ?TargetAttestingBalance, ?HeadAttestingBalance, ?TotalActiveBalance) => .K ... </k>
   <currentSlot> Slot </currentSlot>
   <states>
     <state>
       <slot> Slot </slot>
       <validators> v(VM1 => ?VM2, VIDs) </validators>
       <attested>
-        Epoch |-> Attestations:Attestations
+        ?Epoch |-> Attestations:Attestations
         ...
       </attested>
       <lastFinalized> LastFinalizedEpoch </lastFinalized>
       ...
     </state>
     <state>
-      <slot> firstSlotOf(Epoch) </slot>
+      <slot> firstSlotOf(?Epoch) </slot>
       <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
       ...
     </state>
-    <blocks> BM </blocks>
     ...
   </states>
+  <blocks> BM </blocks>
   ...
 </T>
 requires true
@@ -47,7 +47,7 @@ andBool     ?TotalActiveBalance >=Int 0
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
-andBool ?BaseReward ==Int getBaseReward(V, ?TotalActiveBalance)
+andBool ?BaseReward ==Int getBaseReward(V.effective_balance, ?TotalActiveBalance)
 andBool ?SourceAttestations ==K filterNotSlashed(VM1, Attestations)
 andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
 andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)

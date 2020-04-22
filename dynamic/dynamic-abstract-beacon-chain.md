@@ -337,14 +337,16 @@ rule processRewardsPenaltiesAux1(VIDs, VM, Epoch, FinalityDelay, SourceAttestati
      )
 
 syntax KItem ::= processRewardsPenaltiesAux2(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
-rule (. => processRewardPenalty(VM[VID]v, Epoch, FinalityDelay, getBaseReward(VM[VID]v, TotalActiveBalance),
-                                                                             SourceAttestations,     TargetAttestations,     HeadAttestations,
-                                                                             SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance))
-  ~> processRewardsPenaltiesAux2(VID VIDs => VIDs, VM, Epoch, FinalityDelay, SourceAttestations,     TargetAttestations,     HeadAttestations,
-                                                                             SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
-rule processRewardsPenaltiesAux2(.IntList, _, _, _, _, _, _, _, _, _, _) => .
+rule processRewardsPenaltiesAux2(          VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations, SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+  => processRewardsPenaltiesAux3(.IntList, VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations, SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+
+syntax KItem ::= processRewardsPenaltiesAux3(IntList, IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
+rule (. => processRewardPenalty(VM[VID]v, Epoch, FinalityDelay, getBaseReward(VM[VID]v.effective_balance, TotalActiveBalance), SourceAttestations, TargetAttestations, HeadAttestations, SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance))
+  ~> processRewardsPenaltiesAux3(G_VIDs => VID G_VIDs, VID VIDs => VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations, SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+rule processRewardsPenaltiesAux3(_, .IntList, _, _, _, _, _, _, _, _, _, _) => .
 
 syntax KItem ::= processRewardPenalty(Validator, Int, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
+/*
 rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
                           SourceAttestations,     TargetAttestations,     HeadAttestations,
                           SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
@@ -398,12 +400,55 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
          )
        )
      )
+*/
+
+
+rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
+                          SourceAttestations,     TargetAttestations,     HeadAttestations,
+                          SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
+  => #it(
+       isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
+     ,
+       increaseBalance(V.id,
+       // Matching Rewards and Penalties
+         #if V.id inA SourceAttestations
+         #then getMatchingReward(BaseReward, SourceAttestingBalance, TotalActiveBalance)
+         #else 0 -Int BaseReward
+         #fi
+       +Int
+         #if V.id inA TargetAttestations
+         #then getMatchingReward(BaseReward, TargetAttestingBalance, TotalActiveBalance)
+         #else 0 -Int BaseReward
+         #fi
+       +Int
+         #if V.id inA HeadAttestations
+         #then getMatchingReward(BaseReward, HeadAttestingBalance, TotalActiveBalance)
+         #else 0 -Int BaseReward
+         #fi
+       +Int
+       // Inclusion Rewards
+         #if V.id inA SourceAttestations
+         #then getInclusionReward(BaseReward, minByInclusionDelay(V.id, SourceAttestations).inclusion_delay)
+         #else 0
+         #fi
+       // Inactivity Penalties
+       +Int
+         #if FinalityDelay >Int MIN_EPOCHS_TO_INACTIVITY_PENALTY
+         #then (0 -Int BASE_REWARDS_PER_EPOCH *Int BaseReward)
+               +Int #if notBool (V.id inA TargetAttestations)
+                    #then (0 -Int getInactivityPenalty(V.effective_balance, FinalityDelay))
+                    #else 0
+                    #fi
+         #else 0
+         #fi
+       )
+     )
 
 // get_base_reward
-syntax Int ::= getBaseReward(Validator, Int) [function, smtlib(getBaseReward)]
-rule getBaseReward(V, SafeTotalActiveBalance)
-  => V.effective_balance *Int BASE_REWARD_FACTOR
-     /Int sqrtInt(SafeTotalActiveBalance)
+syntax Int ::= getBaseReward(Int, Int) [function, smtlib(getBaseReward)]
+rule getBaseReward(EffectiveBalance, TotalActiveBalance)
+  => EffectiveBalance *Int BASE_REWARD_FACTOR
+     /Int sqrtInt(TotalActiveBalance)
      /Int BASE_REWARDS_PER_EPOCH
      [concrete]
 

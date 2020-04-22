@@ -113,7 +113,7 @@ syntax Bool ::= distinctVoluntaryExits(VoluntaryExits) [function]
 // TODO: implement
 // rule distinctVoluntaryExits(Es) => distinct(Es.validator)
 
-syntax Bool ::= distinct(IntList) [function]
+syntax Bool ::= distinct(IntList) [function, smtlib(distinctI)]
 // TODO: implement
 
 syntax Validators ::= storeValidatorExits(Validators, VoluntaryExits, Int) [function]
@@ -227,6 +227,9 @@ rule X /Int Y >Int 0 => true requires X >=Int Y
 
 rule lift(X) >=Int EFFECTIVE_BALANCE_INCREMENT => true [smt-lemma]
 
+rule getBaseReward(B, T) <=Int B => true requires B >=Int 0 andBool T >=Int 256 [smt-lemma]
+rule getBaseReward(B, T) >=Int 0 => true requires B >=Int 0 andBool T >=Int 1   [smt-lemma]
+
 rule getMatchingReward(B, A, T) <=Int B => true requires B >=Int 0 andBool A >=Int 0 andBool T >=Int EFFECTIVE_BALANCE_INCREMENT andBool A <=Int T [smt-lemma]
 rule getMatchingReward(B, A, T) >=Int 0 => true requires B >=Int 0 andBool A >=Int 0 andBool T >=Int EFFECTIVE_BALANCE_INCREMENT                   [smt-lemma]
 
@@ -234,6 +237,35 @@ rule getInclusionReward(B, D) <=Int B => true requires B >=Int 0 andBool D >=Int
 rule getInclusionReward(B, D) >=Int 0 => true requires B >=Int 0 andBool D >=Int 1 [smt-lemma]
 
 rule getInactivityPenalty(B, D) >=Int 0 => true requires B >=Int 0 andBool D >=Int 0 [smt-lemma]
+
+syntax IntList ::= rev(IntList) [function, smtlib(revI)]
+
+syntax IntList ::= IntList "++" IntList [function, smtlib(concatI)]
+
+rule L ++ .IntList => L
+rule .IntList ++ L => L
+
+rule rev(X Ys) ++ Xs => rev(Ys) ++ X Xs
+
+rule forall(X, rev(V Vs), E) => E[V / X] andBool forall(X, rev(Vs), E)
+
+syntax Bool ::= disjoint(IntList, IntList) [function, smtlib(disjointI)]
+              | disjoint1(IntList, Int)     [function, smtlib(disjoint1)]
+rule disjoint(Ls, R Rs) => disjoint(Ls, Rs) andBool disjoint1(Ls, R)
+rule disjoint(R Ls, Rs) => disjoint(Ls, R Rs)
+
+rule forall(X, rev(L), (M [ Y <- _ ]v)[X]v.balance <=Int E)
+  => forall(X, rev(L),  M             [X]v.balance <=Int E)
+     requires disjoint1(L, Y)
+
+rule forall(X, Ls, (M [ L <- _ ]v)[X]v.balance ==K E)
+  => forall(X, Ls,  M             [X]v.balance ==K E)
+     requires distinct(L Ls)
+
+rule implies(distinct(L Ls), distinct(Ls)) => true [concrete, smt-lemma]
+
+// TODO: drop
+rule _.effective_balance >=Int 0 => true [concrete, smt-lemma]
 
 syntax Tactic ::= case(Pred) // case analysis
 
@@ -278,10 +310,10 @@ rule bool(xor5(C1, C2, C3, C4, C5)) => C1 orBool C2 orBool C3 orBool C4 orBool C
 rule bool(xor6(C1, C2, C3, C4, C5, C6)) => C1 orBool C2 orBool C3 orBool C4 orBool C5 orBool C6
 
 syntax Bool ::= implies(Bool, Bool) [function, functional]
-rule implies(A, B) => notBool A orBool B
+rule implies(A, B) => notBool A orBool B [macro]
 
 syntax Bool ::= iff(Bool, Bool) [function, functional]
-rule iff(A, B) => implies(A, B) andBool implies(B, A)
+rule iff(A, B) => implies(A, B) andBool implies(B, A) [macro]
 
 syntax Attestations ::= super(Attestations) [function, functional, no-evaluators]
 rule isJustifiable(E, B, super(As), Vs) => true
