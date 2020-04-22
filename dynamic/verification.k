@@ -35,16 +35,20 @@ syntax Int ::= KVar
 syntax Bool ::= forall(KVar, IntList, Bool) [binder, function]
 rule forall(X, V Vs, E) => E[V / X] andBool forall(X, Vs, E)
 rule forall(_, .IntList, _) => true
+rule forall(_, _, true) => true
+rule forall(X, S, X in S) => true
 
 syntax VoluntaryExit ::= KVar
 syntax Bool ::= forallE(KVar, VoluntaryExits, Bool) [binder, function]
 rule forallE(X, V Vs, E) => E[V / X] andBool forallE(X, Vs, E)
 rule forallE(_, .VoluntaryExits, _) => true
+rule forallE(_, _, true) => true
 
 syntax Validator ::= KVar
 syntax Bool ::= forallV(KVar, ValidatorList, Bool) [binder, function]
 rule forallV(X, V Vs, E) => E[V / X] andBool forallV(X, Vs, E)
 rule forallV(_, .ValidatorList, _) => true
+rule forallV(_, _, true) => true
 
 /*
 syntax Int ::= KVar
@@ -165,9 +169,9 @@ rule sizeV(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
 rule sizeV(take(N, _)) <=Int N => true requires N >=Int 0 [smt-lemma]
 rule sizeV(_:ValidatorList) >=Int 0 => true [smt-lemma]
 
-rule subset(take(_, S1), S2) => true requires subset(S1, S2)
-rule subset(sort(S1), S2) => true requires subset(S1, S2)
-rule subset(S, S) => true
+rule subsetV(take(_, S1), S2) => true requires subsetV(S1, S2)
+rule subsetV(sort(S1), S2) => true requires subsetV(S1, S2)
+rule subsetV(S, S) => true
 
 syntax ValidatorMap ::= updateActivations(ValidatorMap, ValidatorList, Int) [function]
 rule updateActivations(VM, V Vs, Epoch) => updateActivations(VM [ V.id <- V with activation_epoch = delayedActivationExitEpoch(Epoch) ]v, Vs, Epoch)
@@ -240,6 +244,8 @@ rule getInactivityPenalty(B, D) >=Int 0 => true requires B >=Int 0 andBool D >=I
 
 syntax IntList ::= rev(IntList) [function, smtlib(revI)]
 
+rule rev(.IntList) => .IntList
+
 syntax IntList ::= IntList "++" IntList [function, smtlib(concatI)]
 
 rule L ++ .IntList => L
@@ -250,12 +256,18 @@ rule rev(X Ys) ++ Xs => rev(Ys) ++ X Xs
 rule forall(X, rev(V Vs), E) => E[V / X] andBool forall(X, rev(Vs), E)
 
 syntax Bool ::= disjoint(IntList, IntList) [function, smtlib(disjointI)]
-              | disjoint1(IntList, Int)     [function, smtlib(disjoint1)]
+              | disjoint1(IntList, Int)    [function, smtlib(disjointI1)]
 rule disjoint(Ls, R Rs) => disjoint(Ls, Rs) andBool disjoint1(Ls, R)
 rule disjoint(R Ls, Rs) => disjoint(Ls, R Rs)
+rule disjoint(.IntList, _) => true
+rule disjoint(_, .IntList) => true
 
 rule forall(X, rev(L), (M [ Y <- _ ]v)[X]v.balance <=Int E)
   => forall(X, rev(L),  M             [X]v.balance <=Int E)
+     requires disjoint1(L, Y)
+
+rule forall(X, rev(L), (M [ Y <- _ ]v)[X]v.balance >=Int E)
+  => forall(X, rev(L),  M             [X]v.balance >=Int E)
      requires disjoint1(L, Y)
 
 rule forall(X, Ls, (M [ L <- _ ]v)[X]v.balance ==K E)
@@ -263,6 +275,18 @@ rule forall(X, Ls, (M [ L <- _ ]v)[X]v.balance ==K E)
      requires distinct(L Ls)
 
 rule implies(distinct(L Ls), distinct(Ls)) => true [concrete, smt-lemma]
+
+rule lift(totalBalance(M, L1)) <=Int lift(totalBalance(M, L2)) => true
+     requires subset(L1, L2)
+
+rule subset(getValidators(As), activeValidators(Vs, Epoch)) => true
+     requires isValidAttestations(As, Vs, Epoch)
+
+syntax Bool ::= isValidAttestations(Attestations, Validators, Int) [function]
+
+rule isValidAttestations(filterNotSlashed(_, As), Vs, Epoch) => true requires isValidAttestations(As, Vs, Epoch)
+rule isValidAttestations(filterByTarget(_,   As), Vs, Epoch) => true requires isValidAttestations(As, Vs, Epoch)
+rule isValidAttestations(filterByHead(_,     As), Vs, Epoch) => true requires isValidAttestations(As, Vs, Epoch)
 
 // TODO: drop
 rule _.effective_balance >=Int 0 => true [concrete, smt-lemma]

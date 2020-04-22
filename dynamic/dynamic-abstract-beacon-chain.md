@@ -402,7 +402,7 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
      )
 */
 
-
+// TODO: process proposer rewards
 rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
                           SourceAttestations,     TargetAttestations,     HeadAttestations,
                           SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
