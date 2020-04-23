@@ -31,15 +31,24 @@ imports SUBSTITUTION
 
 syntax KVar ::= "x" [token]
 
-syntax VoluntaryExit ::= KVar
-syntax Bool ::= forall(KVar, VoluntaryExits, Bool) [binder, function]
+syntax Int ::= KVar
+syntax Bool ::= forall(KVar, IntList, Bool) [binder, function]
 rule forall(X, V Vs, E) => E[V / X] andBool forall(X, Vs, E)
-rule forall(_, .VoluntaryExits, _) => true
+rule forall(_, .IntList, _) => true
+rule forall(_, _, true) => true
+rule forall(X, S, X in S) => true
+
+syntax VoluntaryExit ::= KVar
+syntax Bool ::= forallE(KVar, VoluntaryExits, Bool) [binder, function]
+rule forallE(X, V Vs, E) => E[V / X] andBool forallE(X, Vs, E)
+rule forallE(_, .VoluntaryExits, _) => true
+rule forallE(_, _, true) => true
 
 syntax Validator ::= KVar
 syntax Bool ::= forallV(KVar, ValidatorList, Bool) [binder, function]
 rule forallV(X, V Vs, E) => E[V / X] andBool forallV(X, Vs, E)
 rule forallV(_, .ValidatorList, _) => true
+rule forallV(_, _, true) => true
 
 /*
 syntax Int ::= KVar
@@ -108,7 +117,7 @@ syntax Bool ::= distinctVoluntaryExits(VoluntaryExits) [function]
 // TODO: implement
 // rule distinctVoluntaryExits(Es) => distinct(Es.validator)
 
-syntax Bool ::= distinct(IntList) [function]
+syntax Bool ::= distinct(IntList) [function, smtlib(distinctI)]
 // TODO: implement
 
 syntax Validators ::= storeValidatorExits(Validators, VoluntaryExits, Int) [function]
@@ -123,7 +132,7 @@ rule updateValidatorExits(VM, .VoluntaryExits, _, _) => VM
 
 rule countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), E) <=Int ChurnLimit => true
      requires countValidatorsToExit(v(VM [ VE.validator <- V ]v, VIDs), E) <=Int ChurnLimit
-      andBool forall(x, VEs, countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch)[x.validator]v.exit_epoch) <=Int ChurnLimit)
+      andBool forallE(x, VEs, countValidatorsToExit(v(updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch), VIDs), updateValidatorExits(VM [ VE.validator <- V ]v, VEs, VIDs, Epoch)[x.validator]v.exit_epoch) <=Int ChurnLimit)
       andBool distinctVoluntaryExits(VE VEs)
 
 rule activeValidators(v(updateValidatorExits(VM, VEs, _, _), VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch) // TODO: proof
@@ -160,9 +169,9 @@ rule sizeV(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
 rule sizeV(take(N, _)) <=Int N => true requires N >=Int 0 [smt-lemma]
 rule sizeV(_:ValidatorList) >=Int 0 => true [smt-lemma]
 
-rule subset(take(_, S1), S2) => true requires subset(S1, S2)
-rule subset(sort(S1), S2) => true requires subset(S1, S2)
-rule subset(S, S) => true
+rule subsetV(take(_, S1), S2) => true requires subsetV(S1, S2)
+rule subsetV(sort(S1), S2) => true requires subsetV(S1, S2)
+rule subsetV(S, S) => true
 
 syntax ValidatorMap ::= updateActivations(ValidatorMap, ValidatorList, Int) [function]
 rule updateActivations(VM, V Vs, Epoch) => updateActivations(VM [ V.id <- V with activation_epoch = delayedActivationExitEpoch(Epoch) ]v, Vs, Epoch)
@@ -205,10 +214,11 @@ rule isValidValidatorsToActivate(take(_, sort(activationQueue(Vs, FinalizedEpoch
 // TODO: proof
 
 // for n-spec
+
+/*
 rule X1 +Int Y1 <=Int X2 +Int Y2 => true requires X1 <=Int X2 andBool Y1 <=Int Y2
 rule X1 +Int Y1 >=Int X2 +Int Y2 => true requires X1 >=Int X2 andBool Y1 >=Int Y2
 
-/*
 rule X /Int Y <=Int Z => true requires X <=Int Z
                                andBool X >=Int 0 andBool Y >Int 0 andBool Z >=Int 0
 rule X *Int Y /Int Z <=Int X => true requires Y <=Int Z
@@ -220,6 +230,68 @@ rule X /Int Y >Int 0 => true requires X >=Int Y
 */
 
 rule lift(X) >=Int EFFECTIVE_BALANCE_INCREMENT => true [smt-lemma]
+
+rule getBaseReward(B, T) <=Int B => true requires B >=Int 0 andBool T >=Int 256 [smt-lemma]
+rule getBaseReward(B, T) >=Int 0 => true requires B >=Int 0 andBool T >=Int 1   [smt-lemma]
+
+rule getMatchingReward(B, A, T) <=Int B => true requires B >=Int 0 andBool A >=Int 0 andBool T >=Int EFFECTIVE_BALANCE_INCREMENT andBool A <=Int T [smt-lemma]
+rule getMatchingReward(B, A, T) >=Int 0 => true requires B >=Int 0 andBool A >=Int 0 andBool T >=Int EFFECTIVE_BALANCE_INCREMENT                   [smt-lemma]
+
+rule getInclusionReward(B, D) <=Int B => true requires B >=Int 0 andBool D >=Int 1 [smt-lemma]
+rule getInclusionReward(B, D) >=Int 0 => true requires B >=Int 0 andBool D >=Int 1 [smt-lemma]
+
+rule getInactivityPenalty(B, D) >=Int 0 => true requires B >=Int 0 andBool D >=Int 0 [smt-lemma]
+
+syntax IntList ::= rev(IntList) [function, smtlib(revI)]
+
+rule rev(.IntList) => .IntList
+
+syntax IntList ::= IntList "++" IntList [function, smtlib(concatI)]
+
+rule L ++ .IntList => L
+rule .IntList ++ L => L
+
+rule rev(X Ys) ++ Xs => rev(Ys) ++ X Xs
+
+rule forall(X, rev(V Vs), E) => E[V / X] andBool forall(X, rev(Vs), E)
+
+syntax Bool ::= disjoint(IntList, IntList) [function, smtlib(disjointI)]
+              | disjoint1(IntList, Int)    [function, smtlib(disjointI1)]
+rule disjoint(Ls, R Rs) => disjoint1(Ls, R) andBool disjoint(Ls, Rs)
+rule disjoint(.IntList, _) => true
+rule disjoint(_, .IntList) => true
+
+rule disjoint(R Ls, Rs) => true
+     requires distinct(R Rs) andBool disjoint(Ls, Rs)
+
+rule forall(X, rev(L), (M [ Y <- _ ]v)[X]v.balance <=Int E)
+  => forall(X, rev(L),  M             [X]v.balance <=Int E)
+     requires disjoint1(L, Y)
+
+rule forall(X, rev(L), (M [ Y <- _ ]v)[X]v.balance >=Int E)
+  => forall(X, rev(L),  M             [X]v.balance >=Int E)
+     requires disjoint1(L, Y)
+
+rule forall(X, Ls, (M [ L <- _ ]v)[X]v.balance ==K E)
+  => forall(X, Ls,  M             [X]v.balance ==K E)
+     requires distinct(L Ls)
+
+rule implies(distinct(L Ls), distinct(Ls)) => true [concrete, smt-lemma]
+
+rule lift(totalBalance(M, L1)) <=Int lift(totalBalance(M, L2)) => true
+     requires subset(L1, L2)
+
+rule subset(getValidators(As), activeValidators(Vs, Epoch)) => true
+     requires isValidAttestations(As, Vs, Epoch)
+
+syntax Bool ::= isValidAttestations(Attestations, Validators, Int) [function]
+
+rule isValidAttestations(filterNotSlashed(_, As), Vs, Epoch) => true requires isValidAttestations(As, Vs, Epoch)
+rule isValidAttestations(filterByTarget(_,   As), Vs, Epoch) => true requires isValidAttestations(As, Vs, Epoch)
+rule isValidAttestations(filterByHead(_,     As), Vs, Epoch) => true requires isValidAttestations(As, Vs, Epoch)
+
+// TODO: drop
+rule _.effective_balance >=Int 0 => true [concrete, smt-lemma]
 
 syntax Tactic ::= case(Pred) // case analysis
 
@@ -264,10 +336,10 @@ rule bool(xor5(C1, C2, C3, C4, C5)) => C1 orBool C2 orBool C3 orBool C4 orBool C
 rule bool(xor6(C1, C2, C3, C4, C5, C6)) => C1 orBool C2 orBool C3 orBool C4 orBool C5 orBool C6
 
 syntax Bool ::= implies(Bool, Bool) [function, functional]
-rule implies(A, B) => notBool A orBool B
+rule implies(A, B) => notBool A orBool B [macro]
 
 syntax Bool ::= iff(Bool, Bool) [function, functional]
-rule iff(A, B) => implies(A, B) andBool implies(B, A)
+rule iff(A, B) => implies(A, B) andBool implies(B, A) [macro]
 
 syntax Attestations ::= super(Attestations) [function, functional, no-evaluators]
 rule isJustifiable(E, B, super(As), Vs) => true
