@@ -1,0 +1,176 @@
+require "../../verification.k"
+require "n8-spec.k"
+
+module N9-SPEC
+
+imports VERIFICATION
+imports N8-SPEC
+
+rule
+<T>
+  <k> processRewardsPenalties(?Epoch) => .K ... </k>
+  <currentSlot> Slot </currentSlot>
+  <states>
+    <state>
+      <slot> Slot </slot>
+      <validators> v(VM0 => ?VM2, VIDs) </validators>
+      <attested>
+        ?Epoch |-> Attestations:Attestations
+        ...
+      </attested>
+      <lastFinalized> LastFinalizedEpoch </lastFinalized>
+      ...
+    </state>
+    <state>
+      <slot> firstSlotOf(?Epoch) </slot>
+      <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
+      ...
+    </state>
+    ...
+  </states>
+  <blocks> BM </blocks>
+  ...
+</T>
+requires true
+// types
+andBool Slot >=Int 0
+andBool ?Epoch >=Int 0
+andBool ?FinalityDelay >=Int 0
+// let-bindings
+andBool ?Epoch ==Int epochOf(Slot) -Int 2
+andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
+andBool ?SourceAttestations ==K filterNotSlashed(VM0, Attestations)
+andBool ?TotalActiveBalance ==Int lift(totalBalance(VM0, activeValidators(v(VM0,VIDs), ?Epoch)))
+// conditions
+andBool ?Epoch >=Int 2
+// invariants
+andBool distinct(VIDs)
+andBool isValidAttestations(Attestations, v(VM0, VIDs), ?Epoch)
+andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
+// consistency conditions
+andBool forall(x, VIDs, x in VIDs)
+andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).proposer in VIDs))
+ensures true
+// ensures
+andBool forall(x, VIDs, ?VM2[x]v.balance <=Int VM0[x]v.balance +Int (4 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)))
+andBool forall(x, VIDs, ?VM2[x]v.balance >=Int VM0[x]v.balance -Int (7 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)) -Int getInactivityPenalty(VM0[x]v.effective_balance, ?FinalityDelay))
+
+rule
+<T>
+  <k> processRewardsPenaltiesAux1(VIDs, VM0, ?Epoch, ?FinalityDelay, ?SourceAttestations, ?TargetAttestations, ?HeadAttestations) => .K ... </k>
+  <currentSlot> Slot </currentSlot>
+  <states>
+    <state>
+      <slot> Slot </slot>
+      <validators> v(VM0 => ?VM2, VIDs) </validators>
+      <attested>
+        ?Epoch |-> Attestations:Attestations
+        ...
+      </attested>
+      <lastFinalized> LastFinalizedEpoch </lastFinalized>
+      ...
+    </state>
+    <state>
+      <slot> firstSlotOf(?Epoch) </slot>
+      <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
+      ...
+    </state>
+    ...
+  </states>
+  <blocks> BM </blocks>
+  ...
+</T>
+requires true
+// types
+andBool Slot >=Int 0
+andBool ?Epoch >=Int 0
+andBool ?FinalityDelay >=Int 0
+// let-bindings
+andBool ?Epoch ==Int epochOf(Slot) -Int 2
+andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
+andBool ?SourceAttestations ==K filterNotSlashed(VM0, Attestations)
+andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
+andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
+andBool ?SourceAttestingBalance ==Int lift(totalBalance(VM0, getValidators(?SourceAttestations)))
+andBool ?TargetAttestingBalance ==Int lift(totalBalance(VM0, getValidators(?TargetAttestations)))
+andBool   ?HeadAttestingBalance ==Int lift(totalBalance(VM0, getValidators(?HeadAttestations)))
+andBool     ?TotalActiveBalance ==Int lift(totalBalance(VM0, activeValidators(v(VM0,VIDs), ?Epoch)))
+// conditions
+andBool ?Epoch >=Int 2
+// invariants
+andBool distinct(VIDs)
+andBool ?SourceAttestingBalance <=Int ?TotalActiveBalance
+andBool ?TargetAttestingBalance <=Int ?TotalActiveBalance
+andBool   ?HeadAttestingBalance <=Int ?TotalActiveBalance
+andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
+// consistency conditions
+andBool forall(x, VIDs, x in VIDs)
+andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).proposer in VIDs))
+ensures true
+// ensures
+andBool forall(x, VIDs, ?VM2[x]v.balance <=Int VM0[x]v.balance +Int (4 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)))
+andBool forall(x, VIDs, ?VM2[x]v.balance >=Int VM0[x]v.balance -Int (7 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)) -Int getInactivityPenalty(VM0[x]v.effective_balance, ?FinalityDelay))
+
+rule
+<T>
+  <k> processRewardsPenaltiesAux2(VIDs, VM0, ?Epoch, ?FinalityDelay,
+        ?SourceAttestations,     ?TargetAttestations,     ?HeadAttestations,
+        ?SourceAttestingBalance, ?TargetAttestingBalance, ?HeadAttestingBalance, ?TotalActiveBalance) => .K ... </k>
+  <currentSlot> Slot </currentSlot>
+  <states>
+    <state>
+      <slot> Slot </slot>
+      <validators> v(VM0 => ?VM2, VIDs) </validators>
+      <attested>
+        ?Epoch |-> Attestations:Attestations
+        ...
+      </attested>
+      <lastFinalized> LastFinalizedEpoch </lastFinalized>
+      ...
+    </state>
+    <state>
+      <slot> firstSlotOf(?Epoch) </slot>
+      <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
+      ...
+    </state>
+    ...
+  </states>
+  <blocks> BM </blocks>
+  ...
+</T>
+requires true
+// types
+andBool Slot >=Int 0
+andBool ?Epoch >=Int 0
+andBool ?FinalityDelay >=Int 0
+andBool ?SourceAttestingBalance >=Int 0
+andBool ?TargetAttestingBalance >=Int 0
+andBool   ?HeadAttestingBalance >=Int 0
+andBool     ?TotalActiveBalance >=Int 0
+// let-bindings
+andBool ?Epoch ==Int epochOf(Slot) -Int 2
+andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
+andBool ?SourceAttestations ==K filterNotSlashed(VM0, Attestations)
+andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
+andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
+andBool ?SourceAttestingBalance ==Int lift(totalBalance(VM0, getValidators(?SourceAttestations)))
+andBool ?TargetAttestingBalance ==Int lift(totalBalance(VM0, getValidators(?TargetAttestations)))
+andBool   ?HeadAttestingBalance ==Int lift(totalBalance(VM0, getValidators(?HeadAttestations)))
+andBool     ?TotalActiveBalance ==Int lift(totalBalance(VM0, activeValidators(v(VM0,VIDs), ?Epoch)))
+// conditions
+andBool ?Epoch >=Int 2
+// invariants
+andBool distinct(VIDs)
+andBool ?SourceAttestingBalance <=Int ?TotalActiveBalance
+andBool ?TargetAttestingBalance <=Int ?TotalActiveBalance
+andBool   ?HeadAttestingBalance <=Int ?TotalActiveBalance
+andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
+// consistency conditions
+andBool forall(x, VIDs, x in VIDs)
+andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).proposer in VIDs))
+ensures true
+// ensures
+andBool forall(x, VIDs, ?VM2[x]v.balance <=Int VM0[x]v.balance +Int (4 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)))
+andBool forall(x, VIDs, ?VM2[x]v.balance >=Int VM0[x]v.balance -Int (7 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)) -Int getInactivityPenalty(VM0[x]v.effective_balance, ?FinalityDelay))
+
+endmodule

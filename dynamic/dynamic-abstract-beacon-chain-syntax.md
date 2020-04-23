@@ -250,7 +250,7 @@ syntax ValidatorList ::= sort(ValidatorList) [function, klabel(sortV), smtlib(so
 // TODO: implement
 
 // subset in set-like view
-syntax Bool ::= subset(ValidatorList, ValidatorList) [function, klabel(subsetV), smtlib(subsetV)]
+syntax Bool ::= subsetV(ValidatorList, ValidatorList) [function, klabel(subsetV), smtlib(subsetV)]
 // TODO: implement
 ```
 
@@ -265,6 +265,10 @@ syntax Bool ::= Int "in" IntList [function, klabel(inI), smtlib(inI)]
 rule J in (I Is) => true    requires J  ==Int I
 rule J in (I Is) => J in Is requires J =/=Int I
 rule _ in .IntList => false
+
+// subset in set-like view
+syntax Bool ::= subset(IntList, IntList) [function, klabel(subsetI), smtlib(subsetI)]
+// TODO: implement
 ```
 
 ```k

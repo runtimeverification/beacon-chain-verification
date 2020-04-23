@@ -28,7 +28,7 @@ andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(Validators, ?Epoch)))
 ensures true
 // ensures
 andBool sizeV(?ValidatorsToBeActivated) <=Int ?ChurnLimit
-andBool subset(?ValidatorsToBeActivated, activationQueue(Validators, FinalizedEpoch))
+andBool subsetV(?ValidatorsToBeActivated, activationQueue(Validators, FinalizedEpoch))
 
 // inductive case
 rule
