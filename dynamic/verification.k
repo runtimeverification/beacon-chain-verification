@@ -82,6 +82,14 @@ rule (V with activation_epoch             = I).activation_epoch => I
 rule (V with exit_epoch                   = _).activation_epoch => V.activation_epoch
 rule (V with withdrawable_epoch           = _).activation_epoch => V.activation_epoch
 
+rule (V with slashed                      = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with balance                      = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with effective_balance            = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with activation_eligibility_epoch = I).activation_eligibility_epoch => I
+rule (V with activation_epoch             = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with exit_epoch                   = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with withdrawable_epoch           = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+
 rule (V with slashed                      = _).balance => V.balance
 rule (V with balance                      = I).balance => I
 rule (V with effective_balance            = _).balance => V.balance
@@ -292,6 +300,16 @@ rule isValidAttestations(filterByHead(_,     As), Vs, Epoch) => true requires is
 
 // TODO: drop
 rule _.effective_balance >=Int 0 => true [concrete, smt-lemma]
+
+// for o-spec
+
+rule forall(X, rev(L), (M [ Y <- _ ]v)[X]v.activation_eligibility_epoch ==K E)
+  => forall(X, rev(L),  M             [X]v.activation_eligibility_epoch ==K E)
+     requires disjoint1(L, Y)
+
+rule forall(X, Ls, (M [ L <- _ ]v)[X]v ==K E)
+  => forall(X, Ls,  M             [X]v ==K E)
+     requires distinct(L Ls)
 
 syntax Tactic ::= case(Pred) // case analysis
 
