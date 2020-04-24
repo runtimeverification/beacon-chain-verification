@@ -623,6 +623,7 @@ rule <k> updateActivationEligibility(VID)
          ,
            setActivationEligibility(VID)
          ) ... </k>
+     <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
        <validators> v(VM, _) </validators>

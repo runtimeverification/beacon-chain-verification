@@ -13,7 +13,7 @@ rule
   <states>
     <state>
       <slot> Slot </slot>
-      <validators> v(VM1 => ?VM2, VIDs) </validators>
+      <validators> v(m(SM, BM, EBM, AEM1 => ?AEM2, AM, EM, WM), VIDs) </validators>
       ...
     </state>
     ...
@@ -24,12 +24,13 @@ requires true
 // types
 andBool Slot >=Int 0
 // let-bindings
-// conditions
-// invariants
+andBool ?Epoch ==Int epochOf(Slot)
+andBool ?VM1 ==K m(SM, BM, EBM, AEM1, AM, EM, WM)
+// pre-conditions
 andBool distinct(VIDs)
-// consistency conditions
+// invariants
 ensures true
-// ensures
-andBool forall(x, VIDs, ?VM2[x]v.activation_eligibility_epoch ==Int #if isActivationEligible(VM1[x]v) #then epochOf(Slot) #else VM1[x]v.activation_eligibility_epoch #fi)
+// post-conditions
+andBool forall(x, VIDs, ?AEM2[x]i ==Int #if isActivationEligible(x, ?VM1) #then ?Epoch #else AEM1[x]i #fi)
 
 endmodule
