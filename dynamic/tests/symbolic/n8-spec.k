@@ -6,14 +6,14 @@ imports VERIFICATION
 
 rule
 <T>
-  <k> processRewardsPenaltiesAux3(L_VIDs, R_VIDs, VM0, ?Epoch, ?FinalityDelay,
+  <k> processRewardsPenaltiesAux3(L_VIDs, R_VIDs, m(SM, BM0, EBM, AEM, AM, EM, WM), ?Epoch, ?FinalityDelay,
         ?SourceAttestations,     ?TargetAttestations,     ?HeadAttestations,
         ?SourceAttestingBalance, ?TargetAttestingBalance, ?HeadAttestingBalance, ?TotalActiveBalance) => .K ... </k>
   <currentSlot> Slot </currentSlot>
   <states>
     <state>
       <slot> Slot </slot>
-      <validators> v(VM1 => ?VM2, VIDs) </validators>
+      <validators> v(m(SM, BM1 => ?BM2, EBM, AEM, AM, EM, WM), VIDs) </validators>
       <attested>
         ?Epoch |-> Attestations:Attestations
         ...
@@ -42,32 +42,34 @@ andBool   ?HeadAttestingBalance >=Int 0
 andBool     ?TotalActiveBalance >=Int 0
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
+andBool ?VM0 ==K m(SM, BM0, EBM, AEM, AM, EM, WM)
+andBool ?VM1 ==K m(SM, BM1, EBM, AEM, AM, EM, WM)
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
-andBool ?SourceAttestations ==K filterNotSlashed(VM0, Attestations)
+andBool ?SourceAttestations ==K filterNotSlashed(?VM0, Attestations)
 andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
 andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
-andBool ?SourceAttestingBalance ==Int lift(totalBalance(VM0, getValidators(?SourceAttestations)))
-andBool ?TargetAttestingBalance ==Int lift(totalBalance(VM0, getValidators(?TargetAttestations)))
-andBool   ?HeadAttestingBalance ==Int lift(totalBalance(VM0, getValidators(?HeadAttestations)))
-andBool     ?TotalActiveBalance ==Int lift(totalBalance(VM0, activeValidators(v(VM0,VIDs), ?Epoch)))
-// conditions
+andBool ?SourceAttestingBalance ==Int lift(totalBalance(?VM0, getValidators(?SourceAttestations)))
+andBool ?TargetAttestingBalance ==Int lift(totalBalance(?VM0, getValidators(?TargetAttestations)))
+andBool   ?HeadAttestingBalance ==Int lift(totalBalance(?VM0, getValidators(?HeadAttestations)))
+andBool     ?TotalActiveBalance ==Int lift(totalBalance(?VM0, activeValidators(v(?VM0, VIDs), ?Epoch)))
+// pre-conditions
 andBool ?Epoch >=Int 2
-andBool forall(x, rev(L_VIDs), VM1[x]v.balance <=Int VM0[x]v.balance +Int (4 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)))
-andBool forall(x, rev(L_VIDs), VM1[x]v.balance >=Int VM0[x]v.balance -Int (7 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)) -Int getInactivityPenalty(VM0[x]v.effective_balance, ?FinalityDelay))
-// invariants
+andBool forall(x, R_VIDs, EBM[x]i >=Int 0)
 andBool distinct(R_VIDs)
-andBool disjoint(L_VIDs, R_VIDs)
-andBool forall(x, R_VIDs, VM1[x]v.balance ==Int VM0[x]v.balance)
+andBool forall(x, R_VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
+andBool forall(x, R_VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).proposer in VIDs))
 andBool ?SourceAttestingBalance <=Int ?TotalActiveBalance
 andBool ?TargetAttestingBalance <=Int ?TotalActiveBalance
 andBool   ?HeadAttestingBalance <=Int ?TotalActiveBalance
-andBool forall(x, R_VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
-// consistency conditions
+// invariants
+andBool disjoint(L_VIDs, R_VIDs)
 andBool forall(x, R_VIDs, x in VIDs)
-andBool forall(x, R_VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).proposer in VIDs))
+andBool forall(x, R_VIDs, BM1[x]i ==Int BM0[x]i)
+andBool forall(x, rev(L_VIDs),            BM1[x]i <=Int BM0[x]i +Int (4 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)))
+andBool forall(x, rev(L_VIDs),            BM1[x]i >=Int BM0[x]i -Int (7 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)) -Int getInactivityPenalty(EBM[x]i, ?FinalityDelay))
 ensures true
-// ensures
-andBool forall(x, rev(L_VIDs) ++ R_VIDs, ?VM2[x]v.balance <=Int VM0[x]v.balance +Int (4 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)))
-andBool forall(x, rev(L_VIDs) ++ R_VIDs, ?VM2[x]v.balance >=Int VM0[x]v.balance -Int (7 *Int getBaseReward(VM0[x]v.effective_balance, ?TotalActiveBalance)) -Int getInactivityPenalty(VM0[x]v.effective_balance, ?FinalityDelay))
+// post-conditions
+andBool forall(x, rev(L_VIDs) ++ R_VIDs, ?BM2[x]i <=Int BM0[x]i +Int (4 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)))
+andBool forall(x, rev(L_VIDs) ++ R_VIDs, ?BM2[x]i >=Int BM0[x]i -Int (7 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)) -Int getInactivityPenalty(EBM[x]i, ?FinalityDelay))
 
 endmodule
