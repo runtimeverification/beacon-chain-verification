@@ -150,10 +150,13 @@ syntax Bool ::= distinct(IntList) [function, smtlib(distinctI)]
 /// 
 /// rule activeValidators(v(updateValidatorExits(VM, VEs, _, _), VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch) // TODO: proof
 ///      requires isValidVoluntaryExits(VEs, VM, Epoch, VIDs)
-/// rule activeValidators(v(VM [ VID <- V ]i, VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch)
-///      requires V.exit_epoch >Int Epoch
-///       andBool VM[VID]i.exit_epoch ==Int FAR_FUTURE_EPOCH
-///       andBool VM[VID]i.activation_epoch ==Int V.activation_epoch
+
+rule activeValidators(v(m(SM, BM, EBM, AEM, AM, EM [ VID <- E ]i, WM [ VID <- _ ]i), VIDs), Epoch)
+  => activeValidators(v(m(SM, BM, EBM, AEM, AM, EM              , WM              ), VIDs), Epoch)
+     requires E >Int Epoch
+      andBool EM[VID]i ==Int FAR_FUTURE_EPOCH
+    //andBool VM[VID]i.activation_epoch ==Int V.activation_epoch
+
 /// 
 /// rule updateValidatorExits(VM, Es, _, _) [ E.validator ]i => VM [ E.validator ]i
 ///      requires distinctVoluntaryExits(E Es)
@@ -218,10 +221,13 @@ rule subsetI(S, S) => true
 ///      andBool V.activation_epoch ==Int E
 ///      andBool VID in VIDs
 /// 
-/// rule activeValidators(v(VM [ VID <- V ]i, VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch)
-///      requires V.activation_epoch >Int Epoch
-///       andBool VM[VID]i.activation_epoch ==Int FAR_FUTURE_EPOCH
-///       andBool VM[VID]i.exit_epoch ==Int V.exit_epoch
+
+rule activeValidators(v(m(SM, BM, EBM, AEM, AM [ VID <- E ]i, EM, WM), VIDs), Epoch)
+  => activeValidators(v(m(SM, BM, EBM, AEM, AM              , EM, WM), VIDs), Epoch)
+     requires E >Int Epoch
+      andBool AM[VID]i ==Int FAR_FUTURE_EPOCH
+    //andBool VM[VID]i.exit_epoch ==Int V.exit_epoch
+
 /// 
 /// rule isValidValidatorsToActivate(take(_, sort(activationQueue(Vs, FinalizedEpoch))), Vs, FinalizedEpoch) => true
 /// // TODO: proof
