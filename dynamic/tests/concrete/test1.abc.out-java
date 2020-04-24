@@ -13,7 +13,7 @@
         0
       </slot>
       <validators>
-        v ( .ValidatorMap [ 90000 <- #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90001 <- #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90002 <- #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90003 <- #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90004 <- #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90005 <- #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90006 <- #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v , 90000 90001 90002 90003 90004 90005 90006 .IntList )
+        v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
         0
@@ -44,13 +44,13 @@
         1
       </slot>
       <validators>
-        v ( .ValidatorMap [ 90000 <- #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90001 <- #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90002 <- #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90003 <- #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90004 <- #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90005 <- #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90006 <- #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v , 90000 90001 90002 90003 90004 90005 90006 .IntList )
+        v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
         0
       </slashedBalance>
       <attested>
-        0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings
+        0 |-> #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings
       </attested>
       <justified>
         0 |-> true
@@ -75,13 +75,13 @@
         2
       </slot>
       <validators>
-        v ( .ValidatorMap [ 90000 <- #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90001 <- #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90002 <- #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90003 <- #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90004 <- #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90005 <- #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90006 <- #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v , 90000 90001 90002 90003 90004 90005 90006 .IntList )
+        v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
         0
       </slashedBalance>
       <attested>
-        0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings
+        0 |-> #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings
       </attested>
       <justified>
         0 |-> true
@@ -106,13 +106,13 @@
         3
       </slot>
       <validators>
-        v ( .ValidatorMap [ 90000 <- #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90001 <- #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90002 <- #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90003 <- #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90004 <- #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90005 <- #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90006 <- #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v , 90000 90001 90002 90003 90004 90005 90006 .IntList )
+        v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
         0
       </slashedBalance>
       <attested>
-        0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings
+        0 |-> #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings
       </attested>
       <justified>
         0 |-> true
@@ -137,13 +137,13 @@
         4
       </slot>
       <validators>
-        v ( .ValidatorMap [ 90000 <- #Validator ( 90000 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90001 <- #Validator ( 90001 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90002 <- #Validator ( 90002 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90003 <- #Validator ( 90003 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90004 <- #Validator ( 90004 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90005 <- #Validator ( 90005 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v [ 90006 <- #Validator ( 90006 , false , ( 1 , 1 ) , ( 0 , 0 ) , ( 999999 , 999999 ) ) ]v , 90000 90001 90002 90003 90004 90005 90006 .IntList )
+        v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
         0
       </slashedBalance>
       <attested>
-        0 |-> #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings
+        0 |-> #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings
         1 |-> .Slashings
       </attested>
       <justified>
@@ -166,6 +166,6 @@
     </state>
   </states>
   <blocks>
-    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]b [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , #Attestation ( 90000 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings , .Slashings , .Slashings ) ]b [ 3 <- #Block ( ( 3 , 10003 ) , ( 1 , 10001 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]b
+    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]k [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings , .Slashings , .Slashings ) ]k [ 3 <- #Block ( ( 3 , 10003 ) , ( 1 , 10001 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]k
   </blocks>
 </T>

@@ -39,7 +39,7 @@ configuration <T>
     // a state of slot N is the post-state of a (possibly empty) block at slot N
     <state multiplicity="*" type="Map">
       <slot> 0 </slot>
-      <validators> v(.ValidatorMap, .IntList) </validators> // ValidatorID -> ValidatorState
+      <validators> v(m(.BMap, .IMap, .IMap, .IMap, .IMap, .IMap, .IMap), .IntList) </validators>
       <slashedBalance> 0 </slashedBalance> // slashed balance
       <attested> .Map </attested> // Epoch -> Attestations
       <justified> .Map </justified> // Epoch -> bool
@@ -65,16 +65,23 @@ rule <k> init => . ... </k>
        <state>
          <slot> 0 </slot>
          <validators> v(
-           .ValidatorMap
-           [ 90000 <- #Validator(90000,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH)) ]v
-           [ 90001 <- #Validator(90001,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH)) ]v
-           [ 90002 <- #Validator(90002,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH)) ]v
-           [ 90003 <- #Validator(90003,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH)) ]v
-           [ 90004 <- #Validator(90004,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH)) ]v
-           [ 90005 <- #Validator(90005,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH)) ]v
-           [ 90006 <- #Validator(90006,false,(1,1),(0,0),(FAR_FUTURE_EPOCH,FAR_FUTURE_EPOCH)) ]v
+           m(// slashed
+             .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b
+           , // balance
+             .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i
+           , // effective_balance
+             .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i
+           , // activation_eligibility_epoch
+             .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i
+           , // activation_epoch
+             .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i
+           , // exit_epoch
+             .IMap [ 0 <- FAR_FUTURE_EPOCH ]i [ 1 <- FAR_FUTURE_EPOCH ]i [ 2 <- FAR_FUTURE_EPOCH ]i [ 3 <- FAR_FUTURE_EPOCH ]i [ 4 <- FAR_FUTURE_EPOCH ]i [ 5 <- FAR_FUTURE_EPOCH ]i [ 6 <- FAR_FUTURE_EPOCH ]i
+           , // withdrawable_epoch
+             .IMap [ 0 <- FAR_FUTURE_EPOCH ]i [ 1 <- FAR_FUTURE_EPOCH ]i [ 2 <- FAR_FUTURE_EPOCH ]i [ 3 <- FAR_FUTURE_EPOCH ]i [ 4 <- FAR_FUTURE_EPOCH ]i [ 5 <- FAR_FUTURE_EPOCH ]i [ 6 <- FAR_FUTURE_EPOCH ]i
+           )
          ,
-           90000 90001 90002 90003 90004 90005 90006 .IntList
+           0 1 2 3 4 5 6 .IntList
          ) </validators>
          <slashedBalance> 0 </slashedBalance>
          <attested> 0 |-> .Attestations </attested>
@@ -85,7 +92,7 @@ rule <k> init => . ... </k>
          <lastFinalized> 0 </lastFinalized>
        </state>
      </states>
-     <blocks> .BlockMap => .BlockMap [ 0 <- #Block((0,0),(-1,-1),.Slashings,.Attestations,.Deposits,.VoluntaryExits) ]b </blocks>
+     <blocks> .BlockMap => .BlockMap [ 0 <- #Block((0,0),(-1,-1),.Slashings,.Attestations,.Deposits,.VoluntaryExits) ]k </blocks>
 ```
 
 ## State Transition
@@ -214,8 +221,8 @@ rule <k> true ~> justify(Epoch) => . ... </k>
 rule <k> false ~> justify(_) => . ... </k>
 
 syntax Bool ::= isJustifiable(Int, Int, Attestations, Validators) [function, functional]
-rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, Validators)
-  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, Validators), totalBalance(Validators.vmap, Validators.vset))
+rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, v(VM, VIDs))
+  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, VM), totalBalance(VM, VIDs))
      orBool Epoch ==Int 0 // the genesis block is justified by default
 ```
 ```{.k .kast}
@@ -230,12 +237,12 @@ syntax Bool ::= isMajority(Int, Int) [function, functional]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
                              andBool Total >Int 0             // ensure no div-by-zero
 
-syntax Int ::= attestationsBalance(Int, Attestations, Validators) [function, functional]
-rule attestationsBalance(Target, A Attestations, Validators)
+syntax Int ::= attestationsBalance(Int, Attestations, ValidatorMap) [function, functional]
+rule attestationsBalance(Target, A Attestations, VM)
   => #if A.target_block ==Int Target
-     #then Validators.vmap[A.attester]v.effective_balance
+     #then VM.effective_balance[A.attester]i
      #else 0
-     #fi +Int attestationsBalance(Target, Attestations, Validators)
+     #fi +Int attestationsBalance(Target, Attestations, VM)
 rule attestationsBalance(_, .Attestations, _) => 0
 ```
 
@@ -302,9 +309,9 @@ syntax KItem ::= processRewardsPenalties(Int)
 rule <k> processRewardsPenalties(Epoch)
       => processRewardsPenaltiesAux1(
            VIDs, VM, Epoch, Epoch -Int LastFinalizedEpoch,
-                                                               filterNotSlashed(VM, Attestations)  ,
-                            filterByTarget(EpochBoundaryBlock, filterNotSlashed(VM, Attestations)) ,
-           filterByHead(BM, filterByTarget(EpochBoundaryBlock, filterNotSlashed(VM, Attestations)))
+                                                                     filterNotSlashed(VM, Attestations)  ,
+                                  filterByTarget(EpochBoundaryBlock, filterNotSlashed(VM, Attestations)) ,
+           filterByHead(BlockMap, filterByTarget(EpochBoundaryBlock, filterNotSlashed(VM, Attestations)))
          ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -322,7 +329,7 @@ rule <k> processRewardsPenalties(Epoch)
        <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
        ...
      </state>
-     <blocks> BM </blocks>
+     <blocks> BlockMap </blocks>
      requires Epoch >=Int 2
 rule processRewardsPenalties(Epoch) => .
      requires Epoch <Int 2
@@ -341,11 +348,11 @@ rule processRewardsPenaltiesAux2(          VIDs, VM, Epoch, FinalityDelay, Sourc
   => processRewardsPenaltiesAux3(.IntList, VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations, SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
 
 syntax KItem ::= processRewardsPenaltiesAux3(IntList, IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
-rule (. => processRewardPenalty(VM[VID]v, Epoch, FinalityDelay, getBaseReward(VM[VID]v.effective_balance, TotalActiveBalance), SourceAttestations, TargetAttestations, HeadAttestations, SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance))
+rule (. => processRewardPenalty(VID, VM, Epoch, FinalityDelay, getBaseReward(VM.effective_balance[VID]i, TotalActiveBalance), SourceAttestations, TargetAttestations, HeadAttestations, SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance))
   ~> processRewardsPenaltiesAux3(G_VIDs => VID G_VIDs, VID VIDs => VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations, SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
 rule processRewardsPenaltiesAux3(_, .IntList, _, _, _, _, _, _, _, _, _, _) => .
 
-syntax KItem ::= processRewardPenalty(Validator, Int, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
+syntax KItem ::= processRewardPenalty(Int, ValidatorMap, Int, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
 /*
 rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
                           SourceAttestations,     TargetAttestations,     HeadAttestations,
@@ -403,40 +410,40 @@ rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
 */
 
 // TODO: process proposer rewards
-rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
+rule processRewardPenalty(VID, VM, Epoch, FinalityDelay, BaseReward,
                           SourceAttestations,     TargetAttestations,     HeadAttestations,
                           SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
   => #it(
-       isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
+       isActiveValidator(VID, VM, Epoch) orBool ( VM.slashed[VID]b andBool Epoch +Int 1 <Int VM.withdrawable_epoch[VID]i )
      ,
-       increaseBalance(V.id,
+       increaseBalance(VID,
        // Matching Rewards and Penalties
-         #if V.id inA SourceAttestations
+         #if VID inA SourceAttestations
          #then getMatchingReward(BaseReward, SourceAttestingBalance, TotalActiveBalance)
          #else 0 -Int BaseReward
          #fi
        +Int
-         #if V.id inA TargetAttestations
+         #if VID inA TargetAttestations
          #then getMatchingReward(BaseReward, TargetAttestingBalance, TotalActiveBalance)
          #else 0 -Int BaseReward
          #fi
        +Int
-         #if V.id inA HeadAttestations
+         #if VID inA HeadAttestations
          #then getMatchingReward(BaseReward, HeadAttestingBalance, TotalActiveBalance)
          #else 0 -Int BaseReward
          #fi
        +Int
        // Inclusion Rewards
-         #if V.id inA SourceAttestations
-         #then getInclusionReward(BaseReward, minByInclusionDelay(V.id, SourceAttestations).inclusion_delay)
+         #if VID inA SourceAttestations
+         #then getInclusionReward(BaseReward, minByInclusionDelay(VID, SourceAttestations).inclusion_delay)
          #else 0
          #fi
        // Inactivity Penalties
        +Int
          #if FinalityDelay >Int MIN_EPOCHS_TO_INACTIVITY_PENALTY
          #then (0 -Int BASE_REWARDS_PER_EPOCH *Int BaseReward)
-               +Int #if notBool (V.id inA TargetAttestations)
-                    #then (0 -Int getInactivityPenalty(V.effective_balance, FinalityDelay))
+               +Int #if notBool (VID inA TargetAttestations)
+                    #then (0 -Int getInactivityPenalty(VM.effective_balance[VID]i, FinalityDelay))
                     #else 0
                     #fi
          #else 0
@@ -474,7 +481,19 @@ rule <k> increaseBalance(VID, N) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <validators> v(VM => VM [ VID <- VM[VID]v with balance = VM[VID]v.balance +Int N ]v, VIDs) </validators>
+       <validators> v(
+       //m(... balance: BM => BM [ VID <- BM[VID]i +Int N ]i)
+         m(SM
+         , BM => BM [ VID <- BM[VID]i +Int N ]i
+         , EBM
+         , AEM
+         , AM
+         , EM
+         , WM
+         )
+       ,
+         VIDs
+       ) </validators>
        ...
      </state>
      requires VID in VIDs
@@ -492,7 +511,7 @@ syntax KItem ::= decreaseBalance(Int, Int)
 rule decreaseBalance(VID, N) => increaseBalance(VID, 0 -Int N)
 
 syntax Int ::= totalBalance(ValidatorMap, IntList) [function, smtlib(totalBalance)]
-rule totalBalance(VM, VID VIDs) => VM[VID]v.effective_balance +Int totalBalance(VM, VIDs)
+rule totalBalance(VM, VID VIDs) => VM.effective_balance[VID]i +Int totalBalance(VM, VIDs)
 rule totalBalance(_, .IntList) => 0
 
 syntax Int ::= lift(Int) [function, smtlib(lift)]
@@ -514,14 +533,14 @@ rule filterByTarget(T, A As) => #if A.target_block ==Int T
 rule filterByTarget(_, .Attestations) => .Attestations
 
 syntax Attestations ::= filterByHead(BlockMap, Attestations) [function, smtlib(filterByHead)]
-rule filterByHead(BM, A As) => #if A.head_block ==Int BM[A.slot]b.id
-                               #then A filterByHead(BM, As)
-                               #else   filterByHead(BM, As)
+rule filterByHead(BlockMap, A As) => #if A.head_block ==Int BlockMap[A.slot]k.id
+                               #then A filterByHead(BlockMap, As)
+                               #else   filterByHead(BlockMap, As)
                                #fi
 rule filterByHead(_, .Attestations) => .Attestations
 
 syntax Attestations ::= filterNotSlashed(ValidatorMap, Attestations) [function, smtlib(filterNotSlashed)]
-rule filterNotSlashed(VM, A As) => #if VM[A.attester]v.slashed
+rule filterNotSlashed(VM, A As) => #if VM.slashed[A.attester]b
                                    #then   filterNotSlashed(VM, As)
                                    #else A filterNotSlashed(VM, As)
                                    #fi
@@ -573,9 +592,9 @@ rule processValidatorEjectionsAux(_, .IntList, _) => .
 syntax KItem ::= processValidatorEjection(Int)
 rule <k> processValidatorEjection(VID)
       => #it(
-           isActiveValidator(VM[VID]v, epochOf(Slot) -Int 1) andBool VM[VID]v.effective_balance <=Int EJECTION_BALANCE
+           isActiveValidator(VID, VM, epochOf(Slot) -Int 1) andBool VM.effective_balance[VID]i <=Int EJECTION_BALANCE
          ,
-           initiateValidatorExit(VM[VID]v)
+           initiateValidatorExit(VID)
          ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -598,15 +617,35 @@ rule updateActivationEligibilitiesAux(L, VID VIDs, VM) => updateActivationEligib
 rule updateActivationEligibilitiesAux(_, .IntList, _) => .
 
 syntax KItem ::= updateActivationEligibility(Int)
-rule <k> updateActivationEligibility(VID) => . ... </k>
+rule <k> updateActivationEligibility(VID)
+      => #it(
+           isActivationEligible(VID, VM)
+         ,
+           setActivationEligibility(VID)
+         ) ... </k>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM, _) </validators>
+       ...
+     </state>
+
+syntax KItem ::= setActivationEligibility(Int)
+rule <k> setActivationEligibility(VID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
        <validators> v(
-         VM => VM [ VID <- VM[VID]v with activation_eligibility_epoch = #if isActivationEligible(VM[VID]v)
-                                                                        #then epochOf(Slot)
-                                                                        #else VM[VID]v.activation_eligibility_epoch
-                                                                        #fi ]v
+       //m(... effective_balance: EBM
+       //    , activation_eligibility: AEM => AEM [ VID <- epochOf(Slot) ]i
+       //)
+         m(SM
+         , BM
+         , EBM
+         , AEM => AEM [ VID <- epochOf(Slot) ]i
+         , AM
+         , EM
+         , WM
+         )
        ,
          _
        ) </validators>
@@ -614,10 +653,10 @@ rule <k> updateActivationEligibility(VID) => . ... </k>
      </state>
 
 // is_eligible_for_activation_queue
-syntax Bool ::= isActivationEligible(Validator) [function, functional]
-rule isActivationEligible(V)
-  => V.activation_eligibility_epoch ==Int FAR_FUTURE_EPOCH andBool
-     V.effective_balance ==Int MAX_EFFECTIVE_BALANCE
+syntax Bool ::= isActivationEligible(Int, ValidatorMap) [function, functional]
+rule isActivationEligible(VID, VM)
+  => VM.activation_eligibility_epoch[VID]i ==Int FAR_FUTURE_EPOCH andBool
+     VM.effective_balance[VID]i ==Int MAX_EFFECTIVE_BALANCE
 
 syntax Kitem ::= processValidatorActivation()
 rule <k> processValidatorActivation()
@@ -630,42 +669,50 @@ rule <k> processValidatorActivation()
        ...
      </state>
 
-syntax KItem ::= activateValidators(ValidatorList)
-rule activateValidators(V Vs) => activateValidator(V) ~> activateValidators(Vs)
-rule activateValidators(.ValidatorList) => .
+syntax KItem ::= activateValidators(IntList)
+rule activateValidators(VID VIDs) => activateValidator(VID) ~> activateValidators(VIDs)
+rule activateValidators(.IntList) => .
 
-syntax KItem ::= activateValidator(Validator)
-rule <k> activateValidator(V) => . ... </k>
+syntax KItem ::= activateValidator(Int)
+rule <k> activateValidator(VID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
        <validators> v(
-         VM => VM [ V.id <- V with activation_epoch = delayedActivationExitEpoch(epochOf(Slot) -Int 1) ]v
+       //m(... activation_epoch: AM => AM [ VID <- delayedActivationExitEpoch(epochOf(Slot) -Int 1) ]i)
+         m(SM
+         , BM
+         , EBM
+         , AEM
+         , AM => AM [ VID <- delayedActivationExitEpoch(epochOf(Slot) -Int 1) ]i
+         , EM
+         , WM
+         )
        ,
          _
        ) </validators>
        ...
      </state>
 
-syntax ValidatorList ::= activationQueueUptoChurnLimit(Validators, Int, Int) [function, functional]
+syntax IntList ::= activationQueueUptoChurnLimit(Validators, Int, Int) [function, functional]
 rule activationQueueUptoChurnLimit(Validators, FinalizedEpoch, CurrentEpoch)
   => take(
        churnLimit(size(activeValidators(Validators, CurrentEpoch))),
        sort(activationQueue(Validators, FinalizedEpoch))
      )
 
-syntax ValidatorList ::= activationQueue(Validators, Int) [function, functional, smtlib(activationQueue)]
+syntax IntList ::= activationQueue(Validators, Int) [function, functional, smtlib(activationQueue)]
 rule activationQueue(v(VM, VID VIDs), FinalizedEpoch)
-  => #if isValidValidatorToActivate(VM[VID]v, FinalizedEpoch)
-     #then VM[VID]v activationQueue(v(VM, VIDs), FinalizedEpoch)
-     #else          activationQueue(v(VM, VIDs), FinalizedEpoch)
+  => #if isValidValidatorToActivate(VID, VM, FinalizedEpoch)
+     #then VID activationQueue(v(VM, VIDs), FinalizedEpoch)
+     #else     activationQueue(v(VM, VIDs), FinalizedEpoch)
      #fi
-rule activationQueue(v(_, .IntList), _) => .ValidatorList
+rule activationQueue(v(_, .IntList), _) => .IntList
 
-syntax Bool ::= isValidValidatorToActivate(Validator, Int) [function]
-rule isValidValidatorToActivate(V, FinalizedEpoch)
-  => V.activation_eligibility_epoch <=Int FinalizedEpoch andBool // is_eligible_for_activation
-     V.activation_epoch ==Int FAR_FUTURE_EPOCH
+syntax Bool ::= isValidValidatorToActivate(Int, ValidatorMap, Int) [function]
+rule isValidValidatorToActivate(VID, VM, FinalizedEpoch)
+  => VM.activation_eligibility_epoch[VID]i <=Int FinalizedEpoch andBool // is_eligible_for_activation
+     VM.activation_epoch[VID]i ==Int FAR_FUTURE_EPOCH
 ```
 
 ## Block Processing
@@ -691,7 +738,7 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposi
        ...
      </state>
      <blocks>
-       BM => BM [ Slot <- #Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits) ]b
+       BlockMap => BlockMap [ Slot <- #Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits) ]k
      </blocks>
      // TODO: check if the block proposer is valid (assigned, not slashed)
 ```
@@ -712,10 +759,10 @@ rule <k> processSlashing(#Slashing(A1, A2))
       =>
 ```
 ```{.k .dynamic}
-         initiateValidatorExit(VM[A1.attester]v) ~>
+         initiateValidatorExit(A1.attester) ~>
 ```
 ```k
-         slashValidator(VM[A1.attester]v) ... </k>
+         slashValidator(A1.attester) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -728,16 +775,26 @@ rule <k> processSlashing(#Slashing(A1, A2))
 // rule processSlashing(#Slashing(A1, A2)) => #bottom [owise]
 
 // slash_validator
-syntax KItem ::= slashValidator(Validator)
-rule <k> slashValidator(V) => . ... </k>
+syntax KItem ::= slashValidator(Int)
+rule <k> slashValidator(VID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <slashedBalance> S => S +Int V.effective_balance </slashedBalance> // TODO: store slashed balance for each epoch
+       <slashedBalance> S => S +Int EBM[VID]i </slashedBalance> // TODO: store slashed balance for each epoch
        <validators> v(
-         VM => VM [ V.id <- V with slashed = true
-                              with withdrawable_epoch = maxInt(V.withdrawable_epoch, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR)
-                              with balance = maxInt(0, V.balance -Int (V.effective_balance /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]v
+       //m(... slashed: SM => SM [ VID <- true ]b
+       //    , balance: BM => BM [ VID <- maxInt(0, BM[VID]i -Int (EBM[VID]i /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]i
+       //    , effective_balance: EBM
+       //    , withdrawable_epoch: WM => WM [ VID <- maxInt(WM[VID]i, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR) ]i
+       //)
+         m(SM => SM [ VID <- true ]b
+         , BM => BM [ VID <- maxInt(0, BM[VID]i -Int (EBM[VID]i /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]i
+         , EBM
+         , AEM
+         , AM
+         , EM
+         , WM => WM [ VID <- maxInt(WM[VID]i, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR) ]i
+         )
        ,
          _
        ) </validators>
@@ -782,7 +839,7 @@ rule <k> true ~> addAttestation(A) => . ... </k>
 rule <k> false ~> addAttestation(_) => #bottom ... </k>
 
 syntax KItem ::= checkAttestation(Attestation)
-rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch, JBlock, VM[A.attester]v) ... </k>
+rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch, JBlock, VM.slashed[A.attester]b) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -801,7 +858,7 @@ rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch, JBlock, VM[A
      </state>
      requires A.target_epoch >Int 0
 
-rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch, JBlock, VM[A.attester]v) ... </k>
+rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch, JBlock, VM.slashed[A.attester]b) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -816,13 +873,13 @@ rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch, JBlock, VM[A
      </state>
      requires A.target_epoch ==Int 0
 
-syntax Bool ::= isValidAttestation(Attestation, Int, Int, Int, Validator) [function, functional]
-rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, V)
+syntax Bool ::= isValidAttestation(Attestation, Int, Int, Int, Bool) [function, functional]
+rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed)
   =>         A.source_epoch ==Int SourceEpoch
      andBool A.source_block ==Int SourceBlock
      andBool A.slot +Int MIN_ATTESTATION_INCLUSION_DELAY <=Int Slot andBool Slot <=Int A.slot +Int MAX_ATTESTATION_INCLUSION_DELAY
      andBool epochOf(A.slot) ==Int A.target_epoch
-     andBool notBool V.slashed // TODO: is this checked in spec?
+     andBool notBool Slashed // TODO: is this checked in spec?
      // TODO: check if A.attester is assigned to A.slot
 ```
 
@@ -840,7 +897,15 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-         VM => VM [ D.sender <- VM[D.sender]v with balance = VM[D.sender]v.balance +Int D.amount ]v // no change to effective_balance
+       //m(... balance: BM => BM [ D.sender <- BM[D.sender]i +Int D.amount ]i) // no change to effective_balance
+         m(SM
+         , BM => BM [ D.sender <- BM[D.sender]i +Int D.amount ]i // no change to effective_balance
+         , EBM
+         , AEM
+         , AM
+         , EM
+         , WM
+         )
        ,
          VIDs
        ) </validators>
@@ -852,10 +917,22 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-         VM => VM [ D.sender <- #Validator(D.sender, false,
-                                           (D.amount, minInt(D.amount, MAX_EFFECTIVE_BALANCE)), // effective_balance cap
-                                           (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH),
-                                           (FAR_FUTURE_EPOCH, FAR_FUTURE_EPOCH)) ]v
+       //m(... slashed:             SM => SM [ D.sender <- false ]b
+       //    , balance:             BM => BM [ D.sender <- D.amount ]i
+       //    , effective_balance: EBM => EBM [ D.sender <- minInt(D.amount, MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap
+       //    , activation_eligibility_epoch: FAR_FUTURE_EPOCH
+       //    , activation_epoch:             FAR_FUTURE_EPOCH
+       //    , exit_epoch:                   FAR_FUTURE_EPOCH
+       //    , withdrawable_epoch:           FAR_FUTURE_EPOCH
+       //)
+         m(SM  => SM  [ D.sender <- false ]b
+         , BM  => BM  [ D.sender <- D.amount ]i
+         , EBM => EBM [ D.sender <- minInt(D.amount, MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap
+         , AEM => AEM [ D.sender <- FAR_FUTURE_EPOCH ]i
+         , AM  => AM  [ D.sender <- FAR_FUTURE_EPOCH ]i
+         , EM  => EM  [ D.sender <- FAR_FUTURE_EPOCH ]i
+         , WM  => WM  [ D.sender <- FAR_FUTURE_EPOCH ]i
+         )
        ,
          VIDs => D.sender VIDs
        ) </validators>
@@ -874,8 +951,8 @@ rule processVoluntaryExits(.VoluntaryExits) => .
 
 syntax KItem ::= processVoluntaryExit(VoluntaryExit)
 rule <k> processVoluntaryExit(E)
-      => #if isValidVoluntaryExit(E, VM[E.validator]v, epochOf(Slot))
-         #then initiateValidatorExit(VM[E.validator]v)
+      => #if isValidVoluntaryExit(E, E.validator, VM, epochOf(Slot))
+         #then initiateValidatorExit(E.validator)
          #else #bottom
          #fi ... </k>
      <currentSlot> Slot </currentSlot>
@@ -885,40 +962,50 @@ rule <k> processVoluntaryExit(E)
        ...
      </state>
 
-syntax Bool ::= isValidVoluntaryExit(VoluntaryExit, Validator, Int) [function]
-rule isValidVoluntaryExit(E, V, CurrEpoch)
-  => isActiveValidator(V, CurrEpoch)
-     andBool V.exit_epoch ==Int FAR_FUTURE_EPOCH
+syntax Bool ::= isValidVoluntaryExit(VoluntaryExit, Int, ValidatorMap, Int) [function]
+rule isValidVoluntaryExit(E, VID, VM, CurrEpoch)
+  => isActiveValidator(VID, VM, CurrEpoch)
+     andBool VM.exit_epoch[VID]i ==Int FAR_FUTURE_EPOCH
      andBool CurrEpoch >=Int E.epoch
-     andBool CurrEpoch >=Int V.activation_epoch +Int PERSISTENT_COMMITTEE_PERIOD
+     andBool CurrEpoch >=Int VM.activation_epoch[VID]i +Int PERSISTENT_COMMITTEE_PERIOD
 
 // is_active_validator
-syntax Bool ::= isActiveValidator(Validator, Int) [function, functional]
-rule isActiveValidator(V, Epoch)
-  => V.activation_epoch <=Int Epoch andBool Epoch <Int V.exit_epoch
+syntax Bool ::= isActiveValidator(Int, ValidatorMap, Int) [function, functional]
+rule isActiveValidator(VID, VM, Epoch)
+  => VM.activation_epoch[VID]i <=Int Epoch andBool Epoch <Int VM.exit_epoch[VID]i
 
 // initiate_validator_exit
-syntax KItem ::= initiateValidatorExit(Validator)
-rule <k> initiateValidatorExit(V)
-      => setExitEpoch(V, computeExitEpoch(Validators, epochOf(Slot))) ... </k>
+syntax KItem ::= initiateValidatorExit(Int)
+rule <k> initiateValidatorExit(VID)
+      => #it(
+           VM.exit_epoch[VID]i ==Int FAR_FUTURE_EPOCH
+         ,
+           setExitEpoch(VID, computeExitEpoch(v(VM, VIDs), epochOf(Slot)))
+         ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <validators> Validators </validators>
+       <validators> v(VM, VIDs) </validators>
        ...
      </state>
-     requires V.exit_epoch ==Int FAR_FUTURE_EPOCH
-rule initiateValidatorExit(V) => .
-     requires V.exit_epoch =/=Int FAR_FUTURE_EPOCH
 
-syntax KItem ::= setExitEpoch(Validator, Int)
-rule <k> setExitEpoch(V, ExitEpoch) => . ... </k>
+syntax KItem ::= setExitEpoch(Int, Int)
+rule <k> setExitEpoch(VID, ExitEpoch) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
        <validators> v(
-         VM => VM [ V.id <- V with exit_epoch         = ExitEpoch
-                              with withdrawable_epoch = ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]v
+       //m(... exit_epoch:         EM => EM [ VID <- ExitEpoch ]i
+       //    , withdrawable_epoch: WM => WM [ VID <- ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]i
+       //)
+         m(SM
+         , BM
+         , EBM
+         , AEM
+         , AM
+         , EM => EM [ VID <- ExitEpoch ]i
+         , WM => WM [ VID <- ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]i
+         )
        ,
          _
        ) </validators>
@@ -941,18 +1028,18 @@ rule computeExitEpochAux(Validators, ExitEpoch, ActiveValidatorSize)
      #fi
 
 syntax Int ::= maxExitEpoch(Validators) [function, functional, smtlib(maxExitEpoch)]
-rule maxExitEpoch(v(VM, VID VIDs)) => maxInt(VM[VID]v.exit_epoch, maxExitEpoch(v(VM, VIDs))) requires VM[VID]v.exit_epoch =/=Int FAR_FUTURE_EPOCH
-rule maxExitEpoch(v(VM, VID VIDs)) =>                             maxExitEpoch(v(VM, VIDs))  requires VM[VID]v.exit_epoch  ==Int FAR_FUTURE_EPOCH
+rule maxExitEpoch(v(VM, VID VIDs)) => maxInt(VM.exit_epoch[VID]i, maxExitEpoch(v(VM, VIDs))) requires VM.exit_epoch[VID]i =/=Int FAR_FUTURE_EPOCH
+rule maxExitEpoch(v(VM, VID VIDs)) =>                             maxExitEpoch(v(VM, VIDs))  requires VM.exit_epoch[VID]i  ==Int FAR_FUTURE_EPOCH
 rule maxExitEpoch(v(_, .IntList)) => 0
 
 syntax Int ::= countValidatorsToExit(Validators, Int) [function, functional, smtlib(countValidatorsToExit)]
 rule countValidatorsToExit(v(VM, VID VIDs), ExitEpoch)
-  => #if VM[VID]v.exit_epoch ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(v(VM, VIDs), ExitEpoch)
+  => #if VM.exit_epoch[VID]i ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(v(VM, VIDs), ExitEpoch)
 rule countValidatorsToExit(v(_, .IntList), _) => 0
 
 syntax IntList ::= activeValidators(Validators, Int) [function, functional, smtlib(activeValidators)]
 rule activeValidators(v(VM, VID VIDs), Epoch)
-  => #if isActiveValidator(VM[VID]v, Epoch)
+  => #if isActiveValidator(VID, VM, Epoch)
      #then VID activeValidators(v(VM, VIDs), Epoch)
      #else     activeValidators(v(VM, VIDs), Epoch)
      #fi
