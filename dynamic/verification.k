@@ -32,7 +32,7 @@ imports SUBSTITUTION
 syntax KVar ::= "x" [token]
 
 syntax Int ::= KVar
-syntax Bool ::= forall(KVar, IntList, Bool) [binder, function]
+syntax Bool ::= forall(KVar, IntList, Bool) [binder, function] // smtlib((forall ((#1 Int)) (=> (inI #1 #2) #3)))
 rule forall(X, V Vs, E) => E[V / X] andBool forall(X, Vs, E)
 rule forall(_, .IntList, _) => true
 rule forall(_, _, true) => true
@@ -81,6 +81,14 @@ rule (V with activation_eligibility_epoch = _).activation_epoch => V.activation_
 rule (V with activation_epoch             = I).activation_epoch => I
 rule (V with exit_epoch                   = _).activation_epoch => V.activation_epoch
 rule (V with withdrawable_epoch           = _).activation_epoch => V.activation_epoch
+
+rule (V with slashed                      = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with balance                      = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with effective_balance            = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with activation_eligibility_epoch = I).activation_eligibility_epoch => I
+rule (V with activation_epoch             = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with exit_epoch                   = _).activation_eligibility_epoch => V.activation_eligibility_epoch
+rule (V with withdrawable_epoch           = _).activation_eligibility_epoch => V.activation_eligibility_epoch
 
 rule (V with slashed                      = _).balance => V.balance
 rule (V with balance                      = I).balance => I
@@ -292,6 +300,29 @@ rule isValidAttestations(filterByHead(_,     As), Vs, Epoch) => true requires is
 
 // TODO: drop
 rule _.effective_balance >=Int 0 => true [concrete, smt-lemma]
+
+// for o-spec
+
+rule forall(X, rev(L), (M [ Y <- _ ]v)[X]v.activation_eligibility_epoch ==K E)
+  => forall(X, rev(L),  M             [X]v.activation_eligibility_epoch ==K E)
+     requires disjoint1(L, Y)
+
+rule forall(X, Ls, (M [ L <- _ ]v)[X]v ==K E)
+  => forall(X, Ls,  M             [X]v ==K E)
+     requires distinct(L Ls)
+
+// for p-spec
+
+rule size(_:IntList) >=Int 0 => true [smt-lemma]
+
+rule forall(X, rev(L), #if E0 #then (M [ Y <- _ ]v)[X]v.exit_epoch >=Int E1 andBool (M [ Y <- _ ]v)[X]v.exit_epoch <Int E2 andBool countValidatorsToExit(VS, (M [ Y <- _ ]v)[X]v.exit_epoch) <=Int E3 #else (M [ Y <- _ ]v)[X]v.exit_epoch ==K E4 #fi)
+  => forall(X, rev(L), #if E0 #then  M             [X]v.exit_epoch >=Int E1 andBool  M             [X]v.exit_epoch <Int E2 andBool countValidatorsToExit(VS,  M             [X]v.exit_epoch) <=Int E3 #else  M             [X]v.exit_epoch ==K E4 #fi)
+     requires disjoint1(L, Y)
+
+rule countValidatorsToExit(v(VM [ VID <- V ]v, VIDs), E) <=Int ChurnLimit
+  => countValidatorsToExit(v(VM,               VIDs), E) <=Int ChurnLimit
+     requires countValidatorsToExit(v(VM, VIDs), V.exit_epoch) <Int ChurnLimit
+      andBool VM[VID]v.exit_epoch ==Int FAR_FUTURE_EPOCH
 
 syntax Tactic ::= case(Pred) // case analysis
 

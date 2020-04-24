@@ -558,15 +558,25 @@ rule <k> processValidatorUpdates()
      </state>
 
 syntax KItem ::= processValidatorEjections(IntList)
-rule processValidatorEjections(VID VIDs) => processValidatorEjection(VID) ~> processValidatorEjections(VIDs)
-rule processValidatorEjections(.IntList) => .
+rule <k> processValidatorEjections(VIDs) => processValidatorEjectionsAux(.IntList, VIDs, VM) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM, _) </validators>
+       ...
+     </state>
+
+syntax KItem ::= processValidatorEjectionsAux(IntList, IntList, ValidatorMap)
+rule processValidatorEjectionsAux(L, VID VIDs, VM0) => processValidatorEjection(VID) ~> processValidatorEjectionsAux(VID L, VIDs, VM0)
+rule processValidatorEjectionsAux(_, .IntList, _) => .
 
 syntax KItem ::= processValidatorEjection(Int)
 rule <k> processValidatorEjection(VID)
-      => #if isActiveValidator(VM[VID]v, epochOf(Slot) -Int 1) andBool VM[VID]v.effective_balance <=Int EJECTION_BALANCE
-         #then initiateValidatorExit(VM[VID]v)
-         #else .
-         #fi ... </k>
+      => #it(
+           isActiveValidator(VM[VID]v, epochOf(Slot) -Int 1) andBool VM[VID]v.effective_balance <=Int EJECTION_BALANCE
+         ,
+           initiateValidatorExit(VM[VID]v)
+         ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -575,8 +585,17 @@ rule <k> processValidatorEjection(VID)
      </state>
 
 syntax KItem ::= updateActivationEligibilities(IntList)
-rule updateActivationEligibilities(VID VIDs) => updateActivationEligibility(VID) ~> updateActivationEligibilities(VIDs)
-rule updateActivationEligibilities(.IntList) => .
+rule <k> updateActivationEligibilities(VIDs) => updateActivationEligibilitiesAux(.IntList, VIDs, VM) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM, _) </validators>
+       ...
+     </state>
+
+syntax KItem ::= updateActivationEligibilitiesAux(IntList, IntList, ValidatorMap)
+rule updateActivationEligibilitiesAux(L, VID VIDs, VM) => updateActivationEligibility(VID) ~> updateActivationEligibilitiesAux(VID L, VIDs, VM)
+rule updateActivationEligibilitiesAux(_, .IntList, _) => .
 
 syntax KItem ::= updateActivationEligibility(Int)
 rule <k> updateActivationEligibility(VID) => . ... </k>
@@ -584,12 +603,10 @@ rule <k> updateActivationEligibility(VID) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-         VM
-       =>
-         #if isActivationEligible(VM[VID]v)
-         #then VM [ VID <- VM[VID]v with activation_eligibility_epoch = epochOf(Slot) ]v
-         #else VM
-         #fi
+         VM => VM [ VID <- VM[VID]v with activation_eligibility_epoch = #if isActivationEligible(VM[VID]v)
+                                                                        #then epochOf(Slot)
+                                                                        #else VM[VID]v.activation_eligibility_epoch
+                                                                        #fi ]v
        ,
          _
        ) </validators>
