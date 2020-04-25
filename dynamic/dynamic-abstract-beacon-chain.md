@@ -671,8 +671,17 @@ rule <k> processValidatorActivation()
      </state>
 
 syntax KItem ::= activateValidators(IntList)
-rule activateValidators(VID VIDs) => activateValidator(VID) ~> activateValidators(VIDs)
-rule activateValidators(.IntList) => .
+rule <k> activateValidators(VIDs) => activateValidatorsAux(.IntList, VIDs, VM) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM, _) </validators>
+       ...
+     </state>
+
+syntax KItem ::= activateValidatorsAux(IntList, IntList, ValidatorMap)
+rule activateValidatorsAux(L, VID VIDs, VM0) => activateValidator(VID) ~> activateValidatorsAux(VID L, VIDs, VM0)
+rule activateValidatorsAux(_, .IntList, _) => .
 
 syntax KItem ::= activateValidator(Int)
 rule <k> activateValidator(VID) => . ... </k>

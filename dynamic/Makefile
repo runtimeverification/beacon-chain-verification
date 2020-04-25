@@ -274,7 +274,7 @@ test-symbolic-dynamic-java: build-dynamic-java-symbolic
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slots-base1-spec.k                      | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slots-inductive-spec.k                  | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-activation-eligibility-spec.k | diff - tests/success.out
-#	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-activation-spec.k             | diff - tests/success.out
+	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-activation-spec.k             | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-ejection-spec.k               | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-exit-spec.k                   | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/simple-spec.k                    | diff - tests/success.out
@@ -307,6 +307,7 @@ test-symbolic-dynamic-java: build-dynamic-java-symbolic
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/l6-spec.k                        | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/m-spec.k                         | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/m2-spec.k                        | diff - tests/success.out
+	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/m3-spec.k                        | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/n1-spec.k                        | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/n2-spec.k                        | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/n3-spec.k                        | diff - tests/success.out

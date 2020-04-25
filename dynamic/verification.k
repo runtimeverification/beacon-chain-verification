@@ -225,22 +225,39 @@ rule subsetI(S, S) => true
 ///     requires isValidValidatorsToActivate(Vs, v(VM, VIDs), FinalizedEpoch)
 ///      andBool distinctValidators(V Vs)
 /// 
-/// syntax Int ::= countValidatorsToActivate(Validators, Int) [function, smtlib(countValidatorsToActivate)]
-/// rule countValidatorsToActivate(v(VM, VID VIDs), ActivationEpoch)
-///   => #if VM[VID]i.activation_epoch ==Int ActivationEpoch #then 1 #else 0 #fi +Int countValidatorsToActivate(v(VM, VIDs), ActivationEpoch)
-/// rule countValidatorsToActivate(v(_, .IntList), _) => 0
-/// 
-/// rule countValidatorsToActivate(v(VM [ VID <- V ]i, VIDs), E) => countValidatorsToActivate(v(VM, VIDs), E) +Int 1
-///     requires V.activation_epoch =/=Int VM[VID]i.activation_epoch
-///      andBool V.activation_epoch ==Int E
-///      andBool VID in VIDs
-/// 
+
+syntax Int ::= countValidatorsToActivate(Validators, Int) [function, smtlib(countValidatorsToActivate)]
+rule countValidatorsToActivate(v(VM, VID VIDs), ActivationEpoch)
+  => #if VM.activation_epoch[VID]i ==Int ActivationEpoch #then 1 #else 0 #fi +Int countValidatorsToActivate(v(VM, VIDs), ActivationEpoch)
+rule countValidatorsToActivate(v(_, .IntList), _) => 0
+
+rule countValidatorsToActivate(v(m(SM, BM, EBM, AEM, AM [ VID <- A ]i, EM, WM), VIDs), E)
+  => countValidatorsToActivate(v(m(SM, BM, EBM, AEM, AM              , EM, WM), VIDs), E) +Int 1
+    requires A =/=Int AM[VID]i
+     andBool A ==Int E
+     andBool VID in VIDs
+
 
 rule activeValidators(v(m(SM, BM, EBM, AEM, AM [ VID <- E ]i, EM, WM), VIDs), Epoch)
   => activeValidators(v(m(SM, BM, EBM, AEM, AM              , EM, WM), VIDs), Epoch)
      requires E >Int Epoch
       andBool AM[VID]i ==Int FAR_FUTURE_EPOCH
     //andBool VM[VID]i.exit_epoch ==Int V.exit_epoch
+
+
+rule distinct(activationQueue(v(_, VIDs), _)) => true
+     requires distinct(VIDs)
+
+rule forall(X, activationQueue(v(_, VIDs), _), X in VIDs) => true
+
+rule forall(X, activationQueue(v(VM, VIDs), FinalizedEpoch), E) => true
+     requires E ==K isValidValidatorToActivate(X, VM, FinalizedEpoch)
+
+rule distinct(take(_, sort(L))) => true
+     requires distinct(L)
+
+rule forall(X, take(_, sort(L)), E) => true
+     requires forall(X, L, E)
 
 /// 
 /// rule isValidValidatorsToActivate(take(_, sort(activationQueue(Vs, FinalizedEpoch))), Vs, FinalizedEpoch) => true
