@@ -1034,27 +1034,27 @@ rule <k> setExitEpoch(VID, ExitEpoch) => . ... </k>
 syntax Int ::= computeExitEpoch(Validators, Int) [function, functional]
              | computeExitEpochAux(Validators, Int, Int) [function, functional]
 rule [computeExitEpoch]:
-     computeExitEpoch(Validators, CurrentEpoch)
+     computeExitEpoch(v(VM, VIDs), CurrentEpoch)
   => computeExitEpochAux(
-       Validators,
-       maxInt(maxExitEpoch(Validators), delayedActivationExitEpoch(CurrentEpoch)),
-       size(activeValidators(Validators, CurrentEpoch))
+       v(VM, VIDs),
+       maxInt(maxExitEpoch(VIDs, VM.exit_epoch), delayedActivationExitEpoch(CurrentEpoch)),
+       size(activeValidators(v(VM, VIDs), CurrentEpoch))
      )
-rule computeExitEpochAux(Validators, ExitEpoch, ActiveValidatorSize)
-  => #if countValidatorsToExit(Validators, ExitEpoch) >=Int churnLimit(ActiveValidatorSize)
+rule computeExitEpochAux(v(VM, VIDs), ExitEpoch, ActiveValidatorSize)
+  => #if countValidatorsToExit(VIDs, VM.exit_epoch, ExitEpoch) >=Int churnLimit(ActiveValidatorSize)
      #then ExitEpoch +Int 1
      #else ExitEpoch
      #fi
 
-syntax Int ::= maxExitEpoch(Validators) [function, functional, smtlib(maxExitEpoch)]
-rule maxExitEpoch(v(VM, VID VIDs)) => maxInt(VM.exit_epoch[VID]i, maxExitEpoch(v(VM, VIDs))) requires VM.exit_epoch[VID]i =/=Int FAR_FUTURE_EPOCH
-rule maxExitEpoch(v(VM, VID VIDs)) =>                             maxExitEpoch(v(VM, VIDs))  requires VM.exit_epoch[VID]i  ==Int FAR_FUTURE_EPOCH
-rule maxExitEpoch(v(_, .IntList)) => 0
+syntax Int ::= maxExitEpoch(IntList, IMap) [function, functional, smtlib(maxExitEpoch)]
+rule maxExitEpoch(VID VIDs, EM) => maxInt(EM[VID]i, maxExitEpoch(VIDs, EM)) requires EM[VID]i =/=Int FAR_FUTURE_EPOCH
+rule maxExitEpoch(VID VIDs, EM) =>                  maxExitEpoch(VIDs, EM)  requires EM[VID]i  ==Int FAR_FUTURE_EPOCH
+rule maxExitEpoch(.IntList, _) => 0
 
-syntax Int ::= countValidatorsToExit(Validators, Int) [function, functional, smtlib(countValidatorsToExit)]
-rule countValidatorsToExit(v(VM, VID VIDs), ExitEpoch)
-  => #if VM.exit_epoch[VID]i ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(v(VM, VIDs), ExitEpoch)
-rule countValidatorsToExit(v(_, .IntList), _) => 0
+syntax Int ::= countValidatorsToExit(IntList, IMap, Int) [function, functional, smtlib(countValidatorsToExit)]
+rule countValidatorsToExit(VID VIDs, EM, ExitEpoch)
+  => #if EM[VID]i ==Int ExitEpoch #then 1 #else 0 #fi +Int countValidatorsToExit(VIDs, EM, ExitEpoch)
+rule countValidatorsToExit(.IntList, _, _) => 0
 
 syntax IntList ::= activeValidators(Validators, Int) [function, functional, smtlib(activeValidators)]
 rule activeValidators(v(VM, VID VIDs), Epoch)
