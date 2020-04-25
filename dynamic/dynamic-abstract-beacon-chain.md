@@ -947,12 +947,21 @@ rule <k> processDeposit(D) => . ... </k>
 ```{.k .dynamic}
 // process_voluntary_exit
 syntax KItem ::= processVoluntaryExits(VoluntaryExits)
-rule processVoluntaryExits(E Exits) => processVoluntaryExit(E) ~> processVoluntaryExits(Exits)
-rule processVoluntaryExits(.VoluntaryExits) => .
+rule <k> processVoluntaryExits(Exits) => processVoluntaryExitsAux(.IntList, Exits, VM) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM, _) </validators>
+       ...
+     </state>
+
+syntax KItem ::= processVoluntaryExitsAux(IntList, VoluntaryExits, ValidatorMap)
+rule processVoluntaryExitsAux(L, E Exits, VM0) => processVoluntaryExit(E) ~> processVoluntaryExitsAux(E.validator L, Exits, VM0)
+rule processVoluntaryExitsAux(_, .VoluntaryExits, _) => .
 
 syntax KItem ::= processVoluntaryExit(VoluntaryExit)
 rule <k> processVoluntaryExit(E)
-      => #if isValidVoluntaryExit(E, E.validator, VM, epochOf(Slot))
+      => #if isValidVoluntaryExit(E, VM, epochOf(Slot))
          #then initiateValidatorExit(E.validator)
          #else #bottom
          #fi ... </k>
@@ -963,12 +972,12 @@ rule <k> processVoluntaryExit(E)
        ...
      </state>
 
-syntax Bool ::= isValidVoluntaryExit(VoluntaryExit, Int, ValidatorMap, Int) [function]
-rule isValidVoluntaryExit(E, VID, VM, CurrEpoch)
-  => isActiveValidator(VID, VM, CurrEpoch)
-     andBool VM.exit_epoch[VID]i ==Int FAR_FUTURE_EPOCH
+syntax Bool ::= isValidVoluntaryExit(VoluntaryExit, ValidatorMap, Int) [function]
+rule isValidVoluntaryExit(E, VM, CurrEpoch)
+  => isActiveValidator(E.validator, VM, CurrEpoch)
+     andBool VM.exit_epoch[E.validator]i ==Int FAR_FUTURE_EPOCH
      andBool CurrEpoch >=Int E.epoch
-     andBool CurrEpoch >=Int VM.activation_epoch[VID]i +Int PERSISTENT_COMMITTEE_PERIOD
+     andBool CurrEpoch >=Int VM.activation_epoch[E.validator]i +Int PERSISTENT_COMMITTEE_PERIOD
 
 // is_active_validator
 syntax Bool ::= isActiveValidator(Int, ValidatorMap, Int) [function, functional]

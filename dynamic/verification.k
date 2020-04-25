@@ -117,7 +117,7 @@ rule countValidatorsToExit(v(m(SM, BM, EBM, AEM, AM, EM [ VID <- E ]i, WM [ VID 
      andBool VID in VIDs
 
 syntax Bool ::= isValidVoluntaryExits(VoluntaryExits, ValidatorMap, Int, IntList) [function]
-rule isValidVoluntaryExits(E Es, VM, Epoch, VIDs) => isValidVoluntaryExit(E, E.validator, VM, Epoch) andBool isValidVoluntaryExits(Es, VM, Epoch, VIDs)
+rule isValidVoluntaryExits(E Es, VM, Epoch, VIDs) => isValidVoluntaryExit(E, VM, Epoch) andBool isValidVoluntaryExits(Es, VM, Epoch, VIDs)
                                                      andBool distinctVoluntaryExits(E Es)
                                                      andBool E.validator in VIDs
 rule isValidVoluntaryExits(.VoluntaryExits, _, _, _) => true
@@ -177,6 +177,20 @@ rule countValidatorsToExit(Vs, E) => 0
 rule maxExitEpoch(v(m(SM, BM, EBM, AEM, AM, EM [ VID <- E ]i, WM [ VID <- _ ]i), VIDs)) => maxInt(maxExitEpoch(v(m(SM, BM, EBM, AEM, AM, EM, WM), VIDs)), E)
      requires E =/=Int FAR_FUTURE_EPOCH
       andBool VID in VIDs
+
+
+
+rule forall(X, rev(L), countValidatorsToExit(VS, (M [ Y <- _ ]i)[X]i) <=Int E)
+  => forall(X, rev(L), countValidatorsToExit(VS,  M             [X]i) <=Int E)
+     requires disjoint1(L, Y)
+
+
+
+syntax IntList ::= getValidatorsE(VoluntaryExits) [function, smtlib(getValidatorsE)]
+rule getValidatorsE(E Es) => E.validator getValidatorsE(Es)
+rule getValidatorsE(.VoluntaryExits) => .IntList
+
+
 
 // for m-spec
 /*
@@ -285,6 +299,10 @@ rule disjoint(R Ls, Rs) => true
 
 rule forall(X, rev(L), (M [ Y <- _ ]i)[X]i <=Int E)
   => forall(X, rev(L),  M             [X]i <=Int E)
+     requires disjoint1(L, Y)
+
+rule forall(X, rev(L), (M [ Y <- _ ]i)[X]i  <Int E)
+  => forall(X, rev(L),  M             [X]i  <Int E)
      requires disjoint1(L, Y)
 
 rule forall(X, rev(L), (M [ Y <- _ ]i)[X]i >=Int E)
