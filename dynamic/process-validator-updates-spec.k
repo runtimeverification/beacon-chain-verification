@@ -47,9 +47,7 @@ andBool forall(x, VIDs, #if isActiveValidator(x, ?VM1, ?Epoch -Int 1) andBool EB
 // updateActivationEligibilities
 andBool forall(x, VIDs, ?AEM2[x]i ==Int #if isActivationEligible(x, ?VM1) #then ?Epoch #else AEM1[x]i #fi)
 // processValidatorActivation
-/* TODO:
 andBool forall(x, ?ValidatorsToBeActivated, ?AM2[x]i ==Int ?ActivationEpoch)
-*/
 andBool countValidatorsToActivate(VIDs, ?AM2, ?ActivationEpoch) <=Int ?ChurnLimitB
 
 
