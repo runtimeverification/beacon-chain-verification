@@ -1,6 +1,6 @@
-require "verification.k"
+require "../../verification.k"
 
-module PROCESS-VALIDATOR-EXIT-SPEC
+module L6-SPEC
 
 imports VERIFICATION
 
