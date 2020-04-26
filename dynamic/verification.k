@@ -32,7 +32,7 @@ imports SUBSTITUTION
 syntax KVar ::= "x" [token]
 
 syntax Int ::= KVar
-syntax Bool ::= forall(KVar, IntList, Bool) [binder, function] // , smtlib((forall ((#1 Int)) (=> (inI #1 #2) #3)))]
+syntax Bool ::= forall(KVar, IntList, Bool) [binder, function, smtlib((forall ((#1 Int)) (=> (inI #1 #2) #3)))]
 rule forall(X, V Vs, E) => E[V / X] andBool forall(X, Vs, E)
 rule forall(_, .IntList, _) => true
 rule forall(_, _, true) => true
