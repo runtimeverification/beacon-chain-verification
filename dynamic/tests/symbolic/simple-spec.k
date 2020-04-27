@@ -57,13 +57,13 @@ rule
     ...
     <state>
       <slot> firstSlotOf(Epoch) </slot>
-      <validators> v(.ValidatorMap, .IntList) </validators>
+      <validators> v(m(.BMap, .IMap, .IMap, .IMap, .IMap, .IMap, .IMap), .IntList) </validators>
       <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
       ...
     </state>
     <state>
       <slot> Slot </slot>
-      <validators> v(.ValidatorMap, .IntList) </validators>
+      <validators> v(m(.BMap, .IMap, .IMap, .IMap, .IMap, .IMap, .IMap), .IntList) </validators>
       <attested>
         Epoch |-> .Attestations
         ...

@@ -65,12 +65,12 @@ rule #Block((_,_),_,_,_,_,X).voluntary_exits => X
 ```
 
 ```k
-syntax BlockMap ::= ".BlockMap"                          [          klabel(emptyB),  smtlib(emptyB)]
-syntax BlockMap ::= BlockMap "[" Int "<-" Block "]b"     [function, klabel(storeB),  smtlib(storeB)]
-syntax Block    ::= BlockMap "[" Int "]b"                [function, klabel(selectB), smtlib(selectB)]
+syntax BlockMap ::= ".BlockMap"                          [          klabel(emptyK),  smtlib(emptyK)]
+syntax BlockMap ::= BlockMap "[" Int "<-" Block "]k"     [function, klabel(storeK),  smtlib(storeK)]
+syntax Block    ::= BlockMap "[" Int "]k"                [function, klabel(selectK), smtlib(selectK)]
 
-rule ( M [ K1 <- V ]b ) [ K2 ]b => V         requires K1  ==Int K2
-rule ( M [ K1 <- V ]b ) [ K2 ]b => M [ K2 ]b requires K1 =/=Int K2
+rule ( M [ K1 <- V ]k ) [ K2 ]k => V         requires K1  ==Int K2
+rule ( M [ K1 <- V ]k ) [ K2 ]k => M [ K2 ]k requires K1 =/=Int K2
 ```
 
 ## Abstract Slashings
@@ -191,6 +191,7 @@ An abstract validator consists of:
 The cryptographic data (`pubkey` and `withdrawal_credentials`) is omitted in the abstract model.
 
 ```k
+/*
 syntax Validator ::= #Validator(Int,Bool,Pair,Pair,Pair) // id, slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
 syntax Int  ::= Validator ".id"                           [function, functional, klabel(v_id)                          , smtlib(v_id)                          ]
 syntax Bool ::= Validator ".slashed"                      [function, functional, klabel(v_slashed)                     , smtlib(v_slashed)                     ]
@@ -222,36 +223,43 @@ rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_eligibility_epoch = V => 
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_epoch             = V => #Validator(A,S,(B,C),(D,V),(F,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with exit_epoch                   = V => #Validator(A,S,(B,C),(D,E),(V,G))
 rule #Validator(A,S,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => #Validator(A,S,(B,C),(D,E),(F,V))
+*/
 ```
 
 ```k
 syntax Validators ::= v(ValidatorMap, IntList) [smtlib(v)]
-syntax ValidatorMap ::= Validators ".vmap" [function]
-syntax IntList      ::= Validators ".vset" [function]
-rule v(M,S).vmap => M
-rule v(M,S).vset => S
+/*
+syntax ValidatorMap ::= m(slashed: BMap, balance: IMap, effective_balance: IMap, activation_eligibility_epoch: IMap, activation_epoch: IMap, exit_epoch: IMap, withdrawable_epoch: IMap) [smtlib(m)] // slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
+*/
+syntax ValidatorMap ::= m(BMap, IMap, IMap, IMap, IMap, IMap, IMap) [smtlib(m)] // slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
+syntax BMap ::= ValidatorMap ".slashed"                      [function, functional, klabel(v_slashed)                     , smtlib(v_slashed)                     ]
+syntax IMap ::= ValidatorMap ".balance"                      [function, functional, klabel(v_balance)                     , smtlib(v_balance)                     ]
+syntax IMap ::= ValidatorMap ".effective_balance"            [function, functional, klabel(v_effective_balance)           , smtlib(v_effective_balance)           ]
+syntax IMap ::= ValidatorMap ".activation_eligibility_epoch" [function, functional, klabel(v_activation_eligibility_epoch), smtlib(v_activation_eligibility_epoch)]
+syntax IMap ::= ValidatorMap ".activation_epoch"             [function, functional, klabel(v_activation_epoc)             , smtlib(v_activation_epoc)             ]
+syntax IMap ::= ValidatorMap ".exit_epoch"                   [function, functional, klabel(v_exit_epoch)                  , smtlib(v_exit_epoch)                  ]
+syntax IMap ::= ValidatorMap ".withdrawable_epoch"           [function, functional, klabel(v_withdrawable_epoch)          , smtlib(v_withdrawable_epoch)          ]
+rule m(X,_,_,_,_,_,_).slashed                      => X
+rule m(_,X,_,_,_,_,_).balance                      => X
+rule m(_,_,X,_,_,_,_).effective_balance            => X
+rule m(_,_,_,X,_,_,_).activation_eligibility_epoch => X
+rule m(_,_,_,_,X,_,_).activation_epoch             => X
+rule m(_,_,_,_,_,X,_).exit_epoch                   => X
+rule m(_,_,_,_,_,_,X).withdrawable_epoch           => X
 ```
 
 ```k
+/*
 syntax ValidatorList ::= ".ValidatorList"        [klabel(nilV),  smtlib(nilV)]
 syntax ValidatorList ::= Validator ValidatorList [klabel(consV), smtlib(consV)]
 syntax Int ::= sizeV(ValidatorList) [function, smtlib(sizeV)]
 rule sizeV(_ Vs) => 1 +Int sizeV(Vs)
 rule sizeV(.ValidatorList) => 0
 
-// take the first N elements at most
-syntax ValidatorList ::= take(Int, ValidatorList) [function, klabel(takeV), smtlib(takeV)]
-rule take(N, V Vs) => V take(N -Int 1, Vs) requires N >Int 0
-rule take(0, _) => .ValidatorList
-rule take(_, .ValidatorList) => .ValidatorList
-
-// sort in the order of activation_eligibility_epoch
-syntax ValidatorList ::= sort(ValidatorList) [function, klabel(sortV), smtlib(sortV)]
-// TODO: implement
-
 // subset in set-like view
 syntax Bool ::= subsetV(ValidatorList, ValidatorList) [function, klabel(subsetV), smtlib(subsetV)]
 // TODO: implement
+*/
 ```
 
 ```k
@@ -266,12 +274,23 @@ rule J in (I Is) => true    requires J  ==Int I
 rule J in (I Is) => J in Is requires J =/=Int I
 rule _ in .IntList => false
 
+// take the first N elements at most
+syntax IntList ::= take(Int, IntList) [function, klabel(takeI), smtlib(takeI)]
+rule take(N, V Vs) => V take(N -Int 1, Vs) requires N >Int 0
+rule take(0, _) => .IntList
+rule take(_, .IntList) => .IntList
+
+// sort in the order of activation_eligibility_epoch
+syntax IntList ::= sort(IntList) [function, klabel(sortI), smtlib(sortI)]
+// TODO: implement
+
 // subset in set-like view
 syntax Bool ::= subset(IntList, IntList) [function, klabel(subsetI), smtlib(subsetI)]
 // TODO: implement
 ```
 
 ```k
+/*
 syntax ValidatorMap ::= ".ValidatorMap"                          [          klabel(emptyV),  smtlib(emptyV)]
 syntax ValidatorMap ::= ValidatorMap "[" Int "<-" Validator "]v" [function, klabel(storeV),  smtlib(storeV)]
 syntax Validator    ::= ValidatorMap "[" Int "]v"                [function, klabel(selectV), smtlib(selectV)]
@@ -291,6 +310,38 @@ syntax IntList ::= keys(ValidatorMap) [function, klabel(keysV), smtlib(keysV)]
 
 rule K1 in keys(M [ K2 <- _ ]v) => true          requires K1  ==Int K2
 rule K1 in keys(M [ K2 <- _ ]v) => K1 in keys(M) requires K1 =/=Int K2
+*/
+```
+
+```k
+syntax IMap ::= ".IMap"                    [          klabel(emptyI),  smtlib(emptyI)]
+syntax IMap ::= IMap "[" Int "<-" Int "]i" [function, klabel(storeI),  smtlib(storeI)]
+syntax Int  ::= IMap "[" Int "]i"          [function, klabel(selectI), smtlib(selectI)]
+
+rule ( M [ K1 <- V ]i ) [ K2 ]i => V         requires K1  ==Int K2
+rule ( M [ K1 <- V ]i ) [ K2 ]i => M [ K2 ]i requires K1 =/=Int K2
+
+// in-place update
+
+rule ( M [ K0 <- V0 ]i ) [ K1 <- V1 ]i => M [ K0 <- V1 ]i
+  requires K0 ==Int K1
+
+rule ( M [ K0 <- V0 ]i ) [ K1 <- V1 ]i => ( M [ K1 <- V1 ]i ) [ K0 <- V0 ]i
+  requires K0 =/=Int K1 andBool K1 in keys(M)
+
+syntax IntList ::= keys(IMap) [function, klabel(keysI), smtlib(keysI)]
+
+rule K1 in keys(M [ K2 <- _ ]i) => true          requires K1  ==Int K2
+rule K1 in keys(M [ K2 <- _ ]i) => K1 in keys(M) requires K1 =/=Int K2
+```
+
+```k
+syntax BMap ::= ".BMap"                     [          klabel(emptyB),  smtlib(emptyB)]
+syntax BMap ::= BMap "[" Int "<-" Bool "]b" [function, klabel(storeB),  smtlib(storeB)]
+syntax Bool ::= BMap "[" Int "]b"           [function, klabel(selectB), smtlib(selectB)]
+
+rule ( M [ K1 <- V ]b ) [ K2 ]b => V         requires K1  ==Int K2
+rule ( M [ K1 <- V ]b ) [ K2 ]b => M [ K2 ]b requires K1 =/=Int K2
 ```
 
 ## Constants
