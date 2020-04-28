@@ -28,7 +28,6 @@ rule
 requires true
 andBool Slot ==Int TargetSlot
 // types
-andBool isValidators(Vs)
 andBool Slot >=Int 0
 andBool LastBlockSlot >=Int 0
 andBool LastJustifiedEpoch >=Int 0

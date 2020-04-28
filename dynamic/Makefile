@@ -187,14 +187,16 @@ $(dynamic_java_symbolic_kompiled): $(dynamic_java_symbolic_files) verification.k
 
 .PHONY: test test-concrete test-symbolic \
         test-concrete-static test-concrete-dynamic \
-        test-symbolic-static test-symbolic-static-java test-symbolic-dynamic-java
+        test-symbolic-static test-symbolic-static-java test-symbolic-dynamic-java \
+        proof
 
-test: test-concrete-dynamic-java test-symbolic-dynamic-java
+test: test-concrete-dynamic-java proof
+#test: test-concrete-dynamic-java test-symbolic-dynamic-java proof
 #test: test-concrete test-symbolic
 
 test-concrete: test-concrete-static test-concrete-dynamic
 
-test-symbolic: test-symbolic-static test-symbolic-static-java test-symbolic-dynamic-java
+test-symbolic: test-symbolic-static test-symbolic-static-java test-symbolic-dynamic-java proof
 
 test-concrete-static: build-static
 	$(K_BIN)/krun   -d $(static_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out
@@ -267,7 +269,7 @@ test-symbolic-static-java: build-static-java
 #	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn1-spec.k | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn2-spec.k | diff - tests/success.out
 
-test-symbolic-dynamic-java: build-dynamic-java-symbolic
+proof: build-dynamic-java-symbolic
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-justification-finalization-spec.k       | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-rewards-penalties-spec.k                | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slots-base0-spec.k                      | diff - tests/success.out
@@ -277,6 +279,8 @@ test-symbolic-dynamic-java: build-dynamic-java-symbolic
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-activation-spec.k             | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-ejection-spec.k               | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-exit-spec.k                   | diff - tests/success.out
+
+test-symbolic-dynamic-java: build-dynamic-java-symbolic
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/simple-spec.k                    | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/process-justification-spec.k     | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/process-finalization-spec.k      | diff - tests/success.out
