@@ -36,17 +36,16 @@ andBool ?Epoch >=Int 0
 andBool ?FinalityDelay >=Int 0
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
-andBool ?VM1 ==K m(SM, BM1, EBM, AEM, AM, EM, WM)
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
-andBool ?SourceAttestations ==K filterNotSlashed(?VM1, Attestations)
-andBool ?TotalActiveBalance ==Int lift(totalBalance(?VM1, activeValidators(v(?VM1, VIDs), ?Epoch)))
+andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
+andBool ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
 andBool ?Epoch >=Int 2
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool distinct(VIDs)
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).proposer in VIDs))
-andBool isValidAttestations(Attestations, v(?VM1, VIDs), ?Epoch)
+andBool isValidAttestations(Attestations, VIDs, AM, EM, ?Epoch)
 // invariants
 ensures true
 // post-conditions
@@ -85,15 +84,14 @@ andBool ?Epoch >=Int 0
 andBool ?FinalityDelay >=Int 0
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
-andBool ?VM1 ==K m(SM, BM1, EBM, AEM, AM, EM, WM)
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
-andBool ?SourceAttestations ==K filterNotSlashed(?VM1, Attestations)
+andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
 andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
 andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
-andBool ?SourceAttestingBalance ==Int lift(totalBalance(?VM1, getValidators(?SourceAttestations)))
-andBool ?TargetAttestingBalance ==Int lift(totalBalance(?VM1, getValidators(?TargetAttestations)))
-andBool   ?HeadAttestingBalance ==Int lift(totalBalance(?VM1, getValidators(?HeadAttestations)))
-andBool     ?TotalActiveBalance ==Int lift(totalBalance(?VM1, activeValidators(v(?VM1, VIDs), ?Epoch)))
+andBool ?SourceAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?SourceAttestations)))
+andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?TargetAttestations)))
+andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
+andBool     ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
 andBool ?Epoch >=Int 2
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
@@ -147,15 +145,14 @@ andBool   ?HeadAttestingBalance >=Int 0
 andBool     ?TotalActiveBalance >=Int 0
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
-andBool ?VM1 ==K m(SM, BM1, EBM, AEM, AM, EM, WM)
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
-andBool ?SourceAttestations ==K filterNotSlashed(?VM1, Attestations)
+andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
 andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
 andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
-andBool ?SourceAttestingBalance ==Int lift(totalBalance(?VM1, getValidators(?SourceAttestations)))
-andBool ?TargetAttestingBalance ==Int lift(totalBalance(?VM1, getValidators(?TargetAttestations)))
-andBool   ?HeadAttestingBalance ==Int lift(totalBalance(?VM1, getValidators(?HeadAttestations)))
-andBool     ?TotalActiveBalance ==Int lift(totalBalance(?VM1, activeValidators(v(?VM1, VIDs), ?Epoch)))
+andBool ?SourceAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?SourceAttestations)))
+andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?TargetAttestations)))
+andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
+andBool     ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
 andBool ?Epoch >=Int 2
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
@@ -209,16 +206,14 @@ andBool   ?HeadAttestingBalance >=Int 0
 andBool     ?TotalActiveBalance >=Int 0
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
-andBool ?VM0 ==K m(SM, BM0, EBM, AEM, AM, EM, WM)
-andBool ?VM1 ==K m(SM, BM1, EBM, AEM, AM, EM, WM)
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
-andBool ?SourceAttestations ==K filterNotSlashed(?VM0, Attestations)
+andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
 andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
 andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
-andBool ?SourceAttestingBalance ==Int lift(totalBalance(?VM0, getValidators(?SourceAttestations)))
-andBool ?TargetAttestingBalance ==Int lift(totalBalance(?VM0, getValidators(?TargetAttestations)))
-andBool   ?HeadAttestingBalance ==Int lift(totalBalance(?VM0, getValidators(?HeadAttestations)))
-andBool     ?TotalActiveBalance ==Int lift(totalBalance(?VM0, activeValidators(v(?VM0, VIDs), ?Epoch)))
+andBool ?SourceAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?SourceAttestations)))
+andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?TargetAttestations)))
+andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
+andBool     ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
 andBool ?Epoch >=Int 2
 andBool forall(x, R_VIDs, EBM[x]i >=Int 0)

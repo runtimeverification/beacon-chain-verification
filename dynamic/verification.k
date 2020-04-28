@@ -32,7 +32,7 @@ imports SUBSTITUTION
 syntax KVar ::= "x" [token]
 
 syntax Int ::= KVar
-syntax Bool ::= forall(KVar, IntList, Bool) [binder, function] // smtlib((forall ((#1 Int)) (=> (inI #1 #2) #3)))
+syntax Bool ::= forall(KVar, IntList, Bool) [binder, function, smtlib((forall ((#1 Int)) (=> (inI #1 #2) #3)))]
 rule forall(X, V Vs, E) => E[V / X] andBool forall(X, Vs, E)
 rule forall(_, .IntList, _) => true
 rule forall(_, _, true) => true
@@ -109,22 +109,22 @@ rule (V with exit_epoch                   = J) with balance = I => V with balanc
 rule (V with withdrawable_epoch           = J) with balance = I => V with balance = I with withdrawable_epoch           = J
 */
 
-// for l-spec
-rule countValidatorsToExit(v(m(SM, BM, EBM, AEM, AM, EM [ VID <- E ]i, WM [ VID <- _ ]i), VIDs), Exit)
-  => countValidatorsToExit(v(m(SM, BM, EBM, AEM, AM, EM,               WM              ), VIDs), Exit) +Int 1
+// for processVoluntaryExits
+rule countValidatorsToExit(VIDs, EM [ VID <- E ]i, Exit)
+  => countValidatorsToExit(VIDs, EM,               Exit) +Int 1
     requires E =/=Int EM[VID]i
      andBool E ==Int Exit
      andBool VID in VIDs
 
-syntax Bool ::= isValidVoluntaryExits(VoluntaryExits, ValidatorMap, Int, IntList) [function]
-rule isValidVoluntaryExits(E Es, VM, Epoch, VIDs) => isValidVoluntaryExit(E, VM, Epoch) andBool isValidVoluntaryExits(Es, VM, Epoch, VIDs)
-                                                     andBool distinctVoluntaryExits(E Es)
-                                                     andBool E.validator in VIDs
-rule isValidVoluntaryExits(.VoluntaryExits, _, _, _) => true
-
-rule isValidVoluntaryExits(Es, m(SM, BM, EBM, AEM, AM, EM [ E.validator <- _ ]i, WM [ E.validator <- _ ]i), Epoch, VIDs) => true
-    requires isValidVoluntaryExits(Es, m(SM, BM, EBM, AEM, AM, EM, WM), Epoch, VIDs)
-     andBool distinctVoluntaryExits(E Es)
+/// syntax Bool ::= isValidVoluntaryExits(VoluntaryExits, ValidatorMap, Int, IntList) [function]
+/// rule isValidVoluntaryExits(E Es, VM, Epoch, VIDs) => isValidVoluntaryExit(E, VM, Epoch) andBool isValidVoluntaryExits(Es, VM, Epoch, VIDs)
+///                                                      andBool distinctVoluntaryExits(E Es)
+///                                                      andBool E.validator in VIDs
+/// rule isValidVoluntaryExits(.VoluntaryExits, _, _, _) => true
+/// 
+/// rule isValidVoluntaryExits(Es, m(SM, BM, EBM, AEM, AM, EM [ E.validator <- _ ]i, WM [ E.validator <- _ ]i), Epoch, VIDs) => true
+///     requires isValidVoluntaryExits(Es, m(SM, BM, EBM, AEM, AM, EM, WM), Epoch, VIDs)
+///      andBool distinctVoluntaryExits(E Es)
 
 syntax Bool ::= distinctVoluntaryExits(VoluntaryExits) [function]
 // TODO: implement
@@ -151,11 +151,10 @@ syntax Bool ::= distinct(IntList) [function, smtlib(distinctI)]
 /// rule activeValidators(v(updateValidatorExits(VM, VEs, _, _), VIDs), Epoch) => activeValidators(v(VM, VIDs), Epoch) // TODO: proof
 ///      requires isValidVoluntaryExits(VEs, VM, Epoch, VIDs)
 
-rule activeValidators(v(m(SM, BM, EBM, AEM, AM, EM [ VID <- E ]i, WM [ VID <- _ ]i), VIDs), Epoch)
-  => activeValidators(v(m(SM, BM, EBM, AEM, AM, EM              , WM              ), VIDs), Epoch)
+rule activeValidators(VIDs, AM, EM [ VID <- E ]i, Epoch)
+  => activeValidators(VIDs, AM, EM              , Epoch)
      requires E >Int Epoch
       andBool EM[VID]i ==Int FAR_FUTURE_EPOCH
-    //andBool VM[VID]i.activation_epoch ==Int V.activation_epoch
 
 /// 
 /// rule updateValidatorExits(VM, Es, _, _) [ E.validator ]i => VM [ E.validator ]i
@@ -170,18 +169,18 @@ rule activeValidators(v(m(SM, BM, EBM, AEM, AM, EM [ VID <- E ]i, WM [ VID <- _ 
 
 rule sizeE(_) >=Int 0 => true [smt-lemma]
 
-rule countValidatorsToExit(Vs, E) => 0
-     requires maxExitEpoch(Vs) <Int E andBool E <Int FAR_FUTURE_EPOCH
+rule countValidatorsToExit(VIDs, EM, E) => 0
+     requires maxExitEpoch(VIDs, EM) <Int E andBool E <Int FAR_FUTURE_EPOCH
      [smt-lemma]
 
-rule maxExitEpoch(v(m(SM, BM, EBM, AEM, AM, EM [ VID <- E ]i, WM [ VID <- _ ]i), VIDs)) => maxInt(maxExitEpoch(v(m(SM, BM, EBM, AEM, AM, EM, WM), VIDs)), E)
+rule maxExitEpoch(VIDs, EM [ VID <- E ]i) => maxInt(maxExitEpoch(VIDs, EM), E)
      requires E =/=Int FAR_FUTURE_EPOCH
       andBool VID in VIDs
 
 
 
-rule forall(X, rev(L), countValidatorsToExit(VS, (M [ Y <- _ ]i)[X]i) <=Int E)
-  => forall(X, rev(L), countValidatorsToExit(VS,  M             [X]i) <=Int E)
+rule forall(X, rev(L), countValidatorsToExit(VIDs, EM, (M [ Y <- _ ]i)[X]i) <=Int E)
+  => forall(X, rev(L), countValidatorsToExit(VIDs, EM,  M             [X]i) <=Int E)
      requires disjoint1(L, Y)
 
 
@@ -192,7 +191,7 @@ rule getValidatorsE(.VoluntaryExits) => .IntList
 
 
 
-// for m-spec
+// for processValidatorActivation
 /*
 rule sizeI(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
 */
@@ -226,32 +225,31 @@ rule subsetI(S, S) => true
 ///      andBool distinctValidators(V Vs)
 /// 
 
-syntax Int ::= countValidatorsToActivate(Validators, Int) [function, smtlib(countValidatorsToActivate)]
-rule countValidatorsToActivate(v(VM, VID VIDs), ActivationEpoch)
-  => #if VM.activation_epoch[VID]i ==Int ActivationEpoch #then 1 #else 0 #fi +Int countValidatorsToActivate(v(VM, VIDs), ActivationEpoch)
-rule countValidatorsToActivate(v(_, .IntList), _) => 0
+syntax Int ::= countValidatorsToActivate(IntList, IMap, Int) [function, smtlib(countValidatorsToActivate)]
+rule countValidatorsToActivate(VID VIDs, AM, ActivationEpoch)
+  => #if AM[VID]i ==Int ActivationEpoch #then 1 #else 0 #fi +Int countValidatorsToActivate(VIDs, AM, ActivationEpoch)
+rule countValidatorsToActivate(.IntList, _, _) => 0
 
-rule countValidatorsToActivate(v(m(SM, BM, EBM, AEM, AM [ VID <- A ]i, EM, WM), VIDs), E)
-  => countValidatorsToActivate(v(m(SM, BM, EBM, AEM, AM              , EM, WM), VIDs), E) +Int 1
+rule countValidatorsToActivate(VIDs, AM [ VID <- A ]i, E)
+  => countValidatorsToActivate(VIDs, AM              , E) +Int 1
     requires A =/=Int AM[VID]i
      andBool A ==Int E
      andBool VID in VIDs
 
 
-rule activeValidators(v(m(SM, BM, EBM, AEM, AM [ VID <- E ]i, EM, WM), VIDs), Epoch)
-  => activeValidators(v(m(SM, BM, EBM, AEM, AM              , EM, WM), VIDs), Epoch)
+rule activeValidators(VIDs, AM [ VID <- E ]i, EM, Epoch)
+  => activeValidators(VIDs, AM              , EM, Epoch)
      requires E >Int Epoch
       andBool AM[VID]i ==Int FAR_FUTURE_EPOCH
-    //andBool VM[VID]i.exit_epoch ==Int V.exit_epoch
 
 
-rule distinct(activationQueue(v(_, VIDs), _)) => true
+rule distinct(activationQueue(VIDs, _, _, _)) => true
      requires distinct(VIDs)
 
-rule forall(X, activationQueue(v(_, VIDs), _), X in VIDs) => true
+rule forall(X, activationQueue(VIDs, _, _, _), X in VIDs) => true
 
-rule forall(X, activationQueue(v(VM, VIDs), FinalizedEpoch), E) => true
-     requires E ==K isValidValidatorToActivate(X, VM, FinalizedEpoch)
+rule forall(X, activationQueue(VIDs, AEM, AM, FinalizedEpoch), E) => true
+     requires E ==K isValidValidatorToActivate(X, AEM, AM, FinalizedEpoch)
 
 rule distinct(take(_, sort(L))) => true
      requires distinct(L)
@@ -263,7 +261,7 @@ rule forall(X, take(_, sort(L)), E) => true
 /// rule isValidValidatorsToActivate(take(_, sort(activationQueue(Vs, FinalizedEpoch))), Vs, FinalizedEpoch) => true
 /// // TODO: proof
 
-// for n-spec
+// for processRewardsPenalties
 
 /*
 rule X1 +Int Y1 <=Int X2 +Int Y2 => true requires X1 <=Int X2 andBool Y1 <=Int Y2
@@ -335,19 +333,21 @@ rule implies(distinct(L Ls), distinct(Ls)) => true [concrete, smt-lemma]
 rule lift(totalBalance(M, L1)) <=Int lift(totalBalance(M, L2)) => true
      requires subset(L1, L2)
 
-rule subset(getValidators(As), activeValidators(Vs, Epoch)) => true
-     requires isValidAttestations(As, Vs, Epoch)
+rule subset(getValidators(As), activeValidators(VIDs, AM, EM, Epoch)) => true
+     requires isValidAttestations(As, VIDs, AM, EM, Epoch)
 
-syntax Bool ::= isValidAttestations(Attestations, Validators, Int) [function]
+// the attester of each attestation is in the list of validators, and active in the given epoch
+syntax Bool ::= isValidAttestations(Attestations, IntList, IMap, IMap, Int) [function]
+// rule isValidAttestations(As, VIDs, AM, EM, Epoch) => forall(x, As, x.attester in VIDs andBool isActiveValidator(x.attester, AM, EM, Epoch))
 
-rule isValidAttestations(filterNotSlashed(_, As), Vs, Epoch) => true requires isValidAttestations(As, Vs, Epoch)
-rule isValidAttestations(filterByTarget(_,   As), Vs, Epoch) => true requires isValidAttestations(As, Vs, Epoch)
-rule isValidAttestations(filterByHead(_,     As), Vs, Epoch) => true requires isValidAttestations(As, Vs, Epoch)
+rule isValidAttestations(filterNotSlashed(_, As), VIDs, AM, EM, Epoch) => true requires isValidAttestations(As, VIDs, AM, EM, Epoch)
+rule isValidAttestations(filterByTarget(_,   As), VIDs, AM, EM, Epoch) => true requires isValidAttestations(As, VIDs, AM, EM, Epoch)
+rule isValidAttestations(filterByHead(_,     As), VIDs, AM, EM, Epoch) => true requires isValidAttestations(As, VIDs, AM, EM, Epoch)
 
 /// // TODO: drop
 /// rule _.effective_balance >=Int 0 => true [concrete, smt-lemma]
 
-// for o-spec
+// for updateActivationEligibilities
 
 rule forall(X, rev(L), (M [ Y <- _ ]i)[X]i ==K E)
   => forall(X, rev(L),  M             [X]i ==K E)
@@ -359,18 +359,40 @@ rule forall(X, Ls, (M [ L <- _ ]i)[X]i ==K E)
      requires distinct(L Ls)
 */
 
-// for p-spec
+// X is not in the activation queue before and after updating AEM
+rule activationQueue(VIDs, AEM [ X <- E ]i, AM, FinalizedEpoch)
+  => activationQueue(VIDs, AEM            , AM, FinalizedEpoch)
+     requires AEM[X]i >Int FinalizedEpoch
+      andBool E       >Int FinalizedEpoch
+
+// for processValidatorEjections
 
 rule size(_:IntList) >=Int 0 => true [smt-lemma]
 
-rule forall(X, rev(L), #if E0 #then (M [ Y <- _ ]i)[X]i >=Int E1 andBool (M [ Y <- _ ]i)[X]i <Int E2 andBool countValidatorsToExit(VS, (M [ Y <- _ ]i)[X]i) <=Int E3 #else (M [ Y <- _ ]i)[X]i ==K E4 #fi)
-  => forall(X, rev(L), #if E0 #then  M             [X]i >=Int E1 andBool  M             [X]i <Int E2 andBool countValidatorsToExit(VS,  M             [X]i) <=Int E3 #else  M             [X]i ==K E4 #fi)
+rule forall(X, rev(L), #if E0 #then (M [ Y <- _ ]i)[X]i >=Int E1 andBool (M [ Y <- _ ]i)[X]i <Int E2 andBool countValidatorsToExit(VIDs, EM, (M [ Y <- _ ]i)[X]i) <=Int E3 #else (M [ Y <- _ ]i)[X]i ==K E4 #fi)
+  => forall(X, rev(L), #if E0 #then  M             [X]i >=Int E1 andBool  M             [X]i <Int E2 andBool countValidatorsToExit(VIDs, EM,  M             [X]i) <=Int E3 #else  M             [X]i ==K E4 #fi)
      requires disjoint1(L, Y)
 
-rule countValidatorsToExit(v(m(SM, BM, EBM, AEM, AM, EM [ VID <- E ]i, WM [ VID <- _ ]i), VIDs), Exit) <=Int ChurnLimit
-  => countValidatorsToExit(v(m(SM, BM, EBM, AEM, AM, EM              , WM              ), VIDs), Exit) <=Int ChurnLimit
-     requires countValidatorsToExit(v(m(SM, BM, EBM, AEM, AM, EM, WM), VIDs), E) <Int ChurnLimit
+rule countValidatorsToExit(VIDs, EM [ VID <- E ]i, Exit) <=Int ChurnLimit
+  => countValidatorsToExit(VIDs, EM              , Exit) <=Int ChurnLimit
+     requires countValidatorsToExit(VIDs, EM, E) <Int ChurnLimit
       andBool EM[VID]i ==Int FAR_FUTURE_EPOCH
+
+// X is active before and after updating EM
+rule activeValidators(VIDs, AM, EM [ X <- E ]i, Epoch)
+  => activeValidators(VIDs, AM, EM            , Epoch)
+     requires EM[X]i  >Int Epoch
+      andBool E       >Int Epoch
+      andBool AM[X]i <=Int Epoch
+
+// for process-validator-updates-spec
+
+/// rule activeValidators(v(m(_, _, _, _, AM, EM, _), VIDs), Epoch)
+///  ==K activeValidators(v(m(_, _, _, _, AM, EM, _), VIDs), Epoch) => true [smt-lemma]
+
+/// rule activationQueue(v(m(_, _, _, AEM, AM, _, _), VIDs), E)
+///  ==K activationQueue(v(m(_, _, _, AEM, AM, _, _), VIDs), E) => true [smt-lemma]
+
 
 syntax Tactic ::= case(Pred) // case analysis
 
@@ -421,49 +443,49 @@ syntax Bool ::= iff(Bool, Bool) [function, functional]
 rule iff(A, B) => implies(A, B) andBool implies(B, A) [macro]
 
 syntax Attestations ::= super(Attestations) [function, functional, no-evaluators]
-rule isJustifiable(E, B, super(As), Vs) => true
-    requires isJustifiable(E, B, As, Vs)
+rule isJustifiable(E, B, super(As), EBM, VIDs) => true
+    requires isJustifiable(E, B, As, EBM, VIDs)
     [simplification]
 
-syntax Pred ::= isValidState(Int, Int, Attestations, Validators, Bool,
-                             Int, Int, Attestations, Validators, Bool,
-                             Int) [function, functional]
-rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
-                  Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
-                  LastJustifiedEpoch)
-  => xor3(
-                notBool isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2)
-        andBool notBool isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
-        andBool LastJustifiedEpoch <Int Epoch2
-        andBool Epoch2Justified ==K false
-        andBool Epoch1Justified ==K false
-     ,
-                        isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2)
-        andBool notBool isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
-        andBool LastJustifiedEpoch ==Int Epoch2
-        andBool Epoch2Justified ==K true
-        andBool Epoch1Justified ==K false
-     ,
-                        isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
-        andBool LastJustifiedEpoch ==Int Epoch1
-        andBool Epoch1Justified ==K true
-     )
-
-
-syntax Bool ::= isGoodState(Int, Int, Attestations, Validators, Bool,
-                            Int, Int, Attestations, Validators, Bool,
-                            Int) [function, functional]
-rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
-                 Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
-                 LastJustifiedEpoch)
-  => // justification of e-2 and e-1
-             iff(Epoch2Justified ==K true, isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2))
-     andBool iff(Epoch1Justified ==K true, isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1))
-     // last justified epoch
-     andBool implies(LastJustifiedEpoch  <Int Epoch2, Epoch2Justified ==K false andBool Epoch1Justified ==K false)
-     andBool implies(LastJustifiedEpoch ==Int Epoch2, Epoch2Justified ==K true  andBool Epoch1Justified ==K false)
-     andBool implies(LastJustifiedEpoch ==Int Epoch1,                                   Epoch1Justified ==K true )
-     andBool         LastJustifiedEpoch <=Int Epoch1
+/// syntax Pred ::= isValidState(Int, Int, Attestations, Validators, Bool,
+///                              Int, Int, Attestations, Validators, Bool,
+///                              Int) [function, functional]
+/// rule isValidState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
+///                   Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
+///                   LastJustifiedEpoch)
+///   => xor3(
+///                 notBool isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2)
+///         andBool notBool isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
+///         andBool LastJustifiedEpoch <Int Epoch2
+///         andBool Epoch2Justified ==K false
+///         andBool Epoch1Justified ==K false
+///      ,
+///                         isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2)
+///         andBool notBool isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
+///         andBool LastJustifiedEpoch ==Int Epoch2
+///         andBool Epoch2Justified ==K true
+///         andBool Epoch1Justified ==K false
+///      ,
+///                         isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1)
+///         andBool LastJustifiedEpoch ==Int Epoch1
+///         andBool Epoch1Justified ==K true
+///      )
+/// 
+/// 
+/// syntax Bool ::= isGoodState(Int, Int, Attestations, Validators, Bool,
+///                             Int, Int, Attestations, Validators, Bool,
+///                             Int) [function, functional]
+/// rule isGoodState(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2, Epoch2Justified,
+///                  Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1, Epoch1Justified,
+///                  LastJustifiedEpoch)
+///   => // justification of e-2 and e-1
+///              iff(Epoch2Justified ==K true, isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, Vs2))
+///      andBool iff(Epoch1Justified ==K true, isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, Vs1))
+///      // last justified epoch
+///      andBool implies(LastJustifiedEpoch  <Int Epoch2, Epoch2Justified ==K false andBool Epoch1Justified ==K false)
+///      andBool implies(LastJustifiedEpoch ==Int Epoch2, Epoch2Justified ==K true  andBool Epoch1Justified ==K false)
+///      andBool implies(LastJustifiedEpoch ==Int Epoch1,                                   Epoch1Justified ==K true )
+///      andBool         LastJustifiedEpoch <=Int Epoch1
 
 syntax Bool ::= isCorrectLastJustifiedEpoch(Int, Int, Bool, Bool) [function, functional]
 rule isCorrectLastJustifiedEpoch(LastJustifiedEpoch, Epoch, Epoch1Justified, Epoch2Justified)
