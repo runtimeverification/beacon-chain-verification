@@ -279,6 +279,7 @@ proof: build-dynamic-java-symbolic
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-activation-spec.k             | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-ejection-spec.k               | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-exit-spec.k                   | diff - tests/success.out
+	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-validator-updates-spec.k                | diff - tests/success.out
 
 test-symbolic-dynamic-java: build-dynamic-java-symbolic
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/simple-spec.k                    | diff - tests/success.out

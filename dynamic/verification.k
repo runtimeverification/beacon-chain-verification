@@ -109,7 +109,7 @@ rule (V with exit_epoch                   = J) with balance = I => V with balanc
 rule (V with withdrawable_epoch           = J) with balance = I => V with balance = I with withdrawable_epoch           = J
 */
 
-// for l-spec
+// for processVoluntaryExits
 rule countValidatorsToExit(VIDs, EM [ VID <- E ]i, Exit)
   => countValidatorsToExit(VIDs, EM,               Exit) +Int 1
     requires E =/=Int EM[VID]i
@@ -191,7 +191,7 @@ rule getValidatorsE(.VoluntaryExits) => .IntList
 
 
 
-// for m-spec
+// for processValidatorActivation
 /*
 rule sizeI(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
 */
@@ -261,7 +261,7 @@ rule forall(X, take(_, sort(L)), E) => true
 /// rule isValidValidatorsToActivate(take(_, sort(activationQueue(Vs, FinalizedEpoch))), Vs, FinalizedEpoch) => true
 /// // TODO: proof
 
-// for n-spec
+// for processRewardsPenalties
 
 /*
 rule X1 +Int Y1 <=Int X2 +Int Y2 => true requires X1 <=Int X2 andBool Y1 <=Int Y2
@@ -347,7 +347,7 @@ rule isValidAttestations(filterByHead(_,     As), VIDs, AM, EM, Epoch) => true r
 /// // TODO: drop
 /// rule _.effective_balance >=Int 0 => true [concrete, smt-lemma]
 
-// for o-spec
+// for updateActivationEligibilities
 
 rule forall(X, rev(L), (M [ Y <- _ ]i)[X]i ==K E)
   => forall(X, rev(L),  M             [X]i ==K E)
@@ -359,7 +359,13 @@ rule forall(X, Ls, (M [ L <- _ ]i)[X]i ==K E)
      requires distinct(L Ls)
 */
 
-// for p-spec
+// X is not in the activation queue before and after updating AEM
+rule activationQueue(VIDs, AEM [ X <- E ]i, AM, FinalizedEpoch)
+  => activationQueue(VIDs, AEM            , AM, FinalizedEpoch)
+     requires AEM[X]i >Int FinalizedEpoch
+      andBool E       >Int FinalizedEpoch
+
+// for processValidatorEjections
 
 rule size(_:IntList) >=Int 0 => true [smt-lemma]
 
@@ -372,6 +378,12 @@ rule countValidatorsToExit(VIDs, EM [ VID <- E ]i, Exit) <=Int ChurnLimit
      requires countValidatorsToExit(VIDs, EM, E) <Int ChurnLimit
       andBool EM[VID]i ==Int FAR_FUTURE_EPOCH
 
+// X is active before and after updating EM
+rule activeValidators(VIDs, AM, EM [ X <- E ]i, Epoch)
+  => activeValidators(VIDs, AM, EM            , Epoch)
+     requires EM[X]i  >Int Epoch
+      andBool E       >Int Epoch
+      andBool AM[X]i <=Int Epoch
 
 // for process-validator-updates-spec
 
