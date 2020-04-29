@@ -42,13 +42,13 @@ rule
   <states>
     <state>
       <slot> firstSlotOf(Epoch4) </slot>
-      <validators> v(m(_, _, EBM, _, _, _, _), VIDs) </validators>
+      <validators> v(m(_, _, EBM4, _, _, _, _), VIDs4) </validators>
       <lastBlock> (_, Epoch4BoundaryBlock) </lastBlock>
       ...
     </state>
     <state>
       <slot> firstSlotOf(Epoch3) </slot>
-      <validators> v(m(_, _, EBM, _, _, _, _), VIDs) </validators>
+      <validators> v(m(_, _, EBM3, _, _, _, _), VIDs3) </validators>
       <lastBlock> (_, Epoch3BoundaryBlock) </lastBlock>
       <justified>
         Epoch4 |-> Epoch3Epoch4Justified:Bool
@@ -58,7 +58,7 @@ rule
     </state>
     <state>
       <slot> firstSlotOf(Epoch2) </slot>
-      <validators> v(m(_, _, EBM, _, _, _, _), VIDs) </validators>
+      <validators> v(m(_, _, EBM2, _, _, _, _), VIDs2) </validators>
       <lastBlock> (_, Epoch2BoundaryBlock) </lastBlock>
       <justified>
         Epoch4 |-> Epoch2Epoch4Justified:Bool
@@ -70,7 +70,7 @@ rule
     </state>
     <state>
       <slot> firstSlotOf(Epoch1) </slot>
-      <validators> v(m(_, _, EBM, _, _, _, _), VIDs) </validators>
+      <validators> v(m(_, _, EBM1, _, _, _, _), VIDs1) </validators>
       <lastBlock> (_, Epoch1BoundaryBlock) </lastBlock>
       <attested>
         Epoch3 |-> Epoch1Attestations3:Attestations
@@ -146,8 +146,8 @@ andBool implies(Epoch3Epoch4Justified, Epoch2Epoch4Justified)
 andBool implies(Epoch2Epoch3Justified, Epoch1Epoch3Justified)
 andBool Epoch1Epoch4Justified ==K Epoch2Epoch4Justified
 // state validness of e-1
-andBool iff(Epoch1Epoch3Justified, isJustifiable(Epoch3, Epoch3BoundaryBlock, Epoch1Attestations3, EBM, VIDs))
-andBool iff(Epoch1Epoch2Justified, isJustifiable(Epoch2, Epoch2BoundaryBlock, Epoch1Attestations2, EBM, VIDs))
+andBool iff(Epoch1Epoch3Justified, isJustifiable(Epoch3, Epoch3BoundaryBlock, Epoch1Attestations3, EBM3, VIDs3))
+andBool iff(Epoch1Epoch2Justified, isJustifiable(Epoch2, Epoch2BoundaryBlock, Epoch1Attestations2, EBM2, VIDs2))
 andBool iff(Epoch1Epoch3Finalized, Epoch2LastJustifiedEpoch ==Int Epoch3 andBool Epoch1Epoch2Justified andBool Epoch1Epoch3Justified)
 andBool isCorrectLastJustifiedEpoch(Epoch1LastJustifiedEpoch, Epoch1, Epoch1Epoch2Justified, Epoch1Epoch3Justified)
 andBool isCorrectLastFinalizedEpoch(Epoch1LastFinalizedEpoch, Epoch1, Epoch1Epoch3Finalized, Epoch1Epoch4Finalized)
@@ -172,8 +172,8 @@ andBool ?NewLastFinalizedEpoch >=Int 0
 // ensures
 //
 // justification of e-1 and e-2
-andBool iff(?NewEpoch2Justified, isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, EBM, VIDs))
-andBool iff(?NewEpoch1Justified, isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, EBM, VIDs))
+andBool iff(?NewEpoch2Justified, isJustifiable(Epoch2, Epoch2BoundaryBlock, Attestations2, EBM2, VIDs2))
+andBool iff(?NewEpoch1Justified, isJustifiable(Epoch1, Epoch1BoundaryBlock, Attestations1, EBM1, VIDs1))
 // finalization of e-4
 andBool implies(PrevEpoch4Finalized ==K false,
             iff(?NewEpoch4Finalized, Epoch2LastJustifiedEpoch ==Int Epoch4 andBool ?NewEpoch2Justified andBool Epoch3Justified andBool Epoch4Justified)
