@@ -337,7 +337,7 @@ rule subset(getValidators(As), activeValidators(VIDs, AM, EM, Epoch)) => true
      requires isValidAttestations(As, VIDs, AM, EM, Epoch)
 
 // the attester of each attestation is in the list of validators, and active in the given epoch
-syntax Bool ::= isValidAttestations(Attestations, IntList, IMap, IMap, Int) [function]
+syntax Bool ::= isValidAttestations(Attestations, IntList, IMap, IMap, Int) [function, smtlib(isValidAttestations)]
 // rule isValidAttestations(As, VIDs, AM, EM, Epoch) => forall(x, As, x.attester in VIDs andBool isActiveValidator(x.attester, AM, EM, Epoch))
 
 rule isValidAttestations(filterNotSlashed(_, As), VIDs, AM, EM, Epoch) => true requires isValidAttestations(As, VIDs, AM, EM, Epoch)
@@ -393,6 +393,9 @@ rule activeValidators(VIDs, AM, EM [ X <- E ]i, Epoch)
 /// rule activationQueue(v(m(_, _, _, AEM, AM, _, _), VIDs), E)
 ///  ==K activationQueue(v(m(_, _, _, AEM, AM, _, _), VIDs), E) => true [smt-lemma]
 
+
+syntax Tactic ::= "begin"
+rule begin => .
 
 syntax Tactic ::= case(Pred) // case analysis
 
