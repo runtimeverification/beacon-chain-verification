@@ -170,12 +170,18 @@ rule <k> processEpoch()
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-     //<attested> A => A[epochOf(Slot) <- .Attestations] </attested>
-     //<justified> J => J[epochOf(Slot) <- false] </justified>
-     //<finalized> F => F[epochOf(Slot) <- false] </finalized>
+```
+```{.k .symbolic}
        <attested>  epochOf(Slot) |-> (_ => .Attestations) ... </attested>
        <justified> epochOf(Slot) |-> (_ => false) ... </justified>
        <finalized> epochOf(Slot) |-> (_ => false) ... </finalized>
+```
+```{.k .concrete}
+       <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
+       <justified> J => J[epochOf(Slot) <- false] </justified>
+       <finalized> F => F[epochOf(Slot) <- false] </finalized>
+```
+```k
        ...
      </state>
      requires isFirstSlotOfEpoch(Slot)
