@@ -37,8 +37,8 @@ rule
    ~> processJustification(Epoch2)
    ~> processJustification(Epoch1)
    ~> processFinalization(Epoch2)
-   ~> processFinalization(Epoch1) => . </k>
-  <currentSlot> firstSlotOf(Epoch) </currentSlot>
+   ~> processFinalization(Epoch1) => .K ... </k>
+  <currentSlot> Slot /* firstSlotOf(Epoch) */ </currentSlot>
   <states>
     <state>
       <slot> firstSlotOf(Epoch4) </slot>
@@ -94,11 +94,12 @@ rule
       ...
     </state>
     <state>
-      <slot> firstSlotOf(Epoch) </slot>
+      <slot> Slot /* firstSlotOf(Epoch) */ </slot>
       <validators> v(m(_, _, EBM, _, _, _, _), VIDs) </validators>
       <attested>
         Epoch2 |-> Attestations2:Attestations
         Epoch1 |-> Attestations1:Attestations
+        Epoch  |-> .Attestations
         ...
       </attested>
       <justified>
@@ -106,6 +107,7 @@ rule
         Epoch3 |-> Epoch3Justified:Bool
         Epoch2 |-> (PrevEpoch2Justified:Bool => ?NewEpoch2Justified:Bool)
         Epoch1 |-> (false                    => ?NewEpoch1Justified:Bool)
+        Epoch  |-> false
         ...
       </justified>
       <finalized>
@@ -113,6 +115,7 @@ rule
         Epoch3 |-> (PrevEpoch3Finalized:Bool => ?NewEpoch3Finalized:Bool)
         Epoch2 |-> (false                    => ?NewEpoch2Finalized:Bool)
         Epoch1 |-> false
+        Epoch  |-> false
         ...
       </finalized>
       <lastJustified> PrevLastJustifiedEpoch => ?NewLastJustifiedEpoch </lastJustified>
@@ -128,6 +131,10 @@ andBool Epoch4 ==Int Epoch -Int 4
 andBool Epoch3 ==Int Epoch -Int 3
 andBool Epoch2 ==Int Epoch -Int 2
 andBool Epoch1 ==Int Epoch -Int 1
+
+andBool Epoch ==Int epochOf(Slot)
+andBool Slot ==Int firstSlotOf(Epoch)
+
 //
 // invariant
 //

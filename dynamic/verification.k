@@ -21,6 +21,9 @@ rule I <=Int I => true
 rule I >Int I => false
 rule I <Int I => false
 
+// // for process-epoch-spec
+// rule (I /Int 32) *Int 32 => I
+
 endmodule
 
 module VERIFICATION
