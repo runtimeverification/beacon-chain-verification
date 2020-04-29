@@ -220,7 +220,7 @@ rule <k> true ~> justify(Epoch) => . ... </k>
      </state>
 rule <k> false ~> justify(_) => . ... </k>
 
-syntax Bool ::= isJustifiable(Int, Int, Attestations, IMap, IntList) [function, functional]
+syntax Bool ::= isJustifiable(Int, Int, Attestations, IMap, IntList) [function, functional, smtlib(isJustifiable)]
 rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, EffectiveBalanceMap, VIDs)
   => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, EffectiveBalanceMap), totalBalance(EffectiveBalanceMap, VIDs))
      orBool Epoch ==Int 0 // the genesis block is justified by default

@@ -442,10 +442,10 @@ rule implies(A, B) => notBool A orBool B [macro]
 syntax Bool ::= iff(Bool, Bool) [function, functional]
 rule iff(A, B) => implies(A, B) andBool implies(B, A) [macro]
 
-syntax Attestations ::= super(Attestations) [function, functional, no-evaluators]
-rule isJustifiable(E, B, super(As), EBM, VIDs) => true
-    requires isJustifiable(E, B, As, EBM, VIDs)
-    [simplification]
+syntax Bool ::= subsetA(Attestations, Attestations) [function, functional, smtlib(subsetA)]
+rule implies(isJustifiable(E, B, As1, EBM, VIDs), isJustifiable(E, B, As2, EBM, VIDs)) => true
+    requires subsetA(As1, As2)
+    [concrete, smt-lemma]
 
 /// syntax Pred ::= isValidState(Int, Int, Attestations, Validators, Bool,
 ///                              Int, Int, Attestations, Validators, Bool,

@@ -132,7 +132,7 @@ andBool Epoch1 ==Int Epoch -Int 1
 // invariant
 //
 // process slots increase attestations
-andBool Attestations2 ==K super(Epoch1Attestations2)
+andBool subsetA(Epoch1Attestations2, Attestations2)
 // process slots preserve justification/finalization
 andBool Epoch4Justified ==K Epoch1Epoch4Justified
 andBool Epoch3Justified ==K Epoch1Epoch3Justified
