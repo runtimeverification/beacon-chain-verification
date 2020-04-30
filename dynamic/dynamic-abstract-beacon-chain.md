@@ -170,9 +170,18 @@ rule <k> processEpoch()
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
+```
+```{.k .symbolic}
+       <attested>  epochOf(Slot) |-> (_ => .Attestations) ... </attested>
+       <justified> epochOf(Slot) |-> (_ => false) ... </justified>
+       <finalized> epochOf(Slot) |-> (_ => false) ... </finalized>
+```
+```{.k .concrete}
        <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
        <justified> J => J[epochOf(Slot) <- false] </justified>
        <finalized> F => F[epochOf(Slot) <- false] </finalized>
+```
+```k
        ...
      </state>
      requires isFirstSlotOfEpoch(Slot)
@@ -220,7 +229,7 @@ rule <k> true ~> justify(Epoch) => . ... </k>
      </state>
 rule <k> false ~> justify(_) => . ... </k>
 
-syntax Bool ::= isJustifiable(Int, Int, Attestations, IMap, IntList) [function, functional]
+syntax Bool ::= isJustifiable(Int, Int, Attestations, IMap, IntList) [function, functional, smtlib(isJustifiable)]
 rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, EffectiveBalanceMap, VIDs)
   => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, EffectiveBalanceMap), totalBalance(EffectiveBalanceMap, VIDs))
      orBool Epoch ==Int 0 // the genesis block is justified by default
