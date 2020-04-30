@@ -1,3 +1,4 @@
+```k
 require "verification.k"
 
 module PROCESS-JUSTIFICATION-FINALIZATION-SPEC
@@ -7,6 +8,8 @@ imports VERIFICATION
 rule
 <T>
   <k>
+```
+```{.k .proof}
         case(xor3(
             Epoch2LastJustifiedEpoch  <Int Epoch4
         ,
@@ -34,7 +37,10 @@ rule
         ,
             Epoch3Justified ==K false
         ))
-   ~> processJustification(Epoch2)
+   ~>
+```
+```k
+      processJustification(Epoch2)
    ~> processJustification(Epoch1)
    ~> processFinalization(Epoch2)
    ~> processFinalization(Epoch1) => .K ... </k>
@@ -131,10 +137,9 @@ andBool Epoch4 ==Int Epoch -Int 4
 andBool Epoch3 ==Int Epoch -Int 3
 andBool Epoch2 ==Int Epoch -Int 2
 andBool Epoch1 ==Int Epoch -Int 1
-
+//
 andBool Epoch ==Int epochOf(Slot)
 andBool Slot ==Int firstSlotOf(Epoch)
-
 //
 // invariant
 //
@@ -205,5 +210,11 @@ andBool implies(PrevEpoch4Finalized, ?NewEpoch4Finalized)
 andBool implies(PrevEpoch3Finalized, ?NewEpoch3Finalized)
 andBool PrevLastJustifiedEpoch <=Int ?NewLastJustifiedEpoch
 andBool PrevLastFinalizedEpoch <=Int ?NewLastFinalizedEpoch
+```
+```{.k .lemma}
+[trusted]
+```
 
+```k
 endmodule
+```

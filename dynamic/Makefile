@@ -135,6 +135,10 @@ $(dynamic_java_symbolic_dir)/%.k: %.md
 	@mkdir -p $(dynamic_java_symbolic_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(dynamic_java_symbolic_tangle)" $< > $@
 
+process-justification-finalization-lemma.k: process-justification-finalization-spec.md
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@
+process-justification-finalization-spec.k: process-justification-finalization-spec.md
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.lemma),.proof" $< > $@
 
 # Static validators model
 
@@ -269,7 +273,7 @@ test-symbolic-static-java: build-static-java
 #	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn1-spec.k | diff - tests/success.out
 #	$(K_BIN)/kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn2-spec.k | diff - tests/success.out
 
-proof: build-dynamic-java-symbolic
+proof: build-dynamic-java-symbolic process-justification-finalization-spec.k process-justification-finalization-lemma.k
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-epoch-spec.k                            | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-justification-finalization-spec.k       | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-rewards-penalties-spec.k                | diff - tests/success.out
