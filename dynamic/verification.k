@@ -21,6 +21,9 @@ rule I <=Int I => true
 rule I >Int I => false
 rule I <Int I => false
 
+// // for process-epoch-spec
+// rule (I /Int 32) *Int 32 => I
+
 endmodule
 
 module VERIFICATION
@@ -337,7 +340,7 @@ rule subset(getValidators(As), activeValidators(VIDs, AM, EM, Epoch)) => true
      requires isValidAttestations(As, VIDs, AM, EM, Epoch)
 
 // the attester of each attestation is in the list of validators, and active in the given epoch
-syntax Bool ::= isValidAttestations(Attestations, IntList, IMap, IMap, Int) [function]
+syntax Bool ::= isValidAttestations(Attestations, IntList, IMap, IMap, Int) [function, smtlib(isValidAttestations)]
 // rule isValidAttestations(As, VIDs, AM, EM, Epoch) => forall(x, As, x.attester in VIDs andBool isActiveValidator(x.attester, AM, EM, Epoch))
 
 rule isValidAttestations(filterNotSlashed(_, As), VIDs, AM, EM, Epoch) => true requires isValidAttestations(As, VIDs, AM, EM, Epoch)
@@ -394,6 +397,9 @@ rule activeValidators(VIDs, AM, EM [ X <- E ]i, Epoch)
 ///  ==K activationQueue(v(m(_, _, _, AEM, AM, _, _), VIDs), E) => true [smt-lemma]
 
 
+syntax Tactic ::= "begin"
+rule begin => .
+
 syntax Tactic ::= case(Pred) // case analysis
 
 rule case(xor2(C, _)) => . requires C [trusted]
@@ -442,10 +448,10 @@ rule implies(A, B) => notBool A orBool B [macro]
 syntax Bool ::= iff(Bool, Bool) [function, functional]
 rule iff(A, B) => implies(A, B) andBool implies(B, A) [macro]
 
-syntax Attestations ::= super(Attestations) [function, functional, no-evaluators]
-rule isJustifiable(E, B, super(As), EBM, VIDs) => true
-    requires isJustifiable(E, B, As, EBM, VIDs)
-    [simplification]
+syntax Bool ::= subsetA(Attestations, Attestations) [function, functional, smtlib(subsetA)]
+rule implies(isJustifiable(E, B, As1, EBM, VIDs), isJustifiable(E, B, As2, EBM, VIDs)) => true
+    requires subsetA(As1, As2)
+    [concrete, smt-lemma]
 
 /// syntax Pred ::= isValidState(Int, Int, Attestations, Validators, Bool,
 ///                              Int, Int, Attestations, Validators, Bool,

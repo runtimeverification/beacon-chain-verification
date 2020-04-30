@@ -21,12 +21,10 @@ rule
     </state>
     <state>
       <slot> firstSlotOf(?Epoch) </slot>
-      <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
       ...
     </state>
     ...
   </states>
-  <blocks> BM </blocks>
   ...
 </T>
 requires true
