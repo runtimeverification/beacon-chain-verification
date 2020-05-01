@@ -28,6 +28,23 @@ Proof.
 by rewrite /wt big_set0.
 Qed.
 
+Lemma wt_inc_leq : forall (vs1 vs2:{set Validator}),
+  vs1 \subset vs2 -> wt vs1 <= wt vs2.
+Proof. 
+  move=> vs1 vs2.
+  rewrite /wt.
+  rewrite [\sum_(v in vs2) _](big_setID vs1) //=.
+  move/setIidPr => ->.
+  apply: leq_addr.
+Qed.
+
+Lemma wt_eq : forall (vs1 vs2:{set Validator}),
+  vs1 = vs2 -> wt vs1 = wt vs2.
+Proof.
+  move=> vs1 vs2 Heq.
+  by rewrite /wt Heq.
+Qed.
+
 Lemma wt_aidem : forall v (vs:{set Validator}), 
   v \in vs -> wt (v |: vs) = wt vs.
 Proof. Admitted. 
@@ -70,28 +87,72 @@ Proof. Admitted.
 Lemma wt_diff : forall vs1 vs2,
   wt (vs1 :\: vs2) = wt vs1 - wt (vs1 :&: vs2).
 Proof. Admitted.
-  
-Lemma wt_inc_leq : forall (vs1 vs2:{set Validator}),
-  vs1 \subset vs2 -> wt vs1 <= wt vs2.
-Proof. 
+
+
+Lemma wt_join_disjoint : forall (vs1 vs2:{set Validator}),
+  [disjoint vs1 & vs2] -> wt (vs1 :|: vs2) = wt vs1 + wt vs2.
+Proof. Admitted.
+
+Lemma setDD_disjoint : forall (vs1 vs2:{set Validator}),
+  [disjoint (vs1 :\: vs2) & (vs2 :\: vs1)].
+Proof. Admitted.
+
+Lemma setDDI_disjoint : forall (vs1 vs2:{set Validator}),
+  [disjoint vs1 :\: vs2 :|: vs2 :\: vs1 & vs1 :&: vs2].
+Proof. Admitted.
+
+Lemma setU_par : forall (vs1 vs2:{set Validator}),
+  vs1 :|: vs2 = (vs1 :\: vs2) :|: (vs2 :\: vs1) :|: (vs1 :&: vs2).
+Proof.
   move=> vs1 vs2.
-  rewrite /wt.
-  rewrite [\sum_(v in vs2) _](big_setID vs1) //=.
-  move/setIidPr => ->.
-  apply: leq_addr.
+  apply/eqP.
+  rewrite eqEsubset.
+  apply/andP;split;apply/subsetP => x.
+  case/setUP=> H.
+  - rewrite -setUA setUC -setUA.
+    apply/setUP;right. 
+    by rewrite setUC -setDDr setDv setD0.
+  - rewrite -setUA.
+    apply/setUP;right.
+    by rewrite setIC -setDDr setDv setD0.
+  case/setUP=> H.
+  - case/setUP: H => H.
+    * move/setDP: H => [H _].
+      by apply/setUP;left.
+    * move/setDP: H => [H _].
+      by apply/setUP;right.
+  - move/setIP: H => [H _].
+    by apply/setUP;left.
+Qed.
+
+Lemma wt_join_partition : forall vs1 vs2,
+  wt (vs1 :|: vs2) = wt (vs1 :\: vs2) + wt (vs2 :\: vs1) + wt (vs1 :&: vs2).
+Proof.
+  move=> vs1 vs2.
+  rewrite -!wt_join_disjoint. 
+  apply: wt_eq. apply: setU_par.
+  apply: setDDI_disjoint.
+  apply: setDD_disjoint.
+Qed.
+
+Lemma wt_meet_leq1 : forall vs1 vs2,
+  wt (vs1 :&: vs2) <= wt vs1.
+Proof. 
+  move=> vs1 vs2; apply: wt_inc_leq; apply: subsetIl.
+Qed.
+
+Lemma wt_meet_leq2 : forall vs1 vs2,
+  wt (vs1 :&: vs2) <= wt vs2.
+Proof. 
+  move=> vs1 vs2; apply: wt_inc_leq; apply: subsetIr.
 Qed.
 
 Lemma wt_meet_leq : forall vs1 vs2,
   wt (vs1 :&: vs2) <= wt vs1 + wt vs2.
-Proof. Admitted.
-
-Lemma wt_meet_leq1 : forall vs1 vs2,
-  wt (vs1 :&: vs2) <= wt vs1.
-Proof. Admitted.
-
-Lemma wt_join_partition : forall vs1 vs2,
-  wt (vs1 :|: vs2) = wt (vs1 :\: vs2) + wt (vs2 :\: vs1) + wt (vs1 :&: vs2).
-Proof. Admitted.
-  
-
+Proof.
+  move=> vs1 vs2.
+  have H1:= (wt_meet_leq1 vs1 vs2).
+  have H2:= (leq_addr (wt vs2) (wt vs1)).
+  apply: (leq_trans H1 H2).
+Qed.
 
