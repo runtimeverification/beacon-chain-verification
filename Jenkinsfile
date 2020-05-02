@@ -15,14 +15,6 @@ pipeline {
       parallel {
         stage('Dynamic - K') {
           stages {
-            stage('Dependencies') {
-              steps {
-                sh '''
-                  cd dynamic
-                  make deps -j3
-                '''
-              }
-            }
             stage('Build') {
               steps {
                 sh '''
