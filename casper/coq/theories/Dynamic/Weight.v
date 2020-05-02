@@ -76,21 +76,13 @@ Proof. Admitted.
 (* wt (vs :|: v) >= 0 should also be provable *)
 Lemma wt_join : forall vs1 vs2,
   wt (vs1 :|: vs2) = wt vs1 + wt vs2 - wt (vs1 :&: vs2).
-Proof.
-
-Admitted.
+Proof. Admitted.
 
 (* wt (~: vs) >= 0 should also be provable *)
 Lemma wt_comp : forall vs,
   wt (~: vs) = wt [set: Validator] - wt vs.
 Proof. Admitted.
   
-(* wt (vs1 :\: vs2) >= 0 should also be provable *)
-Lemma wt_diff : forall vs1 vs2,
-  wt (vs1 :\: vs2) = wt vs1 - wt (vs1 :&: vs2).
-Proof. Admitted.
-
-
 Lemma wt_join_disjoint : forall (vs1 vs2:{set Validator}),
   [disjoint vs1 & vs2] -> wt (vs1 :|: vs2) = wt vs1 + wt vs2.
 Proof.
@@ -103,6 +95,19 @@ Proof.
   move/eqP=> H.
   by rewrite wt_join H wt_set0 subn0.
 *)
+Qed.
+
+Lemma setID_disjoint : forall (vs1 vs2:{set Validator}),
+  [disjoint (vs1 :&: vs2) & (vs1 :\: vs2)].
+Proof.
+  move=> vs1 vs2.
+  rewrite -setI_eq0 eqEsubset.
+  apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
+  move/setIP=> [H1 H2].
+  move/setIP: H1 => [_ H1].
+  move/setDP: H2 => [_ H2].
+  move/negP: H2 => H2.
+  by contradiction.
 Qed.
 
 Lemma setDD_disjoint : forall (vs1 vs2:{set Validator}),
@@ -128,6 +133,18 @@ Proof.
   move/setIP: H2 => [Hin1 Hin2].
   case/setUP: H1 => H;move/setDP: H => [_ Hnotin2];
     move/negP: Hnotin2 => Hnotin2;contradiction.
+Qed.
+
+(* wt (vs1 :\: vs2) >= 0 should also be provable *)
+Lemma wt_diff : forall vs1 vs2,
+  wt (vs1 :\: vs2) = wt vs1 - wt (vs1 :&: vs2).
+Proof.
+  move=> vs1 vs2.
+  rewrite -{2}(setID vs1 vs2).
+  rewrite (wt_join_disjoint).
+    rewrite addnC -addnBA; last by [].
+    by rewrite sub_eq addn0.
+  by apply: setID_disjoint.
 Qed.
 
 Lemma setU_par : forall (vs1 vs2:{set Validator}),
