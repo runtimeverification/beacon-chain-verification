@@ -416,6 +416,8 @@ rule unique(Is) => Is requires distinct(Is)
 
 rule distinct(unique(_)) => true [concrete, smt-lemma]
 
+rule iff(X in unique(L1 ++ L2), X in L1 orBool X in L2) => true [concrete, smt-lemma]
+
 rule unique(rev(Ys) ++ X Xs)
   => unique(rev(Ys) ++   Xs)
      requires X in Xs
