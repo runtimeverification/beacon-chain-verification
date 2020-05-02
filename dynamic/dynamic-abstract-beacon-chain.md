@@ -901,8 +901,17 @@ rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed)
 ```{.k .dynamic}
 // process_deposit
 syntax KItem ::= processDeposits(Deposits)
-rule processDeposits(D Deposits) => processDeposit(D) ~> processDeposits(Deposits)
-rule processDeposits(.Deposits) => .
+rule <k> processDeposits(Deposits) => processDepositsAux(.IntList, Deposits, Vs) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> Vs </validators>
+       ...
+     </state>
+
+syntax KItem ::= processDepositsAux(IntList, Deposits, Validators)
+rule processDepositsAux(L, D Deposits, Vs) => processDeposit(D) ~> processDepositsAux(D.sender L, Deposits, Vs)
+rule processDepositsAux(_, .Deposits, _) => .
 
 syntax KItem ::= processDeposit(Deposit)
 rule <k> processDeposit(D) => . ... </k>

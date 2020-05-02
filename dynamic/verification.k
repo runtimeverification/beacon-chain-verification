@@ -396,6 +396,52 @@ rule activeValidators(VIDs, AM, EM [ X <- E ]i, Epoch)
 /// rule activationQueue(v(m(_, _, _, AEM, AM, _, _), VIDs), E)
 ///  ==K activationQueue(v(m(_, _, _, AEM, AM, _, _), VIDs), E) => true [smt-lemma]
 
+// for process-deposit-spec
+
+syntax Bool ::= isValidDeposits(Deposits) [function, smtlib(isValidDeposits)]
+rule isValidDeposits(D Ds) => D.amount >=Int 0 andBool isValidDeposits(Ds)
+rule isValidDeposits(.Deposits) => true
+
+syntax IntList ::= getValidatorsD(Deposits) [function, smtlib(getValidatorsD)]
+rule getValidatorsD(D Ds) => D.sender getValidatorsD(Ds)
+rule getValidatorsD(.Deposits) => .IntList
+
+// remove duplicate elements in the given list: the ones that appear earlier (more left) are removed.
+syntax IntList ::= unique(IntList) [function, smtlib(uniqueI)]
+rule unique(I Is) =>   unique(Is) requires         I in Is
+rule unique(I Is) => I unique(Is) requires notBool I in Is
+rule unique(.IntList) => .IntList
+
+rule unique(Is) => Is requires distinct(Is)
+
+rule distinct(unique(_)) => true [concrete, smt-lemma]
+
+rule unique(rev(Ys) ++ X Xs)
+  => unique(rev(Ys) ++   Xs)
+     requires X in Xs
+
+rule unique((X Xs) ++ Ys)
+  => unique(   Xs  ++ Ys)
+     requires X in Xs orBool X in Ys
+
+rule   unique((X Xs) ++ Ys)
+  => X unique(   Xs  ++ Ys)
+     requires notBool X in unique(Xs ++ Ys)
+     [concrete, smt-lemma]
+
+rule implies(X in Xs1, X in Xs2) => true
+     requires subset(Xs1, Xs2)
+     [concrete, smt-lemma]
+
+rule subset(L, unique(_ ++ L)) => true
+     requires distinct(L)
+     [concrete, smt-lemma]
+
+rule disjoint1(Is, I) => true requires distinct(I Is) [concrete, smt-lemma]
+
+rule implies(J in Js andBool disjoint1(Js, I), I =/=K J) => true [concrete, smt-lemma]
+
+rule iff(X in rev(L), X in L) => true [concrete, smt-lemma]
 
 syntax Tactic ::= "begin"
 rule begin => .

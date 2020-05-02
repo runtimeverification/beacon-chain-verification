@@ -149,8 +149,8 @@ The extra data (e.g., signatures and Merkle proofs) for validating the deposit i
 ```k
 syntax Deposits ::= List{Deposit,""}
 syntax Deposit  ::= #Deposit(Int,Int) // sender, amount
-syntax Int ::= Deposit ".sender" [function, functional]
-syntax Int ::= Deposit ".amount" [function, functional]
+syntax Int ::= Deposit ".sender" [function, functional, klabel(d_sender), smtlib(d_sender)]
+syntax Int ::= Deposit ".amount" [function, functional, klabel(d_amount), smtlib(d_amount)]
 rule #Deposit(X,_).sender => X
 rule #Deposit(_,X).amount => X
 ```
@@ -270,9 +270,9 @@ rule size(_ Is) => 1 +Int size(Is)
 rule size(.IntList) => 0
 
 syntax Bool ::= Int "in" IntList [function, klabel(inI), smtlib(inI)]
-rule J in (I Is) => true    requires J  ==Int I
-rule J in (I Is) => J in Is requires J =/=Int I
-rule _ in .IntList => false
+rule J in (I Is) => true    requires J  ==Int I [smt-lemma]
+rule J in (I Is) => J in Is requires J =/=Int I [smt-lemma]
+rule _ in .IntList => false [smt-lemma]
 
 // take the first N elements at most
 syntax IntList ::= take(Int, IntList) [function, klabel(takeI), smtlib(takeI)]
@@ -314,12 +314,13 @@ rule K1 in keys(M [ K2 <- _ ]v) => K1 in keys(M) requires K1 =/=Int K2
 ```
 
 ```k
+//syntax IMap [smt-prelude] // (define-sort IMap () (Array Int Int))
 syntax IMap ::= ".IMap"                    [          klabel(emptyI),  smtlib(emptyI)]
 syntax IMap ::= IMap "[" Int "<-" Int "]i" [function, klabel(storeI),  smtlib(storeI)]
 syntax Int  ::= IMap "[" Int "]i"          [function, klabel(selectI), smtlib(selectI)]
 
-rule ( M [ K1 <- V ]i ) [ K2 ]i => V         requires K1  ==Int K2
-rule ( M [ K1 <- V ]i ) [ K2 ]i => M [ K2 ]i requires K1 =/=Int K2
+rule ( M [ K1 <- V ]i ) [ K2 ]i => V         requires K1  ==Int K2 [smt-lemma]
+rule ( M [ K1 <- V ]i ) [ K2 ]i => M [ K2 ]i requires K1 =/=Int K2 [smt-lemma]
 
 // in-place update
 
@@ -336,12 +337,13 @@ rule K1 in keys(M [ K2 <- _ ]i) => K1 in keys(M) requires K1 =/=Int K2
 ```
 
 ```k
+//syntax BMap [smt-prelude] // (define-sort BMap () (Array Int Bool))
 syntax BMap ::= ".BMap"                     [          klabel(emptyB),  smtlib(emptyB)]
 syntax BMap ::= BMap "[" Int "<-" Bool "]b" [function, klabel(storeB),  smtlib(storeB)]
 syntax Bool ::= BMap "[" Int "]b"           [function, klabel(selectB), smtlib(selectB)]
 
-rule ( M [ K1 <- V ]b ) [ K2 ]b => V         requires K1  ==Int K2
-rule ( M [ K1 <- V ]b ) [ K2 ]b => M [ K2 ]b requires K1 =/=Int K2
+rule ( M [ K1 <- V ]b ) [ K2 ]b => V         requires K1  ==Int K2 [smt-lemma]
+rule ( M [ K1 <- V ]b ) [ K2 ]b => M [ K2 ]b requires K1 =/=Int K2 [smt-lemma]
 ```
 
 ## Constants
