@@ -162,12 +162,19 @@ This is a pair of a validator ID and an epoch to exit requested.
 This is the same with the concrete model.
 
 ```k
-syntax VoluntaryExits ::= List{VoluntaryExit,""}
 syntax VoluntaryExit  ::= #VoluntaryExit(Int,Int) // validator id, epoch to exit
-syntax Int ::= VoluntaryExit ".validator" [function, functional]
-syntax Int ::= VoluntaryExit ".epoch"     [function, functional]
+syntax Int ::= VoluntaryExit ".validator" [function, functional, klabel(e_validator), smtlib(e_validator)]
+syntax Int ::= VoluntaryExit ".epoch"     [function, functional, klabel(e_epoch)    , smtlib(e_epoch)    ]
 rule #VoluntaryExit(X,_).validator => X
 rule #VoluntaryExit(_,X).epoch     => X
+
+syntax VoluntaryExits ::= ".VoluntaryExits"            [klabel(nilE), smtlib(nilE)]
+syntax VoluntaryExits ::= VoluntaryExit VoluntaryExits [klabel(consE), smtlib(consE)]
+
+syntax Bool ::= VoluntaryExit "inE" VoluntaryExits [function, klabel(inE), smtlib(inE)]
+rule J inE (I Is) => true     requires J  ==K I [smt-lemma]
+rule J inE (I Is) => J inE Is requires J =/=K I [smt-lemma]
+rule _ inE .VoluntaryExits => false [smt-lemma]
 
 syntax Int ::= sizeE(VoluntaryExits) [function, smtlib(sizeE)]
 rule sizeE(_ Es) => 1 +Int sizeE(Es)

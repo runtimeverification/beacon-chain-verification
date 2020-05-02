@@ -42,7 +42,7 @@ rule forall(_, _, true) => true
 rule forall(X, S, X in S) => true
 
 syntax VoluntaryExit ::= KVar
-syntax Bool ::= forallE(KVar, VoluntaryExits, Bool) [binder, function]
+syntax Bool ::= forallE(KVar, VoluntaryExits, Bool) [binder, function, smtlib((forall ((#1 VoluntaryExit)) (=> (inE #1 #2) #3)))]
 rule forallE(X, V Vs, E) => E[V / X] andBool forallE(X, Vs, E)
 rule forallE(_, .VoluntaryExits, _) => true
 rule forallE(_, _, true) => true
@@ -444,6 +444,28 @@ rule disjoint1(Is, I) => true requires distinct(I Is) [concrete, smt-lemma]
 rule implies(J in Js andBool disjoint1(Js, I), I =/=K J) => true [concrete, smt-lemma]
 
 rule iff(X in rev(L), X in L) => true [concrete, smt-lemma]
+
+// for process-block
+
+rule maxExitEpoch(unique(L ++ VIDs), EM2)
+ ==K maxExitEpoch(            VIDs,  EM1) => true
+     requires forall(x, L, implies(notBool x in VIDs, EM2[x]i ==Int FAR_FUTURE_EPOCH)) // new validators have no exit epoch
+      andBool forall(x, VIDs, EM2[x]i ==Int EM1[x]i) // existing validators' exit epoch is preserved
+     [concrete, smt-lemma]
+
+rule activeValidators(unique(L ++ VIDs), AM2, EM2, Epoch)
+ ==K activeValidators(            VIDs , AM1, EM1, Epoch) => true
+     requires forall(x, L, implies(notBool x in VIDs, AM2[x]i ==Int FAR_FUTURE_EPOCH)) // new validators are not active
+      andBool forall(x, VIDs, AM2[x]i ==Int AM1[x]i) // existing validators' activation epoch is preserved
+      andBool forall(x, VIDs, EM2[x]i ==Int EM1[x]i) // existing validators' exit epoch is preserved
+     [concrete, smt-lemma]
+
+rule implies(
+       forall(x, getValidatorsE(VEs), x in VIDs:IntList)
+     ,
+       forallE(x, VEs, x.validator in VIDs)
+     ) => true
+     [concrete, smt-lemma]
 
 syntax Tactic ::= "begin"
 rule begin => .
