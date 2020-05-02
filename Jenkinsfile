@@ -1,6 +1,11 @@
 pipeline {
   options { ansiColor('xterm') }
-  agent { dockerfile { } }
+  agent {
+    dockerfile {
+      label 'docker'
+      additionalBuildArgs '--build-arg K_COMMIT=$(cd deps/k && git rev-parse --short=7 HEAD) --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+    }
+  }
   stages {
     stage('Init title') {
       when { changeRequest() }
