@@ -23,7 +23,7 @@ Definition wt (vs:{set Validator}) : nat :=
 Lemma wt_nonneg : forall vs, wt vs >= 0.
 Proof. by []. Qed.
 
-Lemma wt_mt_zero : wt set0 = 0.
+Lemma wt_set0 : wt set0 = 0.
 Proof.
 by rewrite /wt big_set0.
 Qed.
@@ -76,7 +76,9 @@ Proof. Admitted.
 (* wt (vs :|: v) >= 0 should also be provable *)
 Lemma wt_join : forall vs1 vs2,
   wt (vs1 :|: vs2) = wt vs1 + wt vs2 - wt (vs1 :&: vs2).
-Proof. Admitted.
+Proof.
+
+Admitted.
 
 (* wt (~: vs) >= 0 should also be provable *)
 Lemma wt_comp : forall vs,
@@ -91,15 +93,42 @@ Proof. Admitted.
 
 Lemma wt_join_disjoint : forall (vs1 vs2:{set Validator}),
   [disjoint vs1 & vs2] -> wt (vs1 :|: vs2) = wt vs1 + wt vs2.
-Proof. Admitted.
+Proof.
+  move=> vs1 vs2 Hdis.
+  rewrite /wt.
+  rewrite (eq_bigl [predU vs1 & vs2]); last by move=> i; rewrite !inE.
+  rewrite bigU //=.  
+(*
+  rewrite -setI_eq0.
+  move/eqP=> H.
+  by rewrite wt_join H wt_set0 subn0.
+*)
+Qed.
 
 Lemma setDD_disjoint : forall (vs1 vs2:{set Validator}),
   [disjoint (vs1 :\: vs2) & (vs2 :\: vs1)].
-Proof. Admitted.
+Proof.
+  move=> vs1 vs2.
+  rewrite -setI_eq0 eqEsubset.
+  apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
+  move/setIP=> [H1 H2].
+  move/setDP: H1 => [H1a H1b].
+  move/setDP: H2 => [H2a H2b].
+  move/negP: H2b => H2b.
+  by contradiction.
+Qed.
 
 Lemma setDDI_disjoint : forall (vs1 vs2:{set Validator}),
   [disjoint vs1 :\: vs2 :|: vs2 :\: vs1 & vs1 :&: vs2].
-Proof. Admitted.
+Proof. 
+  move=> vs1 vs2.
+  rewrite -setI_eq0 eqEsubset.
+  apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
+  move/setIP=> [H1 H2].
+  move/setIP: H2 => [Hin1 Hin2].
+  case/setUP: H1 => H;move/setDP: H => [_ Hnotin2];
+    move/negP: Hnotin2 => Hnotin2;contradiction.
+Qed.
 
 Lemma setU_par : forall (vs1 vs2:{set Validator}),
   vs1 :|: vs2 = (vs1 :\: vs2) :|: (vs2 :\: vs1) :|: (vs1 :&: vs2).
