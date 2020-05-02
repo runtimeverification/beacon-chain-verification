@@ -305,6 +305,6 @@
     </state>
   </states>
   <blocks>
-    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]k [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]k [ 4 <- #Block ( ( 4 , 10004 ) , ( 1 , 10001 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]k [ 5 <- #Block ( ( 5 , 10005 ) , ( 4 , 10004 ) , .Slashings , #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 3 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 4 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings , .Slashings , .Slashings ) ]k
+    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Slashings , .Slashings , .VoluntaryExits ) ]k [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , .Slashings , .Slashings , .VoluntaryExits ) ]k [ 4 <- #Block ( ( 4 , 10004 ) , ( 1 , 10001 ) , .Slashings , .Slashings , .Slashings , .VoluntaryExits ) ]k [ 5 <- #Block ( ( 5 , 10005 ) , ( 4 , 10004 ) , .Slashings , #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 3 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 4 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings , .Slashings , .VoluntaryExits ) ]k
   </blocks>
 </T>

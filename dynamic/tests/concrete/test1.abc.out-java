@@ -166,6 +166,6 @@
     </state>
   </states>
   <blocks>
-    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]k [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings , .Slashings , .Slashings ) ]k [ 3 <- #Block ( ( 3 , 10003 ) , ( 1 , 10001 ) , .Slashings , .Slashings , .Slashings , .Slashings ) ]k
+    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Slashings , .Slashings , .VoluntaryExits ) ]k [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 )  .Slashings , .Slashings , .VoluntaryExits ) ]k [ 3 <- #Block ( ( 3 , 10003 ) , ( 1 , 10001 ) , .Slashings , .Slashings , .Slashings , .VoluntaryExits ) ]k
   </blocks>
 </T>
