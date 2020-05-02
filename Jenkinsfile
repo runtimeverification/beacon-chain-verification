@@ -1,16 +1,10 @@
 pipeline {
-  options {
-    ansiColor('xterm')
-  }
+  options { ansiColor('xterm') }
   agent { dockerfile { } }
   stages {
     stage('Init title') {
       when { changeRequest() }
-      steps {
-        script {
-          currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
-        }
-      }
+      steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Build and Test') {
       parallel {
