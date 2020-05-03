@@ -440,7 +440,7 @@ rule lastSlotOf(Epoch)        => firstSlotOf(Epoch) +Int (SLOTS_PER_EPOCH -Int 1
 rule isFirstSlotOfEpoch(Slot) => Slot %Int SLOTS_PER_EPOCH ==Int 0                [macro]
 ```
 ```{.k .symbolic}
-rule epochOf(firstSlotOf(Epoch)) => Epoch [smt-lemma]
+rule epochOf(firstSlotOf(Epoch)) => Epoch [smt-lemma] // NOTE: this ensures the injectivity of firstSlotOf as well!
 rule firstSlotOf(epochOf(Slot)) <=Int Slot => true [concrete, smt-lemma]
 rule lastSlotOf(epochOf(Slot)) >=Int Slot => true [concrete, smt-lemma]
 rule isFirstSlotOfEpoch(firstSlotOf(_)) => true [smt-lemma]
@@ -455,7 +455,7 @@ rule lastSlotOf(Epoch) >=Int Epoch => true [concrete, smt-lemma]
 rule lastSlotOf(Epoch) >=Int firstSlotOf(Epoch) => true [concrete, smt-lemma]
 
 /*
-// injectivity
+// injectivity of firstSlotOf
 rule implies(firstSlotOf(E1) ==K firstSlotOf(E1), E1 ==K E2) => true [concrete, smt-lemma]
 */
 ```
