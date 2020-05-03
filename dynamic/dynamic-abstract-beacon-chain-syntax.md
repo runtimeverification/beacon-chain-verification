@@ -98,7 +98,6 @@ An abstract attestation denotes a single attestation, consisting of an attester,
 The `Attestation` of the concrete model can be represented as a set of abstract attestations whose slot, source, and target are the same.
 
 ```k
-syntax Attestations ::= List{Attestation,""}
 syntax Attestation  ::= #Attestation(Int,Int,Pair,Pair,Int,Int,Int) // attester, assigned slot, source epoch/block, target epoch/block, head block (LMD GHOST vote), proposer, inclusion delay
 syntax Int ::= Attestation ".attester"        [function, functional, klabel(a_attester)       , smtlib(a_attester)       ]
 syntax Int ::= Attestation ".slot"            [function, functional, klabel(a_slot)           , smtlib(a_slot)           ]
@@ -121,6 +120,9 @@ rule #Attestation(_,_,(_,_),(_,_),_,_,X).inclusion_delay => X
 ```
 
 ```k
+syntax Attestations ::= ".Attestations"          [klabel(nilA),  smtlib(nilA)]
+syntax Attestations ::= Attestation Attestations [klabel(consA), smtlib(consA)]
+
 syntax Int ::= sizeA(Attestations) [function, smtlib(sizeA)]
 rule sizeA(_ As) => 1 +Int sizeA(As)
 rule sizeA(.Attestations) => 0

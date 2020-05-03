@@ -1,10 +1,12 @@
-stateTransition(#Block(( 1,10001),( 0,    0),,,,.VoluntaryExits))
-stateTransition(#Block(( 4,10004),( 1,10001),,,,.VoluntaryExits))
+stateTransition(#Block(( 1,10001),( 0,    0),,.Attestations,,.VoluntaryExits))
+stateTransition(#Block(( 4,10004),( 1,10001),,.Attestations,,.VoluntaryExits))
 stateTransition(#Block(( 5,10005),( 4,10004),,#Attestation(0,4,(0,0),(1,10004),0,0,0)
                                               #Attestation(1,4,(0,0),(1,10004),0,0,0)
                                               #Attestation(2,4,(0,0),(1,10004),0,0,0)
+                                              .Attestations
 ,,.VoluntaryExits))
 stateTransition(#Block(( 9,10009),( 5,10005),,#Attestation(3,5,(0,0),(1,10004),0,0,0)
                                               #Attestation(4,5,(0,0),(1,10004),0,0,0)
+                                              .Attestations
 ,,.VoluntaryExits))
 processSlots(12)

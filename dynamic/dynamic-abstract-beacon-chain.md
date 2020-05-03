@@ -830,8 +830,11 @@ rule isSlashableAttestation(A1, A2)
 ```k
 // process_attestation
 syntax KItem ::= processAttestations(Attestations)
-rule processAttestations(A Attestations) => processAttestation(A) ~> processAttestations(Attestations)
-rule processAttestations(.Attestations) => .
+rule processAttestations(As) => processAttestationsAux(.Attestations, As)
+
+syntax KItem ::= processAttestationsAux(Attestations, Attestations)
+rule processAttestationsAux(L, A As) => processAttestation(A) ~> processAttestationsAux(A L, As)
+rule processAttestationsAux(_, .Attestations) => .
 
 syntax KItem ::= processAttestation(Attestation)
 rule processAttestation(A)

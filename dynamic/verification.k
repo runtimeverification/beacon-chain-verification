@@ -467,6 +467,20 @@ rule implies(
      ) => true
      [concrete, smt-lemma]
 
+// for process-attestation
+
+syntax Attestations ::= getAttestations(Attestations, Int) [function, smtlib(getAttestations)]
+rule getAttestations(A As, E) => A getAttestations(As, E) requires A.target_epoch  ==Int E
+rule getAttestations(A As, E) =>   getAttestations(As, E) requires A.target_epoch =/=Int E
+rule getAttestations(.Attestations, _) => .Attestations
+
+/*
+syntax Bool ::= isValidAttestations(Attestations) [function, smtlib(isValidAttestations)]
+rule isValidAttestations(A As, Slot, SourceEpoch, SourceBlock, Slashed) => isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed) andBool isValidAttestations(As)
+rule isValidAttestations(.Attestations) => true
+*/
+
+
 syntax Tactic ::= "begin"
 rule begin => .
 
