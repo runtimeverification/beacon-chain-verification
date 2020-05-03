@@ -428,14 +428,38 @@ syntax Int ::= sqrtInt(Int) [function, smtlib(sqrtInt)]
 ## Macros
 
 ```k
-syntax Int  ::= epochOf(Int)
-              | firstSlotOf(Int)
-              | lastSlotOf(Int)
-syntax Bool ::= isFirstSlotOfEpoch(Int) // Slot is the first slot of an epoch?
+syntax Int  ::= epochOf(Int)            [function, smtlib(epochOf)]
+              | firstSlotOf(Int)        [function, smtlib(firstSlotOf)]
+              | lastSlotOf(Int)         [function, smtlib(lastSlotOf)]
+syntax Bool ::= isFirstSlotOfEpoch(Int) [function, smtlib(isFirstSlotOfEpoch)] // Slot is the first slot of an epoch?
+```
+```{.k .concrete}
 rule epochOf(Slot)            => Slot /Int SLOTS_PER_EPOCH                        [macro]
 rule firstSlotOf(Epoch)       => Epoch *Int SLOTS_PER_EPOCH                       [macro]
 rule lastSlotOf(Epoch)        => firstSlotOf(Epoch) +Int (SLOTS_PER_EPOCH -Int 1) [macro]
 rule isFirstSlotOfEpoch(Slot) => Slot %Int SLOTS_PER_EPOCH ==Int 0                [macro]
+```
+```{.k .symbolic}
+rule epochOf(firstSlotOf(Epoch)) => Epoch [smt-lemma]
+rule firstSlotOf(epochOf(Slot)) <=Int Slot => true [concrete, smt-lemma]
+rule lastSlotOf(epochOf(Slot)) >=Int Slot => true [concrete, smt-lemma]
+rule isFirstSlotOfEpoch(firstSlotOf(_)) => true [smt-lemma]
 
+rule epochOf(_)     >=Int 0 => true [concrete, smt-lemma]
+rule firstSlotOf(_) >=Int 0 => true [concrete, smt-lemma]
+rule lastSlotOf(_)  >=Int 0 => true [concrete, smt-lemma]
+
+rule epochOf(Slot) <=Int Slot => true [concrete, smt-lemma]
+rule firstSlotOf(Epoch) >=Int Epoch => true [concrete, smt-lemma]
+rule lastSlotOf(Epoch) >=Int Epoch => true [concrete, smt-lemma]
+rule lastSlotOf(Epoch) >=Int firstSlotOf(Epoch) => true [concrete, smt-lemma]
+
+/*
+// injectivity
+rule implies(firstSlotOf(E1) ==K firstSlotOf(E1), E1 ==K E2) => true [concrete, smt-lemma]
+*/
+```
+
+```k
 endmodule
 ```
