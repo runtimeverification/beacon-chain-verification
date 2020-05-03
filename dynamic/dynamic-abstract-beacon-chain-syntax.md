@@ -291,6 +291,7 @@ rule take(_, .IntList) => .IntList
 
 // sort in the order of activation_eligibility_epoch
 syntax IntList ::= sort(IntList) [function, klabel(sortI), smtlib(sortI)]
+rule sort(.IntList) => .IntList
 // TODO: implement
 
 // subset in set-like view
