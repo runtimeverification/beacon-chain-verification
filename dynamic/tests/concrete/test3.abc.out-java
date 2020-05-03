@@ -19,7 +19,7 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
+        0 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -27,15 +27,6 @@
       <finalized>
         0 |-> true
       </finalized>
-      <lastBlock>
-        ( 0 , 0 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       1
@@ -50,7 +41,7 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
+        0 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -58,15 +49,6 @@
       <finalized>
         0 |-> true
       </finalized>
-      <lastBlock>
-        ( 1 , 10001 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       2
@@ -81,7 +63,7 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
+        0 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -89,15 +71,6 @@
       <finalized>
         0 |-> true
       </finalized>
-      <lastBlock>
-        ( 1 , 10001 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       3
@@ -112,7 +85,7 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
+        0 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -120,15 +93,6 @@
       <finalized>
         0 |-> true
       </finalized>
-      <lastBlock>
-        ( 1 , 10001 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       4
@@ -143,8 +107,8 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
-        1 |-> .Slashings
+        0 |-> .Attestations
+        1 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -154,15 +118,6 @@
         0 |-> true
         1 |-> false
       </finalized>
-      <lastBlock>
-        ( 4 , 10004 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       5
@@ -177,8 +132,8 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
-        1 |-> #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
+        0 |-> .Attestations
+        1 |-> #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -188,15 +143,6 @@
         0 |-> true
         1 |-> false
       </finalized>
-      <lastBlock>
-        ( 5 , 10005 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       6
@@ -211,8 +157,8 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
-        1 |-> #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
+        0 |-> .Attestations
+        1 |-> #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -222,15 +168,6 @@
         0 |-> true
         1 |-> false
       </finalized>
-      <lastBlock>
-        ( 5 , 10005 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       7
@@ -245,8 +182,8 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
-        1 |-> #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
+        0 |-> .Attestations
+        1 |-> #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -256,15 +193,6 @@
         0 |-> true
         1 |-> false
       </finalized>
-      <lastBlock>
-        ( 5 , 10005 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       8
@@ -279,9 +207,9 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
-        1 |-> #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
-        2 |-> .Slashings
+        0 |-> .Attestations
+        1 |-> #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations
+        2 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -293,15 +221,6 @@
         1 |-> false
         2 |-> false
       </finalized>
-      <lastBlock>
-        ( 5 , 10005 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       9
@@ -316,9 +235,9 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
-        1 |-> #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
-        2 |-> .Slashings
+        0 |-> .Attestations
+        1 |-> #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations
+        2 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -330,15 +249,6 @@
         1 |-> false
         2 |-> false
       </finalized>
-      <lastBlock>
-        ( 9 , 10009 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       10
@@ -353,9 +263,9 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
-        1 |-> #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
-        2 |-> .Slashings
+        0 |-> .Attestations
+        1 |-> #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations
+        2 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -367,15 +277,6 @@
         1 |-> false
         2 |-> false
       </finalized>
-      <lastBlock>
-        ( 9 , 10009 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       11
@@ -390,9 +291,9 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
-        1 |-> #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
-        2 |-> .Slashings
+        0 |-> .Attestations
+        1 |-> #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations
+        2 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -404,15 +305,6 @@
         1 |-> false
         2 |-> false
       </finalized>
-      <lastBlock>
-        ( 9 , 10009 )
-      </lastBlock>
-      <lastJustified>
-        0
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
     <slot>
       12
@@ -427,10 +319,10 @@
         0
       </slashedBalance>
       <attested>
-        0 |-> .Slashings
-        1 |-> #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings
-        2 |-> .Slashings
-        3 |-> .Slashings
+        0 |-> .Attestations
+        1 |-> #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations
+        2 |-> .Attestations
+        3 |-> .Attestations
       </attested>
       <justified>
         0 |-> true
@@ -444,18 +336,18 @@
         2 |-> false
         3 |-> false
       </finalized>
-      <lastBlock>
-        ( 9 , 10009 )
-      </lastBlock>
-      <lastJustified>
-        1
-      </lastJustified>
-      <lastFinalized>
-        0
-      </lastFinalized>
     </state>
   </states>
+  <lastBlock>
+    .IMap [ 0 <- 0 ]i [ 1 <- 10001 ]i [ 2 <- 10001 ]i [ 3 <- 10001 ]i [ 4 <- 10004 ]i [ 5 <- 10005 ]i [ 6 <- 10005 ]i [ 7 <- 10005 ]i [ 8 <- 10005 ]i [ 9 <- 10009 ]i [ 10 <- 10009 ]i [ 11 <- 10009 ]i [ 12 <- 10009 ]i
+  </lastBlock>
+  <lastJustified>
+    .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 1 ]i
+  </lastJustified>
+  <lastFinalized>
+    .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i
+  </lastFinalized>
   <blocks>
-    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Slashings , .Slashings , .VoluntaryExits ) ]k [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , .Slashings , .Slashings , .VoluntaryExits ) ]k [ 4 <- #Block ( ( 4 , 10004 ) , ( 1 , 10001 ) , .Slashings , .Slashings , .Slashings , .VoluntaryExits ) ]k [ 5 <- #Block ( ( 5 , 10005 ) , ( 4 , 10004 ) , .Slashings , #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings , .Slashings , .VoluntaryExits ) ]k [ 9 <- #Block ( ( 9 , 10009 ) , ( 5 , 10005 ) , .Slashings , #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 )  .Slashings , .Slashings , .VoluntaryExits ) ]k
+    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Attestations , .Slashings , .VoluntaryExits ) ]k [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , .Attestations , .Slashings , .VoluntaryExits ) ]k [ 4 <- #Block ( ( 4 , 10004 ) , ( 1 , 10001 ) , .Slashings , .Attestations , .Slashings , .VoluntaryExits ) ]k [ 5 <- #Block ( ( 5 , 10005 ) , ( 4 , 10004 ) , .Slashings , #Attestation ( 0 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 1 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 2 , 4 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations , .Slashings , .VoluntaryExits ) ]k [ 9 <- #Block ( ( 9 , 10009 ) , ( 5 , 10005 ) , .Slashings , #Attestation ( 3 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) #Attestation ( 4 , 5 , ( 0 , 0 ) , ( 1 , 10004 ) , 0 , 0 , 0 ) .Attestations , .Slashings , .VoluntaryExits ) ]k
   </blocks>
 </T>
