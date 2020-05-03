@@ -42,14 +42,14 @@ configuration <T>
       <validators> v(m(.BMap, .IMap, .IMap, .IMap, .IMap, .IMap, .IMap), .IntList) </validators>
       <slashedBalance> 0 </slashedBalance> // slashed balance
       <attested> .Map </attested> // Epoch -> Attestations
-      <justified> .Map </justified> // Epoch -> bool
-      <finalized> .Map </finalized> // Epoch -> bool
+      <justified> .BList </justified> // Epoch -> bool
+      <finalized> .BList </finalized> // Epoch -> bool
     </state>
   </states>
   // historical
   <lastBlock> .IMap </lastBlock> // slot -> last block id
-  <lastJustified> .IMap </lastJustified> // epoch -> last justified block id
-  <lastFinalized> .IMap </lastFinalized> // epoch -> last finalized block id
+  <lastJustified> .IList </lastJustified> // epoch -> last justified block id
+  <lastFinalized> .IList </lastFinalized> // epoch -> last finalized block id
   // blockchain
   <blocks> .BlockMap </blocks> // slot -> block
 </T>
@@ -85,13 +85,13 @@ rule <k> init => . ... </k>
          ) </validators>
          <slashedBalance> 0 </slashedBalance>
          <attested> 0 |-> .Attestations </attested>
-         <justified> 0 |-> true </justified>
-         <finalized> 0 |-> true </finalized>
+         <justified> ( 0 , true ) .BList </justified>
+         <finalized> ( 0 , true ) .BList </finalized>
        </state>
      </states>
      <lastBlock> .IMap => .IMap [ 0 <- 0 ]i </lastBlock>
-     <lastJustified> .IMap => .IMap [ 0 <- 0 ]i </lastJustified>
-     <lastFinalized> .IMap => .IMap [ 0 <- 0 ]i </lastFinalized>
+     <lastJustified> .IList => .IList [ 0 <- 0 ]ii </lastJustified>
+     <lastFinalized> .IList => .IList [ 0 <- 0 ]ii </lastFinalized>
      <blocks> .BlockMap => .BlockMap [ 0 <- #Block((0,0),(-1,-1),.Slashings,.Attestations,.Deposits,.VoluntaryExits) ]k </blocks>
 ```
 
@@ -174,19 +174,17 @@ rule <k> processEpoch()
 ```
 ```{.k .symbolic}
        <attested>  epochOf(Slot) |-> (_ => .Attestations) ... </attested>
-       <justified> epochOf(Slot) |-> (_ => false) ... </justified>
-       <finalized> epochOf(Slot) |-> (_ => false) ... </finalized>
 ```
 ```{.k .concrete}
        <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
-       <justified> J => J[epochOf(Slot) <- false] </justified>
-       <finalized> F => F[epochOf(Slot) <- false] </finalized>
 ```
 ```k
+       <justified> J => ( epochOf(Slot) , false ) J </justified>
+       <finalized> F => ( epochOf(Slot) , false ) F </finalized>
        ...
      </state>
-     <lastJustified> LJ => LJ [ epochOf(Slot) <- LJ[epochOf(Slot) -Int 1]i ]i </lastJustified>
-     <lastFinalized> LF => LF [ epochOf(Slot) <- LF[epochOf(Slot) -Int 1]i ]i </lastFinalized>
+     <lastJustified> LJ => LJ [ epochOf(Slot) <- LJ[epochOf(Slot) -Int 1]ii ]ii </lastJustified>
+     <lastFinalized> LF => LF [ epochOf(Slot) <- LF[epochOf(Slot) -Int 1]ii ]ii </lastFinalized>
      requires isFirstSlotOfEpoch(Slot)
 
 rule <k> processEpoch() => . ... </k>
@@ -226,10 +224,10 @@ rule <k> true ~> justify(Epoch) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <justified> Epoch |-> (_ => true) ... </justified>
+       <justified> J => J [ Epoch <- true ]bb </justified>
        ...
      </state>
-     <lastJustified> LJ => LJ [ epochOf(Slot) <- Epoch ]i </lastJustified>
+     <lastJustified> LJ => LJ [ epochOf(Slot) <- Epoch ]ii </lastJustified>
 rule <k> false ~> justify(_) => . ... </k>
 
 syntax Bool ::= isJustifiable(Int, Int, Attestations, IMap, IntList) [function, functional, smtlib(isJustifiable)]
@@ -263,8 +261,8 @@ rule attestationsBalance(_, .Attestations, _) => 0
 ```k
 syntax KItem ::= processFinalization(Int)
 rule <k> processFinalization(TargetEpoch)
-      => isFinalizable(SourceEpoch[TargetEpoch]i, TargetEpoch, Justified)
-      ~> finalize(SourceEpoch[TargetEpoch]i) ... </k>
+      => isFinalizable(SourceEpoch[TargetEpoch]ii, TargetEpoch, Justified)
+      ~> finalize(SourceEpoch[TargetEpoch]ii) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -281,15 +279,15 @@ rule <k> true ~> finalize(Epoch) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <finalized> Epoch |-> (_ => true) ... </finalized>
+       <finalized> F => F [ Epoch <- true ]bb </finalized>
        ...
      </state>
-     <lastFinalized> LF => LF [ epochOf(Slot) <- Epoch ]i </lastFinalized>
+     <lastFinalized> LF => LF [ epochOf(Slot) <- Epoch ]ii </lastFinalized>
 rule <k> false ~> finalize(_) => . ... </k>
 
 // source : source+1 = target justified
 // source : source+1 : source+2 = target justified
-syntax Bool ::= isFinalizable(Int, Int, Map) [function] // not functional
+syntax Bool ::= isFinalizable(Int, Int, BList) [function] // not functional
 rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
   => isJustified(SourceEpoch, Justified) andBool isJustified(TargetEpoch, Justified)
      andBool (
@@ -301,8 +299,8 @@ rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
 rule isFinalizable(SourceEpoch, TargetEpoch, Justified) => false
   requires TargetEpoch -Int SourceEpoch >Int 2
 
-syntax Bool ::= isJustified(Int, Map) [function] // not functional
-rule isJustified(Epoch, Justified) => {Justified[Epoch]}:>Bool
+syntax Bool ::= isJustified(Int, BList) [function] // not functional
+rule isJustified(Epoch, Justified) => Justified[Epoch]bb
 /*
 rule isJustified(Epoch, Epoch |-> true  _:Map) => true
 rule isJustified(Epoch, Epoch |-> false _:Map) => false
@@ -316,7 +314,7 @@ rule isJustified(Epoch, Epoch |-> false _:Map) => false
 syntax KItem ::= processRewardsPenalties(Int)
 rule <k> processRewardsPenalties(Epoch)
       => processRewardsPenaltiesAux1(
-           VIDs, VM, Epoch, Epoch -Int LastFinalizedEpoch[epochOf(Slot)]i,
+           VIDs, VM, Epoch, Epoch -Int LastFinalizedEpoch[epochOf(Slot)]ii,
                                                                                           filterNotSlashed(VM.slashed, Attestations)  ,
                                   filterByTarget(EpochBoundaryBlock[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)) ,
            filterByHead(BlockMap, filterByTarget(EpochBoundaryBlock[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)))
@@ -665,7 +663,7 @@ rule isActivationEligible(VID, ActivationEligibilityEpochMap, EffectiveBalanceMa
 
 syntax Kitem ::= processValidatorActivation()
 rule <k> processValidatorActivation()
-      => activateValidators(activationQueueUptoChurnLimit(VIDs, VM.activation_eligibility_epoch, VM.activation_epoch, VM.exit_epoch, FinalizedEpoch[epochOf(Slot)]i, epochOf(Slot) -Int 1)) ... </k>
+      => activateValidators(activationQueueUptoChurnLimit(VIDs, VM.activation_eligibility_epoch, VM.activation_epoch, VM.exit_epoch, FinalizedEpoch[epochOf(Slot)]ii, epochOf(Slot) -Int 1)) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -846,7 +844,7 @@ rule <k> true ~> addAttestation(A) => . ... </k>
 rule <k> false ~> addAttestation(_) => #bottom ... </k>
 
 syntax KItem ::= checkAttestation(Attestation)
-rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch[A.target_epoch]i, JBlock[firstSlotOf(JEpoch[A.target_epoch]i)]i, VM.slashed[A.attester]b) ... </k>
+rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch[A.target_epoch]ii, JBlock[firstSlotOf(JEpoch[A.target_epoch]ii)]i, VM.slashed[A.attester]b) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -857,7 +855,7 @@ rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch[A.target_epoc
      <lastBlock> JBlock </lastBlock>
      requires A.target_epoch >Int 0
 
-rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch[0]i, JBlock[0]i, VM.slashed[A.attester]b) ... </k>
+rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch[0]ii, JBlock[0]i, VM.slashed[A.attester]b) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>

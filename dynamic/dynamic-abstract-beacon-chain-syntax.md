@@ -356,6 +356,34 @@ rule ( M [ K1 <- V ]b ) [ K2 ]b => V         requires K1  ==Int K2 [smt-lemma]
 rule ( M [ K1 <- V ]b ) [ K2 ]b => M [ K2 ]b requires K1 =/=Int K2 [smt-lemma]
 ```
 
+```k
+syntax BList ::= ".BList"
+syntax BList ::= "(" Int "," Bool ")" BList
+
+syntax BList ::= BList "[" Int "<-" Bool "]bb" [function]
+syntax Bool  ::= BList "[" Int           "]bb" [function]
+
+rule ( (K1, V) M ) [ K2 ]bb => V          requires K1 ==Int K2
+rule ( (K1, _) M ) [ K2 ]bb => M [ K2 ]bb requires K1  >Int K2
+
+rule ( (K1, _ ) M ) [ K2 <- V2 ]bb => (K1, V2)   M                  requires K1 ==Int K2
+rule ( (K1, V1) M ) [ K2 <- V2 ]bb => (K1, V1) ( M [ K2 <- V2 ]bb ) requires K1  >Int K2
+```
+
+```k
+syntax IList ::= ".IList"
+syntax IList ::= "(" Int "," Int ")" IList
+
+syntax IList ::= IList "[" Int "<-" Int "]ii" [function]
+syntax Int   ::= IList "[" Int          "]ii" [function]
+
+rule ( (K1, V) M ) [ K2 ]ii => V          requires K1 ==Int K2
+rule ( (K1, _) M ) [ K2 ]ii => M [ K2 ]ii requires K1  >Int K2
+
+rule ( (K1, _ ) M ) [ K2 <- V2 ]ii => (K1, V2)   M                  requires K1 ==Int K2
+rule ( (K1, V1) M ) [ K2 <- V2 ]ii => (K1, V1) ( M [ K2 <- V2 ]ii ) requires K1  >Int K2
+```
+
 ## Constants
 
 ```k

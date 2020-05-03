@@ -32,6 +32,9 @@ imports DYNAMIC-ABSTRACT-BEACON-CHAIN
 imports LEMMAS-JAVA
 imports SUBSTITUTION
 
+// rule ( K1 |-> V M:Map ) [ K2 ] => V        requires K1  ==Int K2
+// rule ( K1 |-> _ M:Map ) [ K2 ] => M [ K2 ] requires K1 =/=Int K2
+
 syntax KVar ::= "x" [token]
 
 syntax Int ::= KVar
