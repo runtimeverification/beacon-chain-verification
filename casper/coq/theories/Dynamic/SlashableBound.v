@@ -48,9 +48,39 @@ Lemma wt_meet_subbound : forall (s1 s1' s2':{set Validator}),
   wt (s1 :&: (s1' :&: s2')) + wt (s1' :\: s2') >= wt s1.
 Proof. Admitted.
 
+Lemma set3DD_disjoint : forall (vs0 vs1 vs2:{set Validator}),
+  [disjoint vs0 :\: vs2 & vs1 :\: vs0].
+Proof.
+  move=> vs0 vs1 vs2.
+  rewrite -setI_eq0 eqEsubset.
+  apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
+  move/setIP=> [H1 H2].
+  move/setDP: H1 => [H1a H1b].
+  move/setDP: H2 => [H2a H2b].
+  move/negP: H2b => H2b.
+  by contradiction.
+Qed.
+
+Lemma set3D_subset : forall (vs0 vs1 vs2:{set Validator}),
+  vs1 :\: vs2 \subset vs0 :\: vs2 :|: vs1 :\: vs0.
+Proof. 
+  move=> vs0 vs1 vs2.
+  apply/subsetP => x.
+  move/setDP=> [H1 H2].  
+  apply/setUP.
+  have : (x \in vs0) || ~~(x \in vs0) by apply orbN.
+  case/orP=> H.
+  - left. by apply/setDP;split.
+  - right. by apply/setDP;split.  
+Qed.
+
 Lemma wt_meet_tri_bound : forall vs0 vs1 vs2,
   wt (vs1 :\: vs2) <= wt (vs0 :\: vs2) + wt (vs1 :\: vs0).
-Proof. Admitted.
+Proof.
+  move=> vs0 vs1 vs2.
+  rewrite -wt_join_disjoint;last by apply set3DD_disjoint. 
+  apply: wt_inc_leq. apply: set3D_subset.
+Qed.
 
 Theorem slashable_bound : forall st b0 b1 b2 b1_h b2_h k1 k2,
   k_finalized st b1 b1_h k1 ->
