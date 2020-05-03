@@ -32,6 +32,62 @@ Definition actwt (vs1 vs2: {set Validator}): nat :=
 Definition extwt (vs1 vs2: {set Validator}): nat :=
   wt (exited vs1 vs2).
 
+Lemma setIs_disjoint : forall (A B C: {set Validator}),
+  [disjoint A & B] -> [disjoint A & B :&: C].
+Proof.
+  move=> A B C.
+  move/setDidPl=> <-.
+  rewrite -setI_eq0 eqEsubset.
+  apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
+  move/setIP=> [H1 H2].
+  move/setDP: H1 => [_ H1].
+  move/setIP: H2 => [H2 _].
+  by move/negP: H1 => H1.
+Qed.
+
+Lemma setIID_disjoint : forall (A B C: {set Validator}),
+  [disjoint (A :&: B) & (A :&: C :\: B)].
+Proof.
+  move=> A B C.
+  rewrite setDIl.
+  apply: setIs_disjoint.
+  apply: setID_disjoint.
+Qed.
+
+Lemma setIIDD_disjoint : forall (A B C D: {set Validator}),
+[disjoint A :&: B :|: A :&: C :\: B & B :&: D :\: A].
+Proof.
+  move=> A B C D.
+  rewrite -setI_eq0 eqEsubset.
+  apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
+  move/setIP=> [H1 H2].
+  move/setUP: H1 => H1.
+  move/setDP: H2 => [H2a H2b].
+  case: H1.
+  - move/setIP=> [H _]. by move/negP: H2b.
+  - move/setDP=> [H _]. move/setIP: H => [H _]. by move/negP: H2b.
+Qed.
+
+Lemma setIIDD_subset : forall (A B C D: {set Validator}), 
+  A \subset C ->
+  B \subset D ->
+  A :&: B :|: A :&: D :\: B :|: B :&: C :\: A \subset C :&: D.
+Proof.
+  move=> A B C D Ha Hb.
+  move/subsetP:Ha => Ha.
+  move/subsetP:Hb => Hb.
+  apply/subsetP => x.
+  case/setUP=> H.
+  apply/setIP.
+  - case/setUP: H => H.
+    * move/setIP: H => [Hxa Hxb].
+      by (apply Ha in Hxa;apply Hb in Hxb).
+    * move/setDP: H => [Hxad _]. move/setIP: Hxad => [Hxa Hxd].
+      by (apply Ha in Hxa).
+  - move/setDP: H => [Hxbc _]. move/setIP: Hxbc => [Hxb Hxc].
+    apply Hb in Hxb. by apply/setIP.
+Qed.
+
 Lemma wt_meetC : forall vs1 vs2,
   wt (vs1 :&: vs2) = wt (vs2 :&: vs1).
 Proof. by [rewrite /wt => vs1 vs2;rewrite setIC]. Qed.
@@ -41,7 +97,27 @@ Lemma wt_meet_bound : forall (s1 s2 s1' s2':{set Validator}),
   s2 \subset s2' ->
   let s12' := (s1' :&: s2') in 
     wt (s1 :&: s2) + wt s12' >= wt (s1 :&: s12') + wt (s2 :&: s12').
-Proof. Admitted.
+Proof.
+  move=> s1 s2 s1' s2' Hs1sub Hs2sub /=.
+  have Hs1 : (s1 :&: s1' = s1) by move/setIidPl: Hs1sub.
+  have Hs2 : (s2 :&: s2' = s2) by move/setIidPl: Hs2sub. 
+  rewrite setIA Hs1.
+  rewrite {1}[(s1' :&: s2')]setIC setIA Hs2.
+  
+  rewrite -(setID (s1 :&: s2') s2).
+  rewrite wt_join_disjoint; last by apply setID_disjoint.
+  rewrite -(setID (s2 :&: s1') s1).
+  rewrite wt_join_disjoint; last by apply setID_disjoint.
+  rewrite -setIA [s2' :&: s2]setIC Hs2.
+  rewrite -setIA [s1' :&: s1]setIC Hs1.
+  rewrite addnACA -addnA leq_add2l.
+  rewrite setIC addnA.
+  
+  rewrite -(wt_join_disjoint); last by apply setIID_disjoint.
+  rewrite -(wt_join_disjoint); last by apply setIIDD_disjoint.
+  apply: wt_inc_leq.
+  by apply: setIIDD_subset.
+Qed.
 
 Lemma wt_meet_subbound : forall (s1 s1' s2':{set Validator}),
   s1 \subset s1' -> 
