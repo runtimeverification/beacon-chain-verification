@@ -51,7 +51,7 @@ configuration <T>
   <lastJustified> .IList </lastJustified> // epoch -> last justified block id
   <lastFinalized> .IList </lastFinalized> // epoch -> last finalized block id
   // blockchain
-  <blocks> .BlockMap </blocks> // slot -> block
+  <blocks> .BlockMap </blocks> // block id -> block
 </T>
 ```
 
@@ -316,8 +316,8 @@ rule <k> processRewardsPenalties(Epoch)
       => processRewardsPenaltiesAux1(
            VIDs, VM, Epoch, Epoch -Int LastFinalizedEpoch[epochOf(Slot)]ii,
                                                                                           filterNotSlashed(VM.slashed, Attestations)  ,
-                                  filterByTarget(EpochBoundaryBlock[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)) ,
-           filterByHead(BlockMap, filterByTarget(EpochBoundaryBlock[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)))
+                                  filterByTarget(BlockMap[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)) ,
+           filterByHead(BlockMap, filterByTarget(BlockMap[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)))
          ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -329,9 +329,8 @@ rule <k> processRewardsPenalties(Epoch)
        </attested>
        ...
      </state>
-     <lastBlock> EpochBoundaryBlock </lastBlock>
+     <lastBlock> BlockMap </lastBlock>
      <lastFinalized> LastFinalizedEpoch </lastFinalized>
-     <blocks> BlockMap </blocks>
      requires Epoch >=Int 2
 rule processRewardsPenalties(Epoch) => .
      requires Epoch <Int 2
@@ -534,8 +533,8 @@ rule filterByTarget(T, A As) => #if A.target_block ==Int T
                                 #fi
 rule filterByTarget(_, .Attestations) => .Attestations
 
-syntax Attestations ::= filterByHead(BlockMap, Attestations) [function, smtlib(filterByHead)]
-rule filterByHead(BlockMap, A As) => #if A.head_block ==Int BlockMap[A.slot]k.id
+syntax Attestations ::= filterByHead(IMap, Attestations) [function, smtlib(filterByHead)]
+rule filterByHead(BlockMap, A As) => #if A.head_block ==Int BlockMap[A.slot]i
                                #then A filterByHead(BlockMap, As)
                                #else   filterByHead(BlockMap, As)
                                #fi
@@ -746,7 +745,7 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposi
      <currentSlot> Slot </currentSlot>
      <lastBlock> B => B [ Slot <- ID ]i </lastBlock>
      <blocks>
-       BlockMap => BlockMap [ Slot <- #Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits) ]k
+       BlockMap => BlockMap [ ID <- #Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits) ]k
      </blocks>
      // TODO: check if the block proposer is valid (assigned, not slashed)
 ```

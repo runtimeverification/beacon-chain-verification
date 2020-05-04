@@ -62,9 +62,8 @@ rule
     </state>
     ...
   </states>
-  <lastBlock> EpochBoundaryBlock </lastBlock>
+  <lastBlock> BlockMap </lastBlock>
   <lastFinalized> ( epochOf(Slot) , LastFinalizedEpoch ) _ </lastFinalized>
-  <blocks> BM </blocks>
   ...
 </T>
 requires true
@@ -76,8 +75,8 @@ andBool ?FinalityDelay >=Int 0
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
 andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
-andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock[firstSlotOf(?Epoch)]i, ?SourceAttestations)
-andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
+andBool ?TargetAttestations ==K filterByTarget(BlockMap[firstSlotOf(?Epoch)]i, ?SourceAttestations)
+andBool   ?HeadAttestations ==K filterByHead(BlockMap, ?TargetAttestations)
 andBool ?SourceAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?SourceAttestations)))
 andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?TargetAttestations)))
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
@@ -115,9 +114,8 @@ rule
     </state>
     ...
   </states>
-  <lastBlock> EpochBoundaryBlock </lastBlock>
+  <lastBlock> BlockMap </lastBlock>
   <lastFinalized> ( epochOf(Slot) , LastFinalizedEpoch ) _ </lastFinalized>
-  <blocks> BM </blocks>
   ...
 </T>
 requires true
@@ -133,8 +131,8 @@ andBool     ?TotalActiveBalance >=Int 0
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
 andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
-andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock[firstSlotOf(?Epoch)]i, ?SourceAttestations)
-andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
+andBool ?TargetAttestations ==K filterByTarget(BlockMap[firstSlotOf(?Epoch)]i, ?SourceAttestations)
+andBool   ?HeadAttestations ==K filterByHead(BlockMap, ?TargetAttestations)
 andBool ?SourceAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?SourceAttestations)))
 andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?TargetAttestations)))
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
@@ -172,9 +170,8 @@ rule
     </state>
     ...
   </states>
-  <lastBlock> EpochBoundaryBlock </lastBlock>
+  <lastBlock> BlockMap </lastBlock>
   <lastFinalized> ( epochOf(Slot) , LastFinalizedEpoch ) _ </lastFinalized>
-  <blocks> BM </blocks>
   ...
 </T>
 requires true
@@ -190,8 +187,8 @@ andBool     ?TotalActiveBalance >=Int 0
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
 andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
-andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock[firstSlotOf(?Epoch)]i, ?SourceAttestations)
-andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
+andBool ?TargetAttestations ==K filterByTarget(BlockMap[firstSlotOf(?Epoch)]i, ?SourceAttestations)
+andBool   ?HeadAttestations ==K filterByHead(BlockMap, ?TargetAttestations)
 andBool ?SourceAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?SourceAttestations)))
 andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?TargetAttestations)))
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
