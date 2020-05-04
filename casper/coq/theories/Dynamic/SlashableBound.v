@@ -119,10 +119,44 @@ Proof.
   by apply: setIIDD_subset.
 Qed.
 
+Lemma setID2_disjoint : forall (s1 s1' s2':{set Validator}),
+  [disjoint (s1 :&: s2') & (s1' :\: s2')].
+Proof.
+  move=> vs0 vs1 vs2.
+  rewrite -setI_eq0 eqEsubset.
+  apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
+  move/setIP=> [H1 H2].
+  move/setIP: H1 => [_ H1].  
+  move/setDP: H2 => [_ H2].  
+  by move/negP: H2 => H2.
+Qed.
+
+Lemma setID2_subset : forall (s1 s1' s2':{set Validator}),
+  s1 \subset s1' ->
+  s1 \subset (s1 :&: s2') :|: (s1' :\: s2').
+Proof.
+  move=> vs0 vs1 vs2.
+  move/subsetP => H.
+  apply/subsetP => x.
+  move=> Hs0.
+  apply/setUP.
+  have : (x \in vs2) || ~~(x \in vs2) by apply orbN.
+  case/orP=> H'.
+  - left. by apply/setIP.
+  - right. apply H in Hs0. by apply/setDP.
+Qed.
+
 Lemma wt_meet_subbound : forall (s1 s1' s2':{set Validator}),
   s1 \subset s1' -> 
   wt (s1 :&: (s1' :&: s2')) + wt (s1' :\: s2') >= wt s1.
-Proof. Admitted.
+Proof.
+  move=> s1 s1' s2' Hs1sub.
+  have Hs1 : (s1 :&: s1' = s1) by move/setIidPl: Hs1sub.
+  rewrite setIA Hs1.
+  rewrite -wt_join_disjoint; last by apply setID2_disjoint.  
+  apply: wt_inc_leq.
+  by apply setID2_subset.
+Qed.
 
 Lemma set3DD_disjoint : forall (vs0 vs1 vs2:{set Validator}),
   [disjoint vs0 :\: vs2 & vs1 :\: vs0].
