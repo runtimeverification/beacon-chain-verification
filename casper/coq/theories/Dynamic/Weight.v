@@ -73,11 +73,6 @@ Lemma wt_meet : forall s1 s2,
   wt (s1 :&: s2) = wt s1 + wt s2 - wt (s1 :|: s2).
 Proof. Admitted.
 
-(* wt (vs :|: v) >= 0 should also be provable *)
-Lemma wt_join : forall vs1 vs2,
-  wt (vs1 :|: vs2) = wt vs1 + wt vs2 - wt (vs1 :&: vs2).
-Proof. Admitted.
-
 (* wt (~: vs) >= 0 should also be provable *)
 Lemma wt_comp : forall vs,
   wt (~: vs) = wt [set: Validator] - wt vs.
@@ -179,6 +174,23 @@ Proof.
   apply: wt_eq. apply: setU_par.
   apply: setDDI_disjoint.
   apply: setDD_disjoint.
+Qed.
+
+(* wt (vs :|: v) >= 0 should also be provable *)
+Lemma wt_join : forall vs1 vs2,
+  wt (vs1 :|: vs2) = wt vs1 + wt vs2 - wt (vs1 :&: vs2).
+Proof.
+  move=> vs1 vs2.
+  rewrite -{2}(setID vs1 vs2).
+  rewrite -{4}(setID vs2 vs1).
+  rewrite [wt (vs1 :&: vs2 :|: _)]wt_join_disjoint; last by apply setID_disjoint.
+  rewrite [wt (vs2 :&: vs1 :|: _)]wt_join_disjoint; last by apply setID_disjoint.
+  rewrite [vs2 :&: vs1]setIC.
+  rewrite -addnA [_ + wt (vs2 :\: vs1)]addnC.  
+  rewrite [wt (vs1 :\: vs2) + (_+_)]addnA.
+  rewrite -wt_join_partition. 
+  rewrite -addnBAC; last by [].
+  by rewrite sub_eq add0n.
 Qed.
 
 Lemma wt_meet_leq1 : forall vs1 vs2,
