@@ -19,11 +19,11 @@ rule
     <state>
       <slot> Slot </slot>
       <validators> v(m(SM, BM, EBM, AEM1 => ?AEM2, AM1 => ?AM2, EM1 => ?EM2, WM1 => ?WM2), VIDs) </validators>
-      <lastFinalized> FinalizedEpoch </lastFinalized>
       ...
     </state>
     ...
   </states>
+  <lastFinalized> ( epochOf(Slot) , FinalizedEpoch ) _ </lastFinalized>
   ...
 </T>
 requires true

@@ -32,6 +32,9 @@ imports DYNAMIC-ABSTRACT-BEACON-CHAIN
 imports LEMMAS-JAVA
 imports SUBSTITUTION
 
+rule ( K1 |-> V M:Map ) [ K2 ] => V        requires K1  ==Int K2
+rule ( K1 |-> _ M:Map ) [ K2 ] => M [ K2 ] requires K1 =/=Int K2
+
 syntax KVar ::= "x" [token]
 
 syntax Int ::= KVar
@@ -42,7 +45,7 @@ rule forall(_, _, true) => true
 rule forall(X, S, X in S) => true
 
 syntax VoluntaryExit ::= KVar
-syntax Bool ::= forallE(KVar, VoluntaryExits, Bool) [binder, function]
+syntax Bool ::= forallE(KVar, VoluntaryExits, Bool) [binder, function, smtlib((forall ((#1 VoluntaryExit)) (=> (inE #1 #2) #3)))]
 rule forallE(X, V Vs, E) => E[V / X] andBool forallE(X, Vs, E)
 rule forallE(_, .VoluntaryExits, _) => true
 rule forallE(_, _, true) => true
@@ -395,6 +398,94 @@ rule activeValidators(VIDs, AM, EM [ X <- E ]i, Epoch)
 
 /// rule activationQueue(v(m(_, _, _, AEM, AM, _, _), VIDs), E)
 ///  ==K activationQueue(v(m(_, _, _, AEM, AM, _, _), VIDs), E) => true [smt-lemma]
+
+// for process-deposit-spec
+
+syntax Bool ::= isValidDeposits(Deposits) [function, smtlib(isValidDeposits)]
+rule isValidDeposits(D Ds) => D.amount >=Int 0 andBool isValidDeposits(Ds)
+rule isValidDeposits(.Deposits) => true
+
+syntax IntList ::= getValidatorsD(Deposits) [function, smtlib(getValidatorsD)]
+rule getValidatorsD(D Ds) => D.sender getValidatorsD(Ds)
+rule getValidatorsD(.Deposits) => .IntList
+
+// remove duplicate elements in the given list: the ones that appear earlier (more left) are removed.
+syntax IntList ::= unique(IntList) [function, smtlib(uniqueI)]
+rule unique(I Is) =>   unique(Is) requires         I in Is
+rule unique(I Is) => I unique(Is) requires notBool I in Is
+rule unique(.IntList) => .IntList
+
+rule unique(Is) => Is requires distinct(Is)
+
+rule distinct(unique(_)) => true [concrete, smt-lemma]
+
+rule iff(X in unique(L1 ++ L2), X in L1 orBool X in L2) => true [concrete, smt-lemma]
+
+rule unique(rev(Ys) ++ X Xs)
+  => unique(rev(Ys) ++   Xs)
+     requires X in Xs
+
+rule unique((X Xs) ++ Ys)
+  => unique(   Xs  ++ Ys)
+     requires X in Xs orBool X in Ys
+
+rule   unique((X Xs) ++ Ys)
+  => X unique(   Xs  ++ Ys)
+     requires notBool X in unique(Xs ++ Ys)
+     [concrete, smt-lemma]
+
+rule implies(X in Xs1, X in Xs2) => true
+     requires subset(Xs1, Xs2)
+     [concrete, smt-lemma]
+
+rule subset(L, unique(_ ++ L)) => true
+     requires distinct(L)
+     [concrete, smt-lemma]
+
+rule disjoint1(Is, I) => true requires distinct(I Is) [concrete, smt-lemma]
+
+rule implies(J in Js andBool disjoint1(Js, I), I =/=K J) => true [concrete, smt-lemma]
+
+rule iff(X in rev(L), X in L) => true [concrete, smt-lemma]
+
+// for process-block
+
+rule maxExitEpoch(unique(L ++ VIDs), EM2)
+ ==K maxExitEpoch(            VIDs,  EM1) => true
+     requires forall(x, L, implies(notBool x in VIDs, EM2[x]i ==Int FAR_FUTURE_EPOCH)) // new validators have no exit epoch
+      andBool forall(x, VIDs, EM2[x]i ==Int EM1[x]i) // existing validators' exit epoch is preserved
+     [concrete, smt-lemma]
+
+rule activeValidators(unique(L ++ VIDs), AM2, EM2, Epoch)
+ ==K activeValidators(            VIDs , AM1, EM1, Epoch) => true
+     requires forall(x, L, implies(notBool x in VIDs, AM2[x]i ==Int FAR_FUTURE_EPOCH)) // new validators are not active
+      andBool forall(x, VIDs, AM2[x]i ==Int AM1[x]i) // existing validators' activation epoch is preserved
+      andBool forall(x, VIDs, EM2[x]i ==Int EM1[x]i) // existing validators' exit epoch is preserved
+     [concrete, smt-lemma]
+
+rule implies(
+       forall(x, getValidatorsE(VEs), x in VIDs:IntList)
+     ,
+       forallE(x, VEs, x.validator in VIDs)
+     ) => true
+     [concrete, smt-lemma]
+
+// for process-attestation
+
+syntax Attestations ::= getAttestations(Attestations, Int) [function, smtlib(getAttestations)]
+rule getAttestations(A As, E) => A getAttestations(As, E) requires A.target_epoch  ==Int E
+rule getAttestations(A As, E) =>   getAttestations(As, E) requires A.target_epoch =/=Int E
+rule getAttestations(.Attestations, _) => .Attestations
+
+syntax Bool ::= isValidAttestationList(Attestations, Int, IList, IMap, BMap) [function, smtlib(isValidAttestationList)]
+rule isValidAttestationList(A As, Slot, SourceEpoch, SourceBlock, Slashed)
+  => isValidAttestation(A, Slot, SourceEpoch[A.target_epoch]ii, SourceBlock[firstSlotOf(SourceEpoch[A.target_epoch]ii)]i, Slashed[A.attester]b)
+     andBool ( A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1 ) // TODO: drop
+     andBool isValidAttestationList(As, Slot, SourceEpoch, SourceBlock, Slashed)
+rule isValidAttestationList(.Attestations, _, _, _, _) => true
+
+// rule (A getAttestations(As, E)) ++ As0
+//   => A (getAttestations(As, E)  ++ As0)
 
 
 syntax Tactic ::= "begin"

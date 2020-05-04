@@ -98,7 +98,6 @@ An abstract attestation denotes a single attestation, consisting of an attester,
 The `Attestation` of the concrete model can be represented as a set of abstract attestations whose slot, source, and target are the same.
 
 ```k
-syntax Attestations ::= List{Attestation,""}
 syntax Attestation  ::= #Attestation(Int,Int,Pair,Pair,Int,Int,Int) // attester, assigned slot, source epoch/block, target epoch/block, head block (LMD GHOST vote), proposer, inclusion delay
 syntax Int ::= Attestation ".attester"        [function, functional, klabel(a_attester)       , smtlib(a_attester)       ]
 syntax Int ::= Attestation ".slot"            [function, functional, klabel(a_slot)           , smtlib(a_slot)           ]
@@ -121,6 +120,9 @@ rule #Attestation(_,_,(_,_),(_,_),_,_,X).inclusion_delay => X
 ```
 
 ```k
+syntax Attestations ::= ".Attestations"          [klabel(nilA),  smtlib(nilA)]
+syntax Attestations ::= Attestation Attestations [klabel(consA), smtlib(consA)]
+
 syntax Int ::= sizeA(Attestations) [function, smtlib(sizeA)]
 rule sizeA(_ As) => 1 +Int sizeA(As)
 rule sizeA(.Attestations) => 0
@@ -138,6 +140,18 @@ syntax Bool ::= Int "inA" Attestations [function, klabel(inA), smtlib(inA)]
 rule V inA (A As) => true     requires V  ==Int A.attester
 rule V inA (A As) => V inA As requires V =/=Int A.attester
 rule V inA .Attestations => false
+
+syntax Attestations ::= revA(Attestations) [function, smtlib(revA)]
+
+rule revA(.Attestations) => .Attestations
+
+syntax Attestations ::= Attestations "++A" Attestations [function, klabel(concatA), smtlib(concatA)]
+
+rule L ++A .Attestations => L
+rule .Attestations ++A L => L
+
+rule (X Xs) ++A Ys => X (Xs ++A Ys)
+rule revA(X Ys) ++A Xs => revA(Ys) ++A (X Xs)
 ```
 
 ## Abstract Deposits
@@ -149,8 +163,8 @@ The extra data (e.g., signatures and Merkle proofs) for validating the deposit i
 ```k
 syntax Deposits ::= List{Deposit,""}
 syntax Deposit  ::= #Deposit(Int,Int) // sender, amount
-syntax Int ::= Deposit ".sender" [function, functional]
-syntax Int ::= Deposit ".amount" [function, functional]
+syntax Int ::= Deposit ".sender" [function, functional, klabel(d_sender), smtlib(d_sender)]
+syntax Int ::= Deposit ".amount" [function, functional, klabel(d_amount), smtlib(d_amount)]
 rule #Deposit(X,_).sender => X
 rule #Deposit(_,X).amount => X
 ```
@@ -162,12 +176,19 @@ This is a pair of a validator ID and an epoch to exit requested.
 This is the same with the concrete model.
 
 ```k
-syntax VoluntaryExits ::= List{VoluntaryExit,""}
 syntax VoluntaryExit  ::= #VoluntaryExit(Int,Int) // validator id, epoch to exit
-syntax Int ::= VoluntaryExit ".validator" [function, functional]
-syntax Int ::= VoluntaryExit ".epoch"     [function, functional]
+syntax Int ::= VoluntaryExit ".validator" [function, functional, klabel(e_validator), smtlib(e_validator)]
+syntax Int ::= VoluntaryExit ".epoch"     [function, functional, klabel(e_epoch)    , smtlib(e_epoch)    ]
 rule #VoluntaryExit(X,_).validator => X
 rule #VoluntaryExit(_,X).epoch     => X
+
+syntax VoluntaryExits ::= ".VoluntaryExits"            [klabel(nilE), smtlib(nilE)]
+syntax VoluntaryExits ::= VoluntaryExit VoluntaryExits [klabel(consE), smtlib(consE)]
+
+syntax Bool ::= VoluntaryExit "inE" VoluntaryExits [function, klabel(inE), smtlib(inE)]
+rule J inE (I Is) => true     requires J  ==K I [smt-lemma]
+rule J inE (I Is) => J inE Is requires J =/=K I [smt-lemma]
+rule _ inE .VoluntaryExits => false [smt-lemma]
 
 syntax Int ::= sizeE(VoluntaryExits) [function, smtlib(sizeE)]
 rule sizeE(_ Es) => 1 +Int sizeE(Es)
@@ -270,9 +291,9 @@ rule size(_ Is) => 1 +Int size(Is)
 rule size(.IntList) => 0
 
 syntax Bool ::= Int "in" IntList [function, klabel(inI), smtlib(inI)]
-rule J in (I Is) => true    requires J  ==Int I
-rule J in (I Is) => J in Is requires J =/=Int I
-rule _ in .IntList => false
+rule J in (I Is) => true    requires J  ==Int I [smt-lemma]
+rule J in (I Is) => J in Is requires J =/=Int I [smt-lemma]
+rule _ in .IntList => false [smt-lemma]
 
 // take the first N elements at most
 syntax IntList ::= take(Int, IntList) [function, klabel(takeI), smtlib(takeI)]
@@ -282,6 +303,7 @@ rule take(_, .IntList) => .IntList
 
 // sort in the order of activation_eligibility_epoch
 syntax IntList ::= sort(IntList) [function, klabel(sortI), smtlib(sortI)]
+rule sort(.IntList) => .IntList
 // TODO: implement
 
 // subset in set-like view
@@ -314,12 +336,13 @@ rule K1 in keys(M [ K2 <- _ ]v) => K1 in keys(M) requires K1 =/=Int K2
 ```
 
 ```k
+//syntax IMap [smt-prelude] // (define-sort IMap () (Array Int Int))
 syntax IMap ::= ".IMap"                    [          klabel(emptyI),  smtlib(emptyI)]
 syntax IMap ::= IMap "[" Int "<-" Int "]i" [function, klabel(storeI),  smtlib(storeI)]
 syntax Int  ::= IMap "[" Int "]i"          [function, klabel(selectI), smtlib(selectI)]
 
-rule ( M [ K1 <- V ]i ) [ K2 ]i => V         requires K1  ==Int K2
-rule ( M [ K1 <- V ]i ) [ K2 ]i => M [ K2 ]i requires K1 =/=Int K2
+rule ( M [ K1 <- V ]i ) [ K2 ]i => V         requires K1  ==Int K2 [smt-lemma]
+rule ( M [ K1 <- V ]i ) [ K2 ]i => M [ K2 ]i requires K1 =/=Int K2 [smt-lemma]
 
 // in-place update
 
@@ -336,12 +359,47 @@ rule K1 in keys(M [ K2 <- _ ]i) => K1 in keys(M) requires K1 =/=Int K2
 ```
 
 ```k
+//syntax BMap [smt-prelude] // (define-sort BMap () (Array Int Bool))
 syntax BMap ::= ".BMap"                     [          klabel(emptyB),  smtlib(emptyB)]
 syntax BMap ::= BMap "[" Int "<-" Bool "]b" [function, klabel(storeB),  smtlib(storeB)]
 syntax Bool ::= BMap "[" Int "]b"           [function, klabel(selectB), smtlib(selectB)]
 
-rule ( M [ K1 <- V ]b ) [ K2 ]b => V         requires K1  ==Int K2
-rule ( M [ K1 <- V ]b ) [ K2 ]b => M [ K2 ]b requires K1 =/=Int K2
+rule ( M [ K1 <- V ]b ) [ K2 ]b => V         requires K1  ==Int K2 [smt-lemma]
+rule ( M [ K1 <- V ]b ) [ K2 ]b => M [ K2 ]b requires K1 =/=Int K2 [smt-lemma]
+```
+
+```k
+syntax BList ::= ".BList"
+syntax BList ::= "(" Int "," Bool ")" BList
+
+syntax BList ::= BList "[" Int "<-" Bool "]bb" [function]
+syntax Bool  ::= BList "[" Int           "]bb" [function]
+
+rule ( (K1, V) M ) [ K2 ]bb => V          requires K1 ==Int K2
+rule ( (K1, _) M ) [ K2 ]bb => M [ K2 ]bb requires K1  >Int K2
+
+rule ( (K1, _ ) M ) [ K2 <- V2 ]bb => (K1, V2)   M                  requires K1 ==Int K2
+rule ( (K1, V1) M ) [ K2 <- V2 ]bb => (K1, V1) ( M [ K2 <- V2 ]bb ) requires K1  >Int K2
+rule ( (K1, V1) M ) [ K2 <- V2 ]bb => (K2, V2) (K1, V1) M           requires K1  <Int K2
+
+rule .BList [ K <- V ]bb => (K, V) .BList
+```
+
+```k
+syntax IList ::= ".IList"
+syntax IList ::= "(" Int "," Int ")" IList
+
+syntax IList ::= IList "[" Int "<-" Int "]ii" [function]
+syntax Int   ::= IList "[" Int          "]ii" [function]
+
+rule ( (K1, V) M ) [ K2 ]ii => V          requires K1 ==Int K2
+rule ( (K1, _) M ) [ K2 ]ii => M [ K2 ]ii requires K1  >Int K2
+
+rule ( (K1, _ ) M ) [ K2 <- V2 ]ii => (K1, V2)   M                  requires K1 ==Int K2
+rule ( (K1, V1) M ) [ K2 <- V2 ]ii => (K1, V1) ( M [ K2 <- V2 ]ii ) requires K1  >Int K2
+rule ( (K1, V1) M ) [ K2 <- V2 ]ii => (K2, V2) (K1, V1) M           requires K1  <Int K2
+
+rule .IList [ K <- V ]ii => (K, V) .IList
 ```
 
 ## Constants
@@ -419,14 +477,50 @@ syntax Int ::= sqrtInt(Int) [function, smtlib(sqrtInt)]
 ## Macros
 
 ```k
-syntax Int  ::= epochOf(Int)
-              | firstSlotOf(Int)
-              | lastSlotOf(Int)
-syntax Bool ::= isFirstSlotOfEpoch(Int) // Slot is the first slot of an epoch?
+syntax Int  ::= epochOf(Int)            [function, smtlib(epochOf)]
+              | firstSlotOf(Int)        [function, smtlib(firstSlotOf)]
+              | lastSlotOf(Int)         [function, smtlib(lastSlotOf)]
+syntax Bool ::= isFirstSlotOfEpoch(Int) [function, smtlib(isFirstSlotOfEpoch)] // Slot is the first slot of an epoch?
+```
+```{.k .concrete}
 rule epochOf(Slot)            => Slot /Int SLOTS_PER_EPOCH                        [macro]
 rule firstSlotOf(Epoch)       => Epoch *Int SLOTS_PER_EPOCH                       [macro]
 rule lastSlotOf(Epoch)        => firstSlotOf(Epoch) +Int (SLOTS_PER_EPOCH -Int 1) [macro]
 rule isFirstSlotOfEpoch(Slot) => Slot %Int SLOTS_PER_EPOCH ==Int 0                [macro]
+```
+```{.k .symbolic}
+rule epochOf(firstSlotOf(Epoch)) => Epoch [smt-lemma] // NOTE: this ensures the injectivity of firstSlotOf as well!
+rule firstSlotOf(epochOf(Slot)) <=Int Slot => true [concrete, smt-lemma]
+rule lastSlotOf(epochOf(Slot)) >=Int Slot => true [concrete, smt-lemma]
+rule isFirstSlotOfEpoch(firstSlotOf(_)) => true [smt-lemma]
 
+rule epochOf(_)     >=Int 0 => true [concrete, smt-lemma]
+rule firstSlotOf(_) >=Int 0 => true [concrete, smt-lemma]
+rule lastSlotOf(_)  >=Int 0 => true [concrete, smt-lemma]
+
+rule epochOf(Slot) <=Int Slot => true [concrete, smt-lemma]
+rule firstSlotOf(Epoch) >=Int Epoch => true [concrete, smt-lemma]
+rule lastSlotOf(Epoch) >=Int Epoch => true [concrete, smt-lemma]
+rule lastSlotOf(Epoch) >=Int firstSlotOf(Epoch) => true [concrete, smt-lemma]
+
+/*
+// injectivity of firstSlotOf
+rule implies(firstSlotOf(E1) ==K firstSlotOf(E1), E1 ==K E2) => true [concrete, smt-lemma]
+*/
+```
+
+```k
+syntax KItem ::= assert(Bool)
+rule assert(true) => .
+rule assert(false) => #bottom
+
+syntax KItem ::= assertXOR(Bool, Bool)
+rule assertXOR(true,  true)  => #bottom
+rule assertXOR(true,  false) => .
+rule assertXOR(false, true)  => .
+rule assertXOR(false, false) => #bottom
+```
+
+```k
 endmodule
 ```

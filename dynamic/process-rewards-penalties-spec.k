@@ -16,15 +16,11 @@ rule
         ?Epoch |-> Attestations:Attestations
         ...
       </attested>
-      <lastFinalized> LastFinalizedEpoch </lastFinalized>
-      ...
-    </state>
-    <state>
-      <slot> firstSlotOf(?Epoch) </slot>
       ...
     </state>
     ...
   </states>
+  <lastFinalized> ( epochOf(Slot) , LastFinalizedEpoch ) _ </lastFinalized>
   ...
 </T>
 requires true
@@ -62,17 +58,12 @@ rule
         ?Epoch |-> Attestations:Attestations
         ...
       </attested>
-      <lastFinalized> LastFinalizedEpoch </lastFinalized>
-      ...
-    </state>
-    <state>
-      <slot> firstSlotOf(?Epoch) </slot>
-      <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
       ...
     </state>
     ...
   </states>
-  <blocks> BM </blocks>
+  <lastBlock> BlockMap </lastBlock>
+  <lastFinalized> ( epochOf(Slot) , LastFinalizedEpoch ) _ </lastFinalized>
   ...
 </T>
 requires true
@@ -84,8 +75,8 @@ andBool ?FinalityDelay >=Int 0
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
 andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
-andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
-andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
+andBool ?TargetAttestations ==K filterByTarget(BlockMap[firstSlotOf(?Epoch)]i, ?SourceAttestations)
+andBool   ?HeadAttestations ==K filterByHead(BlockMap, ?TargetAttestations)
 andBool ?SourceAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?SourceAttestations)))
 andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?TargetAttestations)))
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
@@ -119,17 +110,12 @@ rule
         ?Epoch |-> Attestations:Attestations
         ...
       </attested>
-      <lastFinalized> LastFinalizedEpoch </lastFinalized>
-      ...
-    </state>
-    <state>
-      <slot> firstSlotOf(?Epoch) </slot>
-      <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
       ...
     </state>
     ...
   </states>
-  <blocks> BM </blocks>
+  <lastBlock> BlockMap </lastBlock>
+  <lastFinalized> ( epochOf(Slot) , LastFinalizedEpoch ) _ </lastFinalized>
   ...
 </T>
 requires true
@@ -145,8 +131,8 @@ andBool     ?TotalActiveBalance >=Int 0
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
 andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
-andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
-andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
+andBool ?TargetAttestations ==K filterByTarget(BlockMap[firstSlotOf(?Epoch)]i, ?SourceAttestations)
+andBool   ?HeadAttestations ==K filterByHead(BlockMap, ?TargetAttestations)
 andBool ?SourceAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?SourceAttestations)))
 andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?TargetAttestations)))
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
@@ -180,17 +166,12 @@ rule
         ?Epoch |-> Attestations:Attestations
         ...
       </attested>
-      <lastFinalized> LastFinalizedEpoch </lastFinalized>
-      ...
-    </state>
-    <state>
-      <slot> firstSlotOf(?Epoch) </slot>
-      <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
       ...
     </state>
     ...
   </states>
-  <blocks> BM </blocks>
+  <lastBlock> BlockMap </lastBlock>
+  <lastFinalized> ( epochOf(Slot) , LastFinalizedEpoch ) _ </lastFinalized>
   ...
 </T>
 requires true
@@ -206,8 +187,8 @@ andBool     ?TotalActiveBalance >=Int 0
 andBool ?Epoch ==Int epochOf(Slot) -Int 2
 andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
 andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
-andBool ?TargetAttestations ==K filterByTarget(EpochBoundaryBlock, ?SourceAttestations)
-andBool   ?HeadAttestations ==K filterByHead(BM, ?TargetAttestations)
+andBool ?TargetAttestations ==K filterByTarget(BlockMap[firstSlotOf(?Epoch)]i, ?SourceAttestations)
+andBool   ?HeadAttestations ==K filterByHead(BlockMap, ?TargetAttestations)
 andBool ?SourceAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?SourceAttestations)))
 andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?TargetAttestations)))
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
