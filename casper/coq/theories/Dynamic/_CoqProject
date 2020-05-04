@@ -2,6 +2,7 @@
 
 NatExt.v
 Validator.v
+SetTheoryProps.v
 Weight.v
 HashTree.v
 State.v
