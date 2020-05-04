@@ -12,11 +12,11 @@ rule
     <state>
       <slot> Slot </slot>
       <validators> v(m(SM, BM, EBM, AEM1 => ?AEM2, AM, EM, WM), VIDs) </validators>
-      <lastFinalized> FinalizedEpoch </lastFinalized>
       ...
     </state>
     ...
   </states>
+  <lastFinalized> ( epochOf(Slot) , FinalizedEpoch ) _ </lastFinalized>
   ...
 </T>
 requires true
@@ -43,11 +43,11 @@ rule
     <state>
       <slot> Slot </slot>
       <validators> v(m(SM, BM, EBM, AEM1 => ?AEM2, AM, EM, WM), VIDs) </validators>
-      <lastFinalized> FinalizedEpoch </lastFinalized>
       ...
     </state>
     ...
   </states>
+  <lastFinalized> ( epochOf(Slot) , FinalizedEpoch ) _ </lastFinalized>
   ...
 </T>
 requires true

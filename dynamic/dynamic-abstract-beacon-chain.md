@@ -179,8 +179,8 @@ rule <k> processEpoch()
        <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
 ```
 ```k
-       <justified> J => ( epochOf(Slot) , false ) J </justified>
-       <finalized> F => ( epochOf(Slot) , false ) F </finalized>
+       <justified> J => J [ epochOf(Slot) <- false ]bb </justified>
+       <finalized> F => F [ epochOf(Slot) <- false ]bb </finalized>
        ...
      </state>
      <lastJustified> LJ => LJ [ epochOf(Slot) <- LJ[epochOf(Slot) -Int 1]ii ]ii </lastJustified>
