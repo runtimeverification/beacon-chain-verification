@@ -140,6 +140,18 @@ syntax Bool ::= Int "inA" Attestations [function, klabel(inA), smtlib(inA)]
 rule V inA (A As) => true     requires V  ==Int A.attester
 rule V inA (A As) => V inA As requires V =/=Int A.attester
 rule V inA .Attestations => false
+
+syntax Attestations ::= revA(Attestations) [function, smtlib(revA)]
+
+rule revA(.Attestations) => .Attestations
+
+syntax Attestations ::= Attestations "++A" Attestations [function, klabel(concatA), smtlib(concatA)]
+
+rule L ++A .Attestations => L
+rule .Attestations ++A L => L
+
+rule (X Xs) ++A Ys => X (Xs ++A Ys)
+rule revA(X Ys) ++A Xs => revA(Ys) ++A (X Xs)
 ```
 
 ## Abstract Deposits
@@ -495,6 +507,18 @@ rule lastSlotOf(Epoch) >=Int firstSlotOf(Epoch) => true [concrete, smt-lemma]
 // injectivity of firstSlotOf
 rule implies(firstSlotOf(E1) ==K firstSlotOf(E1), E1 ==K E2) => true [concrete, smt-lemma]
 */
+```
+
+```k
+syntax KItem ::= assert(Bool)
+rule assert(true) => .
+rule assert(false) => #bottom
+
+syntax KItem ::= assertXOR(Bool, Bool)
+rule assertXOR(true,  true)  => #bottom
+rule assertXOR(true,  false) => .
+rule assertXOR(false, true)  => .
+rule assertXOR(false, false) => #bottom
 ```
 
 ```k

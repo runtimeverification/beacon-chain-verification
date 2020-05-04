@@ -32,8 +32,8 @@ imports DYNAMIC-ABSTRACT-BEACON-CHAIN
 imports LEMMAS-JAVA
 imports SUBSTITUTION
 
-// rule ( K1 |-> V M:Map ) [ K2 ] => V        requires K1  ==Int K2
-// rule ( K1 |-> _ M:Map ) [ K2 ] => M [ K2 ] requires K1 =/=Int K2
+rule ( K1 |-> V M:Map ) [ K2 ] => V        requires K1  ==Int K2
+rule ( K1 |-> _ M:Map ) [ K2 ] => M [ K2 ] requires K1 =/=Int K2
 
 syntax KVar ::= "x" [token]
 
@@ -477,11 +477,15 @@ rule getAttestations(A As, E) => A getAttestations(As, E) requires A.target_epoc
 rule getAttestations(A As, E) =>   getAttestations(As, E) requires A.target_epoch =/=Int E
 rule getAttestations(.Attestations, _) => .Attestations
 
-/*
-syntax Bool ::= isValidAttestations(Attestations) [function, smtlib(isValidAttestations)]
-rule isValidAttestations(A As, Slot, SourceEpoch, SourceBlock, Slashed) => isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed) andBool isValidAttestations(As)
-rule isValidAttestations(.Attestations) => true
-*/
+syntax Bool ::= isValidAttestationList(Attestations, Int, IList, IMap, BMap) [function, smtlib(isValidAttestationList)]
+rule isValidAttestationList(A As, Slot, SourceEpoch, SourceBlock, Slashed)
+  => isValidAttestation(A, Slot, SourceEpoch[A.target_epoch]ii, SourceBlock[firstSlotOf(SourceEpoch[A.target_epoch]ii)]i, Slashed[A.attester]b)
+     andBool ( A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1 ) // TODO: drop
+     andBool isValidAttestationList(As, Slot, SourceEpoch, SourceBlock, Slashed)
+rule isValidAttestationList(.Attestations, _, _, _, _) => true
+
+// rule (A getAttestations(As, E)) ++ As0
+//   => A (getAttestations(As, E)  ++ As0)
 
 
 syntax Tactic ::= "begin"

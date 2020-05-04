@@ -830,20 +830,33 @@ rule processAttestation(A)
   ~> addAttestation(A)
 
 syntax KItem ::= addAttestation(Attestation)
-rule <k> true ~> addAttestation(A) => . ... </k>
+rule <k> addAttestation(A) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
        <attested>
-         A.target_epoch |-> (As:Attestations => A As)
+         epochOf(Slot) |-> (As:Attestations => A As)
          ...
        </attested>
        ...
      </state>
-rule <k> false ~> addAttestation(_) => #bottom ... </k>
+     requires A.target_epoch ==Int epochOf(Slot)
+rule <k> addAttestation(A) => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <attested>
+         epochOf(Slot) -Int 1 |-> (As:Attestations => A As)
+         ...
+       </attested>
+       ...
+     </state>
+     requires A.target_epoch ==Int epochOf(Slot) -Int 1
 
 syntax KItem ::= checkAttestation(Attestation)
-rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch[A.target_epoch]ii, JBlock[firstSlotOf(JEpoch[A.target_epoch]ii)]i, VM.slashed[A.attester]b) ... </k>
+rule <k> checkAttestation(A)
+      => assert(isValidAttestation(A, Slot, JEpoch[A.target_epoch]ii, JBlock[firstSlotOf(JEpoch[A.target_epoch]ii)]i, VM.slashed[A.attester]b))
+      ~> assertXOR(A.target_epoch ==Int epochOf(Slot), A.target_epoch ==Int epochOf(Slot) -Int 1) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -852,18 +865,6 @@ rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch[A.target_epoc
      </state>
      <lastJustified> JEpoch </lastJustified>
      <lastBlock> JBlock </lastBlock>
-     requires A.target_epoch >Int 0
-
-rule <k> checkAttestation(A) => isValidAttestation(A, Slot, JEpoch[0]ii, JBlock[0]i, VM.slashed[A.attester]b) ... </k>
-     <currentSlot> Slot </currentSlot>
-     <state>
-       <slot> Slot </slot>
-       <validators> v(VM, _) </validators>
-       ...
-     </state>
-     <lastJustified> JEpoch </lastJustified>
-     <lastBlock> JBlock </lastBlock>
-     requires A.target_epoch ==Int 0
 
 syntax Bool ::= isValidAttestation(Attestation, Int, Int, Int, Bool) [function, functional]
 rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed)
