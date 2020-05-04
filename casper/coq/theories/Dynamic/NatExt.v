@@ -3,9 +3,29 @@ From mathcomp.ssreflect
 Require Import all_ssreflect.
 Set Warnings "parsing".
 
+From mathcomp.finmap
+Require Import finmap.
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
+
+Definition highest (A : {fset nat}) : nat :=
+  \max_(i : A) (val i).
+
+Lemma highest_ub:
+  forall (A : {fset nat}) (x:nat), x \in A -> x <= highest A.
+Proof.
+move => A x Hx.
+case (insubP [subType of A] x) => /=; last by move: Hx =>->.
+move => k Hk =><-.
+exact: leq_bigmax_cond.
+Qed.
+
+Lemma ltSnn n: (n.+1 < n) = false.
+Proof.
+by apply/negP/negP; rewrite leqNgt; apply/negP; case/negP.
+Qed.
 
 Lemma sub_eq n : n - n = 0. 
 Proof. by elim: n => [|n IHn]. Qed.
