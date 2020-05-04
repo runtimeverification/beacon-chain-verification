@@ -44,39 +44,6 @@ Proof.
   move=> vs1 vs2 Heq.
   by rewrite /wt Heq.
 Qed.
-
-Lemma wt_aidem : forall v (vs:{set Validator}), 
-  v \in vs -> wt (v |: vs) = wt vs.
-Proof. Admitted. 
-
-Lemma wt_ext : forall v (vs:{set Validator}), 
-  v \notin vs -> wt (v |: vs) = (stake.[st_fun v] + wt vs).
-Proof. Admitted. 
-
-(* In this case, wt (vs :\ v) >= 0 should also be provable *)
-Lemma wt_drop : forall v (vs:{set Validator}), 
-  v \in vs -> wt (vs :\ v) = wt vs - stake.[st_fun v].
-Proof. Admitted.
-
-Lemma wt_didem : forall v (vs:{set Validator}), 
-  v \notin vs -> wt (vs :\ v) = wt vs.
-Proof. Admitted.
-
-Lemma wt_ext_monotonic : forall v vs, wt vs <= wt (v |: vs).
-Proof. Admitted.
-
-Lemma wt_drop_monotonic : forall v vs, wt (vs :\ v) <= wt vs.
-Proof. Admitted.
-
-(* wt (vs :&: v) >= 0 should also be provable *)
-Lemma wt_meet : forall s1 s2,
-  wt (s1 :&: s2) = wt s1 + wt s2 - wt (s1 :|: s2).
-Proof. Admitted.
-
-(* wt (~: vs) >= 0 should also be provable *)
-Lemma wt_comp : forall vs,
-  wt (~: vs) = wt [set: Validator] - wt vs.
-Proof. Admitted.
   
 Lemma wt_join_disjoint : forall (vs1 vs2:{set Validator}),
   [disjoint vs1 & vs2] -> wt (vs1 :|: vs2) = wt vs1 + wt vs2.
