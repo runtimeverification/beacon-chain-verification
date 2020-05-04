@@ -22,10 +22,10 @@
         0 |-> .Attestations
       </attested>
       <justified>
-        0 |-> true
+        ( 0 , true ) .BList
       </justified>
       <finalized>
-        0 |-> true
+        ( 0 , true ) .BList
       </finalized>
     </state>
     <slot>
@@ -44,10 +44,10 @@
         0 |-> #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 ) .Attestations
       </attested>
       <justified>
-        0 |-> true
+        ( 0 , true ) .BList
       </justified>
       <finalized>
-        0 |-> true
+        ( 0 , true ) .BList
       </finalized>
     </state>
     <slot>
@@ -66,10 +66,10 @@
         0 |-> #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 ) .Attestations
       </attested>
       <justified>
-        0 |-> true
+        ( 0 , true ) .BList
       </justified>
       <finalized>
-        0 |-> true
+        ( 0 , true ) .BList
       </finalized>
     </state>
     <slot>
@@ -88,10 +88,10 @@
         0 |-> #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 ) .Attestations
       </attested>
       <justified>
-        0 |-> true
+        ( 0 , true ) .BList
       </justified>
       <finalized>
-        0 |-> true
+        ( 0 , true ) .BList
       </finalized>
     </state>
     <slot>
@@ -111,12 +111,10 @@
         1 |-> .Attestations
       </attested>
       <justified>
-        0 |-> true
-        1 |-> false
+        ( 1 , false ) ( 0 , true ) .BList
       </justified>
       <finalized>
-        0 |-> true
-        1 |-> false
+        ( 1 , false ) ( 0 , true ) .BList
       </finalized>
     </state>
   </states>
@@ -124,12 +122,12 @@
     .IMap [ 0 <- 0 ]i [ 1 <- 10001 ]i [ 2 <- 10001 ]i [ 3 <- 10003 ]i [ 4 <- 10003 ]i
   </lastBlock>
   <lastJustified>
-    .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i
+    ( 1 , 0 ) ( 0 , 0 ) .IList
   </lastJustified>
   <lastFinalized>
-    .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i
+    ( 1 , 0 ) ( 0 , 0 ) .IList
   </lastFinalized>
   <blocks>
-    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Attestations , .Slashings , .VoluntaryExits ) ]k [ 1 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 ) .Attestations , .Slashings , .VoluntaryExits ) ]k [ 3 <- #Block ( ( 3 , 10003 ) , ( 1 , 10001 ) , .Slashings , .Attestations , .Slashings , .VoluntaryExits ) ]k
+    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Attestations , .Slashings , .VoluntaryExits ) ]k [ 10001 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 ) .Attestations , .Slashings , .VoluntaryExits ) ]k [ 10003 <- #Block ( ( 3 , 10003 ) , ( 1 , 10001 ) , .Slashings , .Attestations , .Slashings , .VoluntaryExits ) ]k
   </blocks>
 </T>

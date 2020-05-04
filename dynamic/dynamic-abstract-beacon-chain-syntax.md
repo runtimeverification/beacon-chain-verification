@@ -369,6 +369,8 @@ rule ( (K1, _) M ) [ K2 ]bb => M [ K2 ]bb requires K1  >Int K2
 rule ( (K1, _ ) M ) [ K2 <- V2 ]bb => (K1, V2)   M                  requires K1 ==Int K2
 rule ( (K1, V1) M ) [ K2 <- V2 ]bb => (K1, V1) ( M [ K2 <- V2 ]bb ) requires K1  >Int K2
 rule ( (K1, V1) M ) [ K2 <- V2 ]bb => (K2, V2) (K1, V1) M           requires K1  <Int K2
+
+rule .BList [ K <- V ]bb => (K, V) .BList
 ```
 
 ```k
@@ -384,6 +386,8 @@ rule ( (K1, _) M ) [ K2 ]ii => M [ K2 ]ii requires K1  >Int K2
 rule ( (K1, _ ) M ) [ K2 <- V2 ]ii => (K1, V2)   M                  requires K1 ==Int K2
 rule ( (K1, V1) M ) [ K2 <- V2 ]ii => (K1, V1) ( M [ K2 <- V2 ]ii ) requires K1  >Int K2
 rule ( (K1, V1) M ) [ K2 <- V2 ]ii => (K2, V2) (K1, V1) M           requires K1  <Int K2
+
+rule .IList [ K <- V ]ii => (K, V) .IList
 ```
 
 ## Constants
