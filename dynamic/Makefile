@@ -275,6 +275,7 @@ test-symbolic-static-java: build-static-java
 
 proof: build-dynamic-java-symbolic process-justification-finalization-spec.k process-justification-finalization-lemma.k
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/q2-spec.k                        | diff - tests/success.out
+	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/q3-spec.k                        | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-attestation-spec.k                      | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-deposit-spec.k                          | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-epoch-spec.k                            | diff - tests/success.out

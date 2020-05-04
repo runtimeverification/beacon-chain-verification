@@ -38,7 +38,6 @@ ensures true
 // post-conditions
 andBool ?PrevAs2 ==K revA(getAttestations(As, ?Epoch -Int 1)) ++A PrevAs1
 andBool ?CurrAs2 ==K revA(getAttestations(As, ?Epoch       )) ++A CurrAs1
-[matching(concatA)]
 
 rule
 <T>
