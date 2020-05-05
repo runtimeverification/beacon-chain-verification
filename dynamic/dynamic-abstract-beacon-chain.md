@@ -160,12 +160,8 @@ rule <k> processEpoch()
       ~> processJustification(epochOf(Slot) -Int 1)
       ~> processFinalization(epochOf(Slot) -Int 2)
       ~> processFinalization(epochOf(Slot) -Int 1)
-```
-```{.k .dynamic}
       ~> processRewardsPenalties(epochOf(Slot) -Int 2)
       ~> processValidatorUpdates()
-```
-```k
       ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -308,7 +304,7 @@ rule isJustified(Epoch, Epoch |-> false _:Map) => false
 
 ### Rewards and Penalties
 
-```{.k .dynamic}
+```k
 // process_rewards_and_penalties
 syntax KItem ::= processRewardsPenalties(Int)
 rule <k> processRewardsPenalties(Epoch)
@@ -562,7 +558,7 @@ rule getValidatorsAux2(.Map) => .IntList
 
 ### Validator Updates
 
-```{.k .dynamic}
+```k
 // TODO: check if no mistake was made as this process is associated with the previous epoch
 // process_registry_updates
 syntax KItem ::= processValidatorUpdates()
@@ -735,13 +731,8 @@ rule isValidValidatorToActivate(VID, ActivationEligibilityEpochMap, ActivationEp
 rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits))
       => processSlashings(Slashings)
       ~> processAttestations(Attestations)
-```
-```{.k .dynamic}
       ~> processDeposits(Deposits)
-      ~> processVoluntaryExits(VoluntaryExits)
-```
-```k
-      ... </k>
+      ~> processVoluntaryExits(VoluntaryExits) ... </k>
      <currentSlot> Slot </currentSlot>
      <lastBlock> B => B [ Slot <- ID ]i </lastBlock>
      <blocks>
@@ -773,13 +764,8 @@ rule processSlashingsAux(_, .Slashings, _) => .
 syntax KItem ::= processSlashing(Slashing)
 rule <k> processSlashing(S)
       => #assert(isValidSlashing(S, VM.slashed))
-      ~>
-```
-```{.k .dynamic}
-         initiateValidatorExit(S.attestation_1.attester) ~>
-```
-```k
-         slashValidator(S.attestation_1.attester) ... </k>
+      ~> initiateValidatorExit(S.attestation_1.attester)
+      ~> slashValidator(S.attestation_1.attester) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -896,7 +882,7 @@ rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed)
 
 ### Deposits
 
-```{.k .dynamic}
+```k
 // process_deposit
 syntax KItem ::= processDeposits(Deposits)
 rule <k> processDeposits(Deposits) => processDepositsAux(.IntList, Deposits, Vs) ... </k>
@@ -963,7 +949,7 @@ rule <k> processDeposit(D) => . ... </k>
 
 ### Voluntary Exits
 
-```{.k .dynamic}
+```k
 // process_voluntary_exit
 syntax KItem ::= processVoluntaryExits(VoluntaryExits)
 rule <k> processVoluntaryExits(Exits) => processVoluntaryExitsAux(.IntList, Exits, VM) ... </k>
