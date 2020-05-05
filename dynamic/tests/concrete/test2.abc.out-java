@@ -204,7 +204,7 @@
         2 |-> .Attestations
       </attested>
       <justified>
-        ( 2 , false ) ( 1 , true ) ( 0 , true ) .BList
+        ( 2 , false ) ( 1 , false ) ( 0 , true ) .BList
       </justified>
       <finalized>
         ( 2 , false ) ( 1 , false ) ( 0 , true ) .BList
@@ -215,7 +215,7 @@
     .IMap [ 0 <- 0 ]i [ 1 <- 10001 ]i [ 2 <- 10001 ]i [ 3 <- 10001 ]i [ 4 <- 10004 ]i [ 5 <- 10005 ]i [ 6 <- 10005 ]i [ 7 <- 10005 ]i [ 8 <- 10005 ]i
   </lastBlock>
   <lastJustified>
-    ( 2 , 1 ) ( 1 , 0 ) ( 0 , 0 ) .IList
+    ( 2 , 0 ) ( 1 , 0 ) ( 0 , 0 ) .IList
   </lastJustified>
   <lastFinalized>
     ( 2 , 0 ) ( 1 , 0 ) ( 0 , 0 ) .IList
