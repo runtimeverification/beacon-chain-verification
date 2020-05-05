@@ -115,10 +115,11 @@ The `process_epoch()` in the concrete model is called before increasing the slot
 
 ```k
 // process_slots
-rule <k> (. => processSlot()
-            ~> processEpoch())
+rule <k> processSlots(TargetSlot)
+      => processSlot()
+      ~> processEpoch()
       ~> processSlots(TargetSlot) ... </k>
-     <currentSlot> Slot => Slot +Int 1 </currentSlot>
+     <currentSlot> Slot => Slot +Int 1 </currentSlot> // TODO: the python spec increases slot after processEpoch
      <states>
        <state> <slot> Slot        </slot> S </state>
      (
