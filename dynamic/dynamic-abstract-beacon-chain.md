@@ -161,14 +161,13 @@ rule <k> processEpoch()
       ~> processFinalization(epochOf(Slot) -Int 2)
       ~> processFinalization(epochOf(Slot) -Int 1)
       ~> processRewardsPenalties(epochOf(Slot) -Int 2)
-      ~> processValidatorUpdates()
-      ... </k>
+      ~> processValidatorUpdates() ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
 ```
 ```{.k .symbolic}
-       <attested>  epochOf(Slot) |-> (_ => .Attestations) ... </attested>
+       <attested> epochOf(Slot) |-> (_ => .Attestations) ... </attested>
 ```
 ```{.k .concrete}
        <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
