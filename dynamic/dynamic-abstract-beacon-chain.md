@@ -103,10 +103,10 @@ Validation of block signatures and state roots is omitted in the abstract model.
 
 ```k
 // state_transition
-rule <k> stateTransition(NewBlock)
-      => #assert(Slot <Int NewBlock.slot) // TODO: <=Int or <Int ?
-      ~> processSlots(NewBlock.slot)
-      ~> processBlock(NewBlock) ... </k>
+rule <k> stateTransition(Block)
+      => #assert(Slot <Int Block.slot) // TODO: <=Int or <Int ?
+      ~> processSlots(Block.slot)
+      ~> processBlock(Block) ... </k>
      <currentSlot> Slot </currentSlot>
 ```
 
