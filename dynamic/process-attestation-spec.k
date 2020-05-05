@@ -32,7 +32,8 @@ andBool Slot >=Int 0
 andBool ?Epoch ==Int epochOf(Slot)
 // pre-conditions
 andBool ?Epoch >=Int 1
-andBool isValidAttestationList(As, Slot, LastJustifiedEpoch, BlockMap, VM.slashed)
+andBool isValidAttestationListPartial(As, Slot, LastJustifiedEpoch, BlockMap)
+andBool forall(x, getValidatorsA(As), VM.slashed[x]b ==K false)
 // invariants
 ensures true
 // post-conditions
@@ -69,7 +70,8 @@ andBool ?PrevAs1 ==K getAttestations(L_As, ?Epoch -Int 1) ++A PrevAs0
 andBool ?CurrAs1 ==K getAttestations(L_As, ?Epoch       ) ++A CurrAs0
 // pre-conditions
 andBool ?Epoch >=Int 1
-andBool isValidAttestationList(As, Slot, LastJustifiedEpoch, BlockMap, VM.slashed)
+andBool isValidAttestationListPartial(As, Slot, LastJustifiedEpoch, BlockMap)
+andBool forall(x, getValidatorsA(As), VM.slashed[x]b ==K false)
 // invariants
 ensures true
 // post-conditions

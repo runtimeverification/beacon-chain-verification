@@ -173,8 +173,6 @@ rule activeValidators(VIDs, AM, EM [ VID <- E ]i, Epoch)
 ///      updateExitEpoch(V, Vs, Epoch) => V with exit_epoch         = computeExitEpoch(Vs, Epoch)
 ///                                         with withdrawable_epoch = computeExitEpoch(Vs, Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY
 
-rule sizeE(_) >=Int 0 => true [smt-lemma]
-
 rule countValidatorsToExit(VIDs, EM, E) => 0
      requires maxExitEpoch(VIDs, EM) <Int E andBool E <Int FAR_FUTURE_EPOCH
      [smt-lemma]
@@ -359,6 +357,10 @@ rule forall(X, rev(L), (M [ Y <- _ ]i)[X]i ==K E)
   => forall(X, rev(L),  M             [X]i ==K E)
      requires disjoint1(L, Y)
 
+rule forall(X, rev(L), (M [ Y <- _ ]b)[X]b ==K E)
+  => forall(X, rev(L),  M             [X]b ==K E)
+     requires disjoint1(L, Y)
+
 /*
 rule forall(X, Ls, (M [ L <- _ ]i)[X]i ==K E)
   => forall(X, Ls,  M             [X]i ==K E)
@@ -470,6 +472,24 @@ rule implies(
      ) => true
      [concrete, smt-lemma]
 
+/*
+rule implies(
+        forall(x, VIDs, implies(notBool x in L, SM2[x]b ==K SM1[x]b))
+        andBool disjoint(getValidators(As), L)
+     ,
+        isValidAttestationList(As, Slot, SourceEpoch, SourceBlock, SM2)
+        ==K
+        isValidAttestationList(As, Slot, SourceEpoch, SourceBlock, SM1)
+     ) => true
+     [concrete, smt-lemma]
+*/
+
+rule implies(disjoint(L1, L2) andBool X in L1, notBool X in L2) => true [concrete, smt-lemma]
+rule implies(disjoint(L1, L2) andBool X in L2, notBool X in L1) => true [concrete, smt-lemma]
+
+rule X.validator in getValidatorsE(VEs) => true requires X inE VEs [concrete, smt-lemma]
+
+
 // for process-attestation
 
 syntax Attestations ::= getAttestations(Attestations, Int) [function, smtlib(getAttestations)]
@@ -477,16 +497,50 @@ rule getAttestations(A As, E) => A getAttestations(As, E) requires A.target_epoc
 rule getAttestations(A As, E) =>   getAttestations(As, E) requires A.target_epoch =/=Int E
 rule getAttestations(.Attestations, _) => .Attestations
 
+// TODO: add check A.attester in VIDs
+/*
 syntax Bool ::= isValidAttestationList(Attestations, Int, IList, IMap, BMap) [function, smtlib(isValidAttestationList)]
 rule isValidAttestationList(A As, Slot, SourceEpoch, SourceBlock, Slashed)
   => isValidAttestation(A, Slot, SourceEpoch[A.target_epoch]ii, SourceBlock[firstSlotOf(SourceEpoch[A.target_epoch]ii)]i, Slashed[A.attester]b)
      andBool ( A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1 ) // TODO: drop
      andBool isValidAttestationList(As, Slot, SourceEpoch, SourceBlock, Slashed)
 rule isValidAttestationList(.Attestations, _, _, _, _) => true
+*/
+
+syntax Bool ::= isValidAttestationListPartial(Attestations, Int, IList, IMap) [function, smtlib(isValidAttestationListPartial)]
+rule isValidAttestationListPartial(A As, Slot, SourceEpoch, SourceBlock)
+  => isValidAttestation(A, Slot, SourceEpoch[A.target_epoch]ii, SourceBlock[firstSlotOf(SourceEpoch[A.target_epoch]ii)]i, false)
+     andBool ( A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1 ) // TODO: drop
+     andBool isValidAttestationListPartial(As, Slot, SourceEpoch, SourceBlock)
+rule isValidAttestationListPartial(.Attestations, _, _, _) => true
 
 // rule (A getAttestations(As, E)) ++ As0
 //   => A (getAttestations(As, E)  ++ As0)
 
+syntax IntList ::= getValidatorsA(Attestations) [function, smtlib(getValidatorsA)]
+rule getValidatorsA(A As) => A.attester getValidatorsA(As)
+rule getValidatorsA(.Attestations) => .IntList
+
+// for process-slashing
+
+syntax Slashing ::= KVar
+syntax Bool ::= forallS(KVar, Slashings, Bool) [binder, function, smtlib((forall ((#1 Slashing)) (=> (inS #1 #2) #3)))]
+rule forallS(X, V Vs, E) => E[V / X] andBool forallS(X, Vs, E)
+rule forallS(_, .Slashings, _) => true
+rule forallS(_, _, true) => true
+
+/*
+syntax Bool ::= isValidSlashings(Slashings, BMap) [function, smtlib(isValidSlashings)]
+rule isValidSlashings(S Ss)
+  => isSlashableAttestation(S.attestation_1, S.attestation_2)
+     andBool S.attestation_1.attester ==Int S.attestation_2.attester
+     andBool SM[S.attestation_1.attester]b ==K false
+     andBool isValidSlashings(Ss)
+*/
+
+syntax IntList ::= getValidatorsS(Slashings) [function, smtlib(getValidatorsS)]
+rule getValidatorsS(S Ss) => S.attestation_1.attester getValidatorsS(Ss)
+rule getValidatorsS(.Slashings) => .IntList
 
 syntax Tactic ::= "begin"
 rule begin => .
