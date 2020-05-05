@@ -281,6 +281,7 @@ proof: build-dynamic-java-symbolic process-justification-finalization-spec.k pro
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-epoch-spec.k                            | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-justification-finalization-spec.k       | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-rewards-penalties-spec.k                | diff - tests/success.out
+	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slashing-spec.k                         | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slots-base0-spec.k                      | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slots-base1-spec.k                      | diff - tests/success.out
 	$(K_BIN)/kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slots-inductive-spec.k                  | diff - tests/success.out

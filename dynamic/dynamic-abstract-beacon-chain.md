@@ -758,22 +758,34 @@ rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposi
 // process_proposer_slashing
 // process_attester_slashing
 syntax KItem ::= processSlashings(Slashings)
-rule processSlashings(S Slashings) => processSlashing(S) ~> processSlashings(Slashings)
-rule processSlashings(.Slashings) => .
+rule <k> processSlashings(Slashings) => processSlashingsAux(.IntList, Slashings, VM) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM, _) </validators>
+       ...
+     </state>
+
+syntax KItem ::= processSlashingsAux(IntList, Slashings, ValidatorMap)
+rule processSlashingsAux(L, S Slashings, VM0) => processSlashing(S) ~> processSlashingsAux(S.attestation_1.attester L, Slashings, VM0)
+rule processSlashingsAux(_, .Slashings, _) => .
 
 syntax KItem ::= processSlashing(Slashing)
-rule <k> processSlashing(#Slashing(A1, A2))
-      =>
+rule <k> processSlashing(S)
+      => assert(isValidSlashing(S, VM.slashed))
+      ~>
 ```
 ```{.k .dynamic}
-         initiateValidatorExit(A1.attester) ~>
+         initiateValidatorExit(S.attestation_1.attester) ~>
 ```
 ```k
-         slashValidator(A1.attester) ... </k>
-     requires isSlashableAttestation(A1, A2) // assertion
-      andBool A1.attester ==Int A2.attester
-// TODO:
-// rule processSlashing(#Slashing(A1, A2)) => #bottom [owise]
+         slashValidator(S.attestation_1.attester) ... </k>
+     <currentSlot> Slot </currentSlot>
+     <state>
+       <slot> Slot </slot>
+       <validators> v(VM, _) </validators>
+       ...
+     </state>
 
 // slash_validator
 syntax KItem ::= slashValidator(Int)
@@ -802,6 +814,12 @@ rule <k> slashValidator(VID) => . ... </k>
        ...
      </state>
      // TODO: proposer and whistleblower rewards
+
+syntax Bool ::= isValidSlashing(Slashing, BMap) [function]
+rule isValidSlashing(S, SM)
+  => isSlashableAttestation(S.attestation_1, S.attestation_2)
+     andBool S.attestation_1.attester ==Int S.attestation_2.attester
+     andBool SM[S.attestation_1.attester]b ==K false
 
 syntax Bool ::= isSlashableAttestation(Attestation, Attestation) [function, functional]
 rule isSlashableAttestation(A1, A2)

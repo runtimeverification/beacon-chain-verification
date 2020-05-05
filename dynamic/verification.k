@@ -173,8 +173,6 @@ rule activeValidators(VIDs, AM, EM [ VID <- E ]i, Epoch)
 ///      updateExitEpoch(V, Vs, Epoch) => V with exit_epoch         = computeExitEpoch(Vs, Epoch)
 ///                                         with withdrawable_epoch = computeExitEpoch(Vs, Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY
 
-rule sizeE(_) >=Int 0 => true [smt-lemma]
-
 rule countValidatorsToExit(VIDs, EM, E) => 0
      requires maxExitEpoch(VIDs, EM) <Int E andBool E <Int FAR_FUTURE_EPOCH
      [smt-lemma]
@@ -359,6 +357,10 @@ rule forall(X, rev(L), (M [ Y <- _ ]i)[X]i ==K E)
   => forall(X, rev(L),  M             [X]i ==K E)
      requires disjoint1(L, Y)
 
+rule forall(X, rev(L), (M [ Y <- _ ]b)[X]b ==K E)
+  => forall(X, rev(L),  M             [X]b ==K E)
+     requires disjoint1(L, Y)
+
 /*
 rule forall(X, Ls, (M [ L <- _ ]i)[X]i ==K E)
   => forall(X, Ls,  M             [X]i ==K E)
@@ -487,6 +489,26 @@ rule isValidAttestationList(.Attestations, _, _, _, _) => true
 // rule (A getAttestations(As, E)) ++ As0
 //   => A (getAttestations(As, E)  ++ As0)
 
+// for process-slashing
+
+syntax Slashing ::= KVar
+syntax Bool ::= forallS(KVar, Slashings, Bool) [binder, function, smtlib((forall ((#1 Slashing)) (=> (inS #1 #2) #3)))]
+rule forallS(X, V Vs, E) => E[V / X] andBool forallS(X, Vs, E)
+rule forallS(_, .Slashings, _) => true
+rule forallS(_, _, true) => true
+
+/*
+syntax Bool ::= isValidSlashings(Slashings, BMap) [function, smtlib(isValidSlashings)]
+rule isValidSlashings(S Ss)
+  => isSlashableAttestation(S.attestation_1, S.attestation_2)
+     andBool S.attestation_1.attester ==Int S.attestation_2.attester
+     andBool SM[S.attestation_1.attester]b ==K false
+     andBool isValidSlashings(Ss)
+*/
+
+syntax IntList ::= getValidatorsS(Slashings) [function, smtlib(getValidatorsS)]
+rule getValidatorsS(S Ss) => S.attestation_1.attester getValidatorsS(Ss)
+rule getValidatorsS(.Slashings) => .IntList
 
 syntax Tactic ::= "begin"
 rule begin => .
