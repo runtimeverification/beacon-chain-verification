@@ -206,8 +206,12 @@ rule <k> processJustificationAndFinalization() => . ... </k>
 ```k
 syntax KItem ::= processJustification(Int)
 rule <k> processJustification(Epoch)
-      => isJustifiable(Epoch, EpochBoundaryBlock[firstSlotOf(Epoch)]i, Attestations, VM.effective_balance, VIDs)
-      ~> justify(Epoch) ... </k>
+      => #assert(Epoch >=Int 1) // due to the side condition of processJustificationAndFinalization
+      ~> #it(
+           isJustifiable(Epoch, EpochBoundaryBlock[firstSlotOf(Epoch)]i, Attestations, VM.effective_balance, VIDs)
+         ,
+           justify(Epoch)
+         ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -224,12 +228,9 @@ rule <k> processJustification(Epoch)
        ...
      </state>
      <lastBlock> EpochBoundaryBlock </lastBlock>
-     requires Epoch >=Int 1
-rule <k> processJustification(Epoch) => . ... </k>
-     requires Epoch <Int 1
 
 syntax KItem ::= justify(Int)
-rule <k> true ~> justify(Epoch) => . ... </k>
+rule <k> justify(Epoch) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -237,7 +238,6 @@ rule <k> true ~> justify(Epoch) => . ... </k>
        ...
      </state>
      <lastJustified> LJ => LJ [ epochOf(Slot) <- Epoch ]ii </lastJustified>
-rule <k> false ~> justify(_) => . ... </k>
 
 syntax Bool ::= isJustifiable(Int, Int, Attestations, IMap, IntList) [function, functional, smtlib(isJustifiable)]
 rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, EffectiveBalanceMap, VIDs)
