@@ -156,10 +156,7 @@ Note that `Slot` is equal to `state.slot + 1` of the concrete model.
 // TODO: add process_slashings, process_final_updates (for updating effective balances with hysteresis)
 // process_epoch
 rule <k> processEpoch()
-      => processJustification(epochOf(Slot) -Int 2)
-      ~> processJustification(epochOf(Slot) -Int 1)
-      ~> processFinalization(epochOf(Slot) -Int 2)
-      ~> processFinalization(epochOf(Slot) -Int 1)
+      => processJustificationAndFinalization()
       ~> processRewardsPenalties(epochOf(Slot) -Int 2)
       ~> processValidatorUpdates() ... </k>
      <currentSlot> Slot </currentSlot>
@@ -184,6 +181,24 @@ rule <k> processEpoch()
 rule <k> processEpoch() => . ... </k>
      <currentSlot> Slot </currentSlot>
      requires notBool isFirstSlotOfEpoch(Slot)
+```
+
+### Justification and Finalization
+
+```k
+syntax KItem ::= processJustificationAndFinalization()
+
+rule <k> processJustificationAndFinalization()
+      => processJustification(epochOf(Slot) -Int 2)
+      ~> processJustification(epochOf(Slot) -Int 1)
+      ~> processFinalization(epochOf(Slot) -Int 2)
+      ~> processFinalization(epochOf(Slot) -Int 1) ... </k>
+     <currentSlot> Slot </currentSlot>
+     requires epochOf(Slot) >=Int 3
+
+rule <k> processJustificationAndFinalization() => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     requires epochOf(Slot) <Int 3
 ```
 
 ### Justification
