@@ -256,8 +256,12 @@ rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 
 ```k
 syntax KItem ::= processFinalization(Int)
 rule <k> processFinalization(TargetEpoch)
-      => isFinalizable(SourceEpoch[TargetEpoch]ii, TargetEpoch, Justified)
-      ~> finalize(SourceEpoch[TargetEpoch]ii) ... </k>
+      => #assert(TargetEpoch >=Int 1) // due to the side condition of processJustificationAndFinalization
+      ~> #it(
+           isFinalizable(SourceEpoch[TargetEpoch]ii, TargetEpoch, Justified)
+         ,
+           finalize(SourceEpoch[TargetEpoch]ii)
+         ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -265,12 +269,9 @@ rule <k> processFinalization(TargetEpoch)
        ...
      </state>
      <lastJustified> SourceEpoch </lastJustified>
-     requires TargetEpoch >=Int 1
-rule <k> processFinalization(TargetEpoch) => . ... </k>
-     requires TargetEpoch <Int 1
 
 syntax KItem ::= finalize(Int)
-rule <k> true ~> finalize(Epoch) => . ... </k>
+rule <k> finalize(Epoch) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -278,28 +279,16 @@ rule <k> true ~> finalize(Epoch) => . ... </k>
        ...
      </state>
      <lastFinalized> LF => LF [ epochOf(Slot) <- Epoch ]ii </lastFinalized>
-rule <k> false ~> finalize(_) => . ... </k>
 
 // source : source+1 = target justified
 // source : source+1 : source+2 = target justified
 syntax Bool ::= isFinalizable(Int, Int, BList) [function] // not functional
 rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
-  => isJustified(SourceEpoch, Justified) andBool isJustified(TargetEpoch, Justified)
+  => Justified[SourceEpoch]bb andBool Justified[TargetEpoch]bb
      andBool (
                 SourceEpoch +Int 1 ==Int TargetEpoch
-       orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool isJustified(SourceEpoch +Int 1, Justified) )
+       orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool Justified[SourceEpoch +Int 1]bb )
      )
-// TODO: use rule priority
-  requires TargetEpoch -Int SourceEpoch <=Int 2
-rule isFinalizable(SourceEpoch, TargetEpoch, Justified) => false
-  requires TargetEpoch -Int SourceEpoch >Int 2
-
-syntax Bool ::= isJustified(Int, BList) [function] // not functional
-rule isJustified(Epoch, Justified) => Justified[Epoch]bb
-/*
-rule isJustified(Epoch, Epoch |-> true  _:Map) => true
-rule isJustified(Epoch, Epoch |-> false _:Map) => false
-*/
 ```
 
 ### Rewards and Penalties
