@@ -531,15 +531,15 @@ rule implies(firstSlotOf(E1) ==K firstSlotOf(E1), E1 ==K E2) => true [concrete, 
 ```
 
 ```k
-syntax KItem ::= assert(Bool)
-rule assert(true) => .
-rule assert(false) => #bottom
+syntax KItem ::= #assert(Bool)
+rule #assert(true) => .
+rule #assert(false) => #bottom
 
-syntax KItem ::= assertXOR(Bool, Bool)
-rule assertXOR(true,  true)  => #bottom
-rule assertXOR(true,  false) => .
-rule assertXOR(false, true)  => .
-rule assertXOR(false, false) => #bottom
+syntax KItem ::= #assertXOR(Bool, Bool)
+rule #assertXOR(true,  true)  => #bottom
+rule #assertXOR(true,  false) => .
+rule #assertXOR(false, true)  => .
+rule #assertXOR(false, false) => #bottom
 ```
 
 ```k
