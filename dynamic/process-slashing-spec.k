@@ -46,6 +46,9 @@ andBool forall(x, getValidatorsS(Ss), #if EM1[x]i ==Int FAR_FUTURE_EPOCH
                                             andBool countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit
                                       #else ?EM2[x]i ==Int EM1[x]i
                                       #fi)
+// rely-guarantee conditions
+andBool maxInt(maxExitEpoch(VIDs, ?EM2), delayedActivationExitEpoch(?Epoch)) <=Int ?LastExitEpoch +Int sizeS(Ss)
+andBool activeValidators(VIDs, AM, ?EM2, ?Epoch) ==K activeValidators(VIDs, AM, EM1, ?Epoch)
 
 rule
 <T>
@@ -92,6 +95,8 @@ andBool forall(x, rev(L_VIDs)                         , #if EM0[x]i ==Int FAR_FU
                                                               andBool countValidatorsToExit(VIDs, EM1, EM1[x]i) <=Int ?ChurnLimit
                                                         #else EM1[x]i ==Int EM0[x]i
                                                         #fi)
+andBool maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(?Epoch)) <=Int maxInt(maxExitEpoch(VIDs, EM0), delayedActivationExitEpoch(?Epoch)) +Int size(L_VIDs)
+andBool activeValidators(VIDs, AM, EM1, ?Epoch) ==K activeValidators(VIDs, AM, EM0, ?Epoch)
 ensures true
 // post-conditions
 andBool forall(x, VIDs, implies(notBool x in rev(L_VIDs) ++ getValidatorsS(R_Ss), ?SM2[x]b ==K SM0[x]b))
@@ -104,6 +109,8 @@ andBool forall(x, rev(L_VIDs) ++ getValidatorsS(R_Ss), #if EM0[x]i ==Int FAR_FUT
                                                              andBool countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit
                                                        #else ?EM2[x]i ==Int EM0[x]i
                                                        #fi)
-[trusted]
+// rely-guarantee conditions
+andBool maxInt(maxExitEpoch(VIDs, ?EM2), delayedActivationExitEpoch(?Epoch)) <=Int maxInt(maxExitEpoch(VIDs, EM0), delayedActivationExitEpoch(?Epoch)) +Int size(L_VIDs) +Int sizeS(R_Ss)
+andBool activeValidators(VIDs, AM, ?EM2, ?Epoch) ==K activeValidators(VIDs, AM, EM0, ?Epoch)
 
 endmodule

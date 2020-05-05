@@ -547,6 +547,7 @@ rule filterNotSlashed(SlashedMap, A As) => #if SlashedMap[A.attester]b
                                    #fi
 rule filterNotSlashed(_, .Attestations) => .Attestations
 
+// TODO: rename: getUniqueValidators
 syntax IntList ::= getValidators(Attestations) [function, smtlib(getValidators)]
 rule getValidators(As) => getValidatorsAux2(getValidatorsAux1(As, .Map))
      [concrete]

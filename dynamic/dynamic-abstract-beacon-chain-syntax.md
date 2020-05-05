@@ -140,6 +140,8 @@ syntax Int ::= sizeA(Attestations) [function, smtlib(sizeA)]
 rule sizeA(_ As) => 1 +Int sizeA(As)
 rule sizeA(.Attestations) => 0
 
+rule sizeA(_) >=Int 0 => true [smt-lemma]
+
 // sort in the order of inclusion_delay
 syntax Attestations ::= sortByInclusionDelay(Attestations) [function, klabel(sortA), smtlib(sortA)]
 // TODO: implement
@@ -292,6 +294,8 @@ syntax Int ::= sizeV(ValidatorList) [function, smtlib(sizeV)]
 rule sizeV(_ Vs) => 1 +Int sizeV(Vs)
 rule sizeV(.ValidatorList) => 0
 
+rule sizeV(_) >=Int 0 => true [smt-lemma]
+
 // subset in set-like view
 syntax Bool ::= subsetV(ValidatorList, ValidatorList) [function, klabel(subsetV), smtlib(subsetV)]
 // TODO: implement
@@ -304,6 +308,8 @@ syntax IntList ::= Int IntList  [klabel(consI), smtlib(consI)]
 syntax Int ::= size(IntList) [function, klabel(sizeI), smtlib(sizeI)]
 rule size(_ Is) => 1 +Int size(Is)
 rule size(.IntList) => 0
+
+rule size(_) >=Int 0 => true [smt-lemma]
 
 syntax Bool ::= Int "in" IntList [function, klabel(inI), smtlib(inI)]
 rule J in (I Is) => true    requires J  ==Int I [smt-lemma]

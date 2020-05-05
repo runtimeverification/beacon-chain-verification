@@ -472,6 +472,24 @@ rule implies(
      ) => true
      [concrete, smt-lemma]
 
+/*
+rule implies(
+        forall(x, VIDs, implies(notBool x in L, SM2[x]b ==K SM1[x]b))
+        andBool disjoint(getValidators(As), L)
+     ,
+        isValidAttestationList(As, Slot, SourceEpoch, SourceBlock, SM2)
+        ==K
+        isValidAttestationList(As, Slot, SourceEpoch, SourceBlock, SM1)
+     ) => true
+     [concrete, smt-lemma]
+*/
+
+rule implies(disjoint(L1, L2) andBool X in L1, notBool X in L2) => true [concrete, smt-lemma]
+rule implies(disjoint(L1, L2) andBool X in L2, notBool X in L1) => true [concrete, smt-lemma]
+
+rule X.validator in getValidatorsE(VEs) => true requires X inE VEs [concrete, smt-lemma]
+
+
 // for process-attestation
 
 syntax Attestations ::= getAttestations(Attestations, Int) [function, smtlib(getAttestations)]
@@ -479,15 +497,29 @@ rule getAttestations(A As, E) => A getAttestations(As, E) requires A.target_epoc
 rule getAttestations(A As, E) =>   getAttestations(As, E) requires A.target_epoch =/=Int E
 rule getAttestations(.Attestations, _) => .Attestations
 
+// TODO: add check A.attester in VIDs
+/*
 syntax Bool ::= isValidAttestationList(Attestations, Int, IList, IMap, BMap) [function, smtlib(isValidAttestationList)]
 rule isValidAttestationList(A As, Slot, SourceEpoch, SourceBlock, Slashed)
   => isValidAttestation(A, Slot, SourceEpoch[A.target_epoch]ii, SourceBlock[firstSlotOf(SourceEpoch[A.target_epoch]ii)]i, Slashed[A.attester]b)
      andBool ( A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1 ) // TODO: drop
      andBool isValidAttestationList(As, Slot, SourceEpoch, SourceBlock, Slashed)
 rule isValidAttestationList(.Attestations, _, _, _, _) => true
+*/
+
+syntax Bool ::= isValidAttestationListPartial(Attestations, Int, IList, IMap) [function, smtlib(isValidAttestationListPartial)]
+rule isValidAttestationListPartial(A As, Slot, SourceEpoch, SourceBlock)
+  => isValidAttestation(A, Slot, SourceEpoch[A.target_epoch]ii, SourceBlock[firstSlotOf(SourceEpoch[A.target_epoch]ii)]i, false)
+     andBool ( A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1 ) // TODO: drop
+     andBool isValidAttestationListPartial(As, Slot, SourceEpoch, SourceBlock)
+rule isValidAttestationListPartial(.Attestations, _, _, _) => true
 
 // rule (A getAttestations(As, E)) ++ As0
 //   => A (getAttestations(As, E)  ++ As0)
+
+syntax IntList ::= getValidatorsA(Attestations) [function, smtlib(getValidatorsA)]
+rule getValidatorsA(A As) => A.attester getValidatorsA(As)
+rule getValidatorsA(.Attestations) => .IntList
 
 // for process-slashing
 
