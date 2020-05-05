@@ -15,13 +15,15 @@ From Dynamic
 Require Import StrongInductionLtn.
 
 From Dynamic
-Require Import Validator HashTree State Slashing Quorums Justification.
+Require Import Validator Weight HashTree State Slashing Quorums Justification.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* The accountable safety theorem *)
+(******************************************************************************)
+(* The accountable safety theorem                                             *)
+(******************************************************************************)
 
 (* A state has a fork when two conflicting blocks are both finalized *)
 Definition finalization_fork st :=

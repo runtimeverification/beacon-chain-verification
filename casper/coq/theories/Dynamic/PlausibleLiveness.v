@@ -12,40 +12,25 @@ From Dynamic
 Require Import StrongInductionLtn.
 
 From Dynamic
-Require Import Validator HashTree State Slashing Quorums Justification AccountableSafety.
+Require Import NatExt Validator Weight HashTree State Slashing Quorums Justification AccountableSafety.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** The plausible liveness theorem **)
-
-(* The liveness theorem will assume that 2/3 of validators have not behaved badly.
-   For liveness it is not sufficient to merely say that a 1/3 quorum is unslashed.
-   Votes with unjustified sources or ones that do not represent proper forward
-   links in the checkpoint tree do not violate any slashing conditions
-   themselves, but can prevent a validator from contributing to progress,
-   because votes spanning over such bad votes would violate slashing condition II.
-   No correct validator should ever make such votes.
- *)
+(******************************************************************************)
+(* The plausible liveness theorem                                             *)
+(*                                                                            *)
+(* The liveness theorem will assume that 2/3 of validators have not behaved   *)
+(* badly. For liveness it is not sufficient to merely say that a 1/3 quorum   *)
+(* is unslashed. Votes with unjustified sources or ones that do not represent *)
+(* proper forward links in the checkpoint tree do not violate any slashing    *)
+(* conditions themselves, but can prevent a validator from contributing to    *)
+(* progress, because votes spanning over such bad votes would violate         *)
+(* slashing condition II. No correct validator should ever make such votes.   *)
+(******************************************************************************)
 
 (* A few minor lemmas and definitions used in the proof *)
-Definition highest (A : {fset nat}) : nat :=
-  \max_(i : A) (val i).
-
-Lemma highest_ub:
-  forall (A : {fset nat}) (x:nat), x \in A -> x <= highest A.
-Proof.
-move => A x Hx.
-case (insubP [subType of A] x) => /=; last by move: Hx =>->.
-move => k Hk =><-.
-exact: leq_bigmax_cond.
-Qed.
-
-Lemma ltSnn: forall n, (n.+1 < n) = false.
-Proof.
-by move => n; apply/negP/negP; rewrite leqNgt; apply/negP; case/negP.
-Qed.
 
 (* Votes have justified sources *)
 Definition justified_source_votes st v :=

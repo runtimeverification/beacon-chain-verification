@@ -13,7 +13,9 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Definitions of the slashing conditions *)
+(******************************************************************************)
+(* Definitions of the slashing conditions                                     *)
+(******************************************************************************)
 
 (* A validator may not make two votes with different target hashes at
    the same target height (whatever the source blocks)
