@@ -14,6 +14,10 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(******************************************************************************)
+(* Definitions of justification and finalization and their properties.        *)
+(******************************************************************************)
+
 Tactic Notation "spec" hyp(H) :=
   match type of H with ?a -> _ => 
     let H1 := fresh in (assert (H1: a); [|generalize (H H1); clear H H1; intro H]) end.

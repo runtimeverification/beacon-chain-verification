@@ -18,16 +18,17 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** The plausible liveness theorem **)
-
-(* The liveness theorem will assume that 2/3 of validators have not behaved badly.
-   For liveness it is not sufficient to merely say that a 1/3 quorum is unslashed.
-   Votes with unjustified sources or ones that do not represent proper forward
-   links in the checkpoint tree do not violate any slashing conditions
-   themselves, but can prevent a validator from contributing to progress,
-   because votes spanning over such bad votes would violate slashing condition II.
-   No correct validator should ever make such votes.
- *)
+(******************************************************************************)
+(* The plausible liveness theorem                                             *)
+(*                                                                            *)
+(* The liveness theorem will assume that 2/3 of validators have not behaved   *)
+(* badly. For liveness it is not sufficient to merely say that a 1/3 quorum   *)
+(* is unslashed. Votes with unjustified sources or ones that do not represent *)
+(* proper forward links in the checkpoint tree do not violate any slashing    *)
+(* conditions themselves, but can prevent a validator from contributing to    *)
+(* progress, because votes spanning over such bad votes would violate         *)
+(* slashing condition II. No correct validator should ever make such votes.   *)
+(******************************************************************************)
 
 (* A few minor lemmas and definitions used in the proof *)
 

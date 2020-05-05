@@ -10,6 +10,11 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(******************************************************************************)
+(* Various set-theoretic properties that are used in the rest of the specs.   *)
+(******************************************************************************)
+
+
 Lemma setID_disjoint : forall (vs1 vs2:{set Validator}),
   [disjoint (vs1 :&: vs2) & (vs1 :\: vs2)].
 Proof.
@@ -155,7 +160,7 @@ Proof.
   - right. apply H in Hs0. by apply/setDP.
 Qed.
 
-Lemma set3DD_disjoint : forall (vs0 vs1 vs2:{set Validator}),
+Lemma set3D_disjoint : forall (vs0 vs1 vs2:{set Validator}),
   [disjoint vs0 :\: vs2 & vs1 :\: vs0].
 Proof.
   move=> vs0 vs1 vs2.

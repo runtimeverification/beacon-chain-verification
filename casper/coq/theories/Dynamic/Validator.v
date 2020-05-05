@@ -12,6 +12,10 @@ Unset Printing Implicit Defensive.
 
 Open Scope fmap_scope.
 
+(******************************************************************************)
+(* Validators and validator stake                                             *)
+(******************************************************************************)
+
 (* We assume finite sets of validators *)
 Parameter Validator : finType.
 

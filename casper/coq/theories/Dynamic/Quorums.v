@@ -16,6 +16,11 @@ Unset Printing Implicit Defensive.
 Open Scope fmap_scope.
 Open Scope big_scope.
 
+(******************************************************************************)
+(* Validator sets, quorums and quorum properties                              *)
+(******************************************************************************)
+
+
 (* A finite map vset defining the set of validators for a given block *)
 Parameter vset : {fmap Hash -> {set Validator}}.
 

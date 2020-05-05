@@ -15,6 +15,10 @@ Unset Printing Implicit Defensive.
 
 Open Scope fmap_scope.
 
+(******************************************************************************)
+(* The slash-able bound theorem                                               *)
+(******************************************************************************)
+
 (** Activation and Exit Sets **)
 (* The set of validators who activated from vs1 to vs2 *)
 Definition activated (vs1 vs2: {set Validator}): {set Validator} :=
@@ -32,6 +36,7 @@ Definition actwt (vs1 vs2: {set Validator}): nat :=
 Definition extwt (vs1 vs2: {set Validator}): nat :=
   wt (exited vs1 vs2).
 
+(* Some additional lemmas about wt *)
 Lemma wt_meet_bound : forall (s1 s2 s1' s2':{set Validator}),
   s1 \subset s1' -> 
   s2 \subset s2' ->
@@ -75,10 +80,11 @@ Lemma wt_meet_tri_bound : forall vs0 vs1 vs2,
   wt (vs1 :\: vs2) <= wt (vs0 :\: vs2) + wt (vs1 :\: vs0).
 Proof.
   move=> vs0 vs1 vs2.
-  rewrite -wt_join_disjoint;last by apply set3DD_disjoint. 
+  rewrite -wt_join_disjoint;last by apply set3D_disjoint. 
   apply: wt_inc_leq. apply: set3D_subset.
 Qed.
 
+(* The main slashable bound theorem *)
 Theorem slashable_bound : forall st b0 b1 b2 b1_h b2_h k1 k2,
   k_finalized st b1 b1_h k1 ->
   k_finalized st b2 b2_h k2 ->
