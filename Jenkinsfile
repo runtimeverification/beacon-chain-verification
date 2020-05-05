@@ -1,29 +1,20 @@
 pipeline {
-  options {
-    ansiColor('xterm')
+  options { ansiColor('xterm') }
+  agent {
+    dockerfile {
+      label 'docker'
+      additionalBuildArgs '--build-arg K_COMMIT=$(cd deps/k && git rev-parse --short=7 HEAD) --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+    }
   }
-  agent { dockerfile { } }
   stages {
     stage('Init title') {
       when { changeRequest() }
-      steps {
-        script {
-          currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
-        }
-      }
+      steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Build and Test') {
       parallel {
         stage('Dynamic - K') {
           stages {
-            stage('Dependencies') {
-              steps {
-                sh '''
-                  cd dynamic
-                  make deps -j3
-                '''
-              }
-            }
             stage('Build') {
               steps {
                 sh '''
