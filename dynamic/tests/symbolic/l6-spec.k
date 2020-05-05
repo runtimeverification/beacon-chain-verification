@@ -1,6 +1,6 @@
-require "verification.k"
+require "../../verification.k"
 
-module PROCESS-VALIDATOR-EXIT-SPEC
+module L6-SPEC
 
 imports VERIFICATION
 
@@ -23,11 +23,12 @@ requires true
 andBool Slot >=Int 0
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot)
-andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(?Epoch))
-andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(VIDs, AM, EM1, ?Epoch)))
+andBool ?VM1 ==K m(SM, BM, EBM, AEM, AM, EM1, WM1)
+andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(v(?VM1, VIDs)), delayedActivationExitEpoch(?Epoch))
+andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(v(?VM1, VIDs), ?Epoch)))
 // pre-conditions
 andBool ?LastExitEpoch +Int sizeE(VEs) <Int FAR_FUTURE_EPOCH
-andBool forallE(x, VEs, isValidVoluntaryExit(x, AM, EM1, ?Epoch))
+andBool forallE(x, VEs, isValidVoluntaryExit(x, ?VM1, ?Epoch))
 andBool distinct(getValidatorsE(VEs))
 andBool forall(x, getValidatorsE(VEs), x in VIDs)
 // invariants
@@ -35,7 +36,7 @@ ensures true
 // post-conditions
 andBool forall(x, getValidatorsE(VEs), ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch))
 andBool forall(x, getValidatorsE(VEs), ?EM2[x]i  <Int FAR_FUTURE_EPOCH)
-andBool forall(x, getValidatorsE(VEs), countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit)
+andBool forall(x, getValidatorsE(VEs), countValidatorsToExit(v(m(SM, BM, EBM, AEM, AM, ?EM2, ?WM2), VIDs), ?EM2[x]i) <=Int ?ChurnLimit)
 
 rule
 <T>
@@ -56,11 +57,13 @@ requires true
 andBool Slot >=Int 0
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot)
-andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(?Epoch))
-andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(VIDs, AM, EM1, ?Epoch)))
+andBool ?VM0 ==K m(SM, BM, EBM, AEM, AM, EM0, WM0)
+andBool ?VM1 ==K m(SM, BM, EBM, AEM, AM, EM1, WM1)
+andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(v(?VM1, VIDs)), delayedActivationExitEpoch(?Epoch))
+andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(v(?VM1, VIDs), ?Epoch)))
 // pre-conditions
 andBool ?LastExitEpoch +Int sizeE(R_VEs) <Int FAR_FUTURE_EPOCH
-andBool forallE(x, R_VEs, isValidVoluntaryExit(x, AM, EM0, ?Epoch))
+andBool forallE(x, R_VEs, isValidVoluntaryExit(x, ?VM0, ?Epoch))
 andBool distinct(getValidatorsE(R_VEs))
 andBool forall(x, getValidatorsE(R_VEs), x in VIDs)
 // invariants
@@ -69,11 +72,11 @@ andBool forall(x, getValidatorsE(R_VEs), EM1[x]i ==K EM0[x]i)
 andBool forall(x, getValidatorsE(R_VEs), WM1[x]i ==K WM0[x]i)
 andBool forall(x, rev(L_VIDs)                         , EM1[x]i >=Int delayedActivationExitEpoch(?Epoch))
 andBool forall(x, rev(L_VIDs)                         , EM1[x]i  <Int FAR_FUTURE_EPOCH)
-andBool forall(x, rev(L_VIDs)                         , countValidatorsToExit(VIDs, EM1, EM1[x]i) <=Int ?ChurnLimit)
+andBool forall(x, rev(L_VIDs)                         , countValidatorsToExit(v(?VM1, VIDs), EM1[x]i) <=Int ?ChurnLimit)
 ensures true
 // post-conditions
 andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch))
 andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?EM2[x]i  <Int FAR_FUTURE_EPOCH)
-andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit)
+andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), countValidatorsToExit(v(m(SM, BM, EBM, AEM, AM, ?EM2, ?WM2), VIDs), ?EM2[x]i) <=Int ?ChurnLimit)
 
 endmodule

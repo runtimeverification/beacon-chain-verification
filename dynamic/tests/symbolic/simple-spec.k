@@ -23,17 +23,7 @@ rule
       <lastFinalized> LastFinalizedEpoch </lastFinalized>
     </state>
   </states>
-  <blocks>
-    ...
-    <block>
-      <bSlot> LastBlockSlot </bSlot> <bID> LastBlockID </bID>
-      <parent> (ParentSlot, ParentID) </parent>
-      <slashings> .Slashings </slashings>
-      <attestations> .Attestations </attestations>
-      <deposits> .Deposits </deposits>
-      <exits> .VoluntaryExits </exits>
-    </block>
-  </blocks>
+  ...
 </T>
 
 // processSlots(s) does nothing if s is the current slot.
@@ -55,17 +45,7 @@ rule
       <lastFinalized> LastFinalizedEpoch </lastFinalized>
     </state>
   </states>
-  <blocks>
-    ...
-    <block>
-      <bSlot> LastBlockSlot </bSlot> <bID> LastBlockID </bID>
-      <parent> (ParentSlot, ParentID) </parent>
-      <slashings> .Slashings </slashings>
-      <attestations> .Attestations </attestations>
-      <deposits> .Deposits </deposits>
-      <exits> .VoluntaryExits </exits>
-    </block>
-  </blocks>
+  ...
 </T>
 
 // processJustification(e) does nothing if no validator exist.
@@ -77,13 +57,13 @@ rule
     ...
     <state>
       <slot> firstSlotOf(Epoch) </slot>
-      <validators> v(.ValidatorMap, .IntList) </validators>
+      <validators> v(m(.BMap, .IMap, .IMap, .IMap, .IMap, .IMap, .IMap), .IntList) </validators>
       <lastBlock> (_, EpochBoundaryBlock) </lastBlock>
       ...
     </state>
     <state>
       <slot> Slot </slot>
-      <validators> v(.ValidatorMap, .IntList) </validators>
+      <validators> v(m(.BMap, .IMap, .IMap, .IMap, .IMap, .IMap, .IMap), .IntList) </validators>
       <attested>
         Epoch |-> .Attestations
         ...

@@ -17,9 +17,6 @@ rule
       <attested> AttestedMap </attested>
       <justified> JustifiedMap </justified>
       <finalized> FinalizedMap </finalized>
-      <lastBlock> (LastBlockSlot, LastBlockID) </lastBlock>
-      <lastJustified> LastJustifiedEpoch </lastJustified>
-      <lastFinalized> LastFinalizedEpoch </lastFinalized>
     </state>
     ...
   </states>
@@ -28,11 +25,7 @@ rule
 requires true
 andBool Slot ==Int TargetSlot
 // types
-andBool isValidators(Vs)
 andBool Slot >=Int 0
-andBool LastBlockSlot >=Int 0
-andBool LastJustifiedEpoch >=Int 0
-andBool LastFinalizedEpoch >=Int 0
 ensures true
 
 endmodule
