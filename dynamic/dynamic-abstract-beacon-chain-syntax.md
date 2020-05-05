@@ -494,13 +494,13 @@ rule firstSlotOf(epochOf(Slot)) <=Int Slot => true [concrete, smt-lemma]
 rule lastSlotOf(epochOf(Slot)) >=Int Slot => true [concrete, smt-lemma]
 rule isFirstSlotOfEpoch(firstSlotOf(_)) => true [smt-lemma]
 
-rule epochOf(_)     >=Int 0 => true [concrete, smt-lemma]
-rule firstSlotOf(_) >=Int 0 => true [concrete, smt-lemma]
-rule lastSlotOf(_)  >=Int 0 => true [concrete, smt-lemma]
+rule epochOf(Slot)      >=Int 0 => true requires Slot  >=Int 0 [concrete, smt-lemma]
+rule firstSlotOf(Epoch) >=Int 0 => true requires Epoch >=Int 0 [concrete, smt-lemma]
+rule lastSlotOf(Epoch)  >=Int 0 => true requires Epoch >=Int 0 [concrete, smt-lemma]
 
-rule epochOf(Slot) <=Int Slot => true [concrete, smt-lemma]
-rule firstSlotOf(Epoch) >=Int Epoch => true [concrete, smt-lemma]
-rule lastSlotOf(Epoch) >=Int Epoch => true [concrete, smt-lemma]
+rule epochOf(Slot) <=Int Slot => true requires Slot >=Int 0 [concrete, smt-lemma]
+rule firstSlotOf(Epoch) >=Int Epoch => true requires Epoch >=Int 0 [concrete, smt-lemma]
+rule lastSlotOf(Epoch) >=Int Epoch => true requires Epoch >=Int 0 [concrete, smt-lemma]
 rule lastSlotOf(Epoch) >=Int firstSlotOf(Epoch) => true [concrete, smt-lemma]
 
 /*
