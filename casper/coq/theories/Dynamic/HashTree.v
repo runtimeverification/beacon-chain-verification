@@ -7,10 +7,11 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** Note **)
-(* We consider the checkpoint tree of blocks, and so a "block" refers
-   to a "checkpoint block" throughout the specs below.
- *)
+(******************************************************************************)
+(* A representation of block (hash) trees and related properties              *)
+(* Note: We consider the checkpoint tree of blocks, and so a "block" refers   *)
+(*       to a "checkpoint block" throughout the specs below.                  *)
+(******************************************************************************)
 
 (* We assume finite hash values (block identifiers) *)
 Parameter Hash : finType.
