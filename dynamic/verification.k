@@ -594,7 +594,7 @@ syntax Bool ::= iff(Bool, Bool) [function, functional]
 rule iff(A, B) => implies(A, B) andBool implies(B, A) [macro]
 
 syntax Bool ::= subsetA(Attestations, Attestations) [function, functional, smtlib(subsetA)]
-rule implies(isJustifiable(E, B, As1, EBM, VIDs), isJustifiable(E, B, As2, EBM, VIDs)) => true
+rule implies(isJustifiable(E, B, As1, SM, EBM, AM, EM, VIDs), isJustifiable(E, B, As2, SM, EBM, AM, EM, VIDs)) => true
     requires subsetA(As1, As2)
     [concrete, smt-lemma]
 

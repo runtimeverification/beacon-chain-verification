@@ -208,7 +208,7 @@ syntax KItem ::= processJustification(Int)
 rule <k> processJustification(Epoch)
       => #assert(Epoch >=Int 1) // due to the side condition of processJustificationAndFinalization
       ~> #it(
-           isJustifiable(Epoch, EpochBoundaryBlock[firstSlotOf(Epoch)]i, Attestations, VM.effective_balance, VIDs)
+           isJustifiable(Epoch, EpochBoundaryBlock[firstSlotOf(Epoch)]i, Attestations, VM.slashed, VM.effective_balance, VM.activation_epoch, VM.exit_epoch, VIDs)
          ,
            justify(Epoch)
          ) ... </k>
@@ -239,30 +239,16 @@ rule <k> justify(Epoch) => . ... </k>
      </state>
      <lastJustified> LJ => LJ [ epochOf(Slot) <- Epoch ]ii </lastJustified>
 
-syntax Bool ::= isJustifiable(Int, Int, Attestations, IMap, IntList) [function, functional, smtlib(isJustifiable)]
-rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, EffectiveBalanceMap, VIDs)
-  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, EffectiveBalanceMap), totalBalance(EffectiveBalanceMap, VIDs))
+syntax Bool ::= isJustifiable(Int, Int, Attestations, BMap, IMap, IMap, IMap, IntList) [function, functional, smtlib(isJustifiable)]
+rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, SlashedMap, EffectiveBalanceMap, ActivationEpochMap, ExitEpochMap, VIDs)
+  => isMajority(totalBalance(EffectiveBalanceMap, getValidators(filterByTarget(EpochBoundaryBlock, filterNotSlashed(SlashedMap, Attestations)))),
+                totalBalance(EffectiveBalanceMap, activeValidators(VIDs, ActivationEpochMap, ExitEpochMap, Epoch)))
      orBool Epoch ==Int 0 // the genesis block is justified by default
-```
-```{.k .kast}
-  requires #isConcrete(Attestations) // TODO: drop this
-```
-```{.k .kore}
-     [concrete]
-```
+     requires #isConcrete(Attestations) // TODO: drop this
 
-```k
 syntax Bool ::= isMajority(Int, Int) [function, functional]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
                              andBool Total >Int 0             // ensure no div-by-zero
-
-syntax Int ::= attestationsBalance(Int, Attestations, IMap) [function, functional]
-rule attestationsBalance(Target, A Attestations, EffectiveBalanceMap)
-  => #if A.target_block ==Int Target
-     #then EffectiveBalanceMap[A.attester]i
-     #else 0
-     #fi +Int attestationsBalance(Target, Attestations, EffectiveBalanceMap)
-rule attestationsBalance(_, .Attestations, _) => 0
 ```
 
 ### Finalization
