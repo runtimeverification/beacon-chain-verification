@@ -41,9 +41,9 @@ configuration <T>
       <slot> 0 </slot>
       <validators> v(m(.BMap, .IMap, .IMap, .IMap, .IMap, .IMap, .IMap), .IntList) </validators>
       <slashedBalance> 0 </slashedBalance> // slashed balance
-      <attested> .Map </attested> // Epoch -> Attestations
-      <justified> .BList </justified> // Epoch -> bool
-      <finalized> .BList </finalized> // Epoch -> bool
+      <attested> .Map </attested> // epoch -> attestations
+      <justified> .BList </justified> // epoch -> bool
+      <finalized> .BList </finalized> // epoch -> bool
     </state>
   </states>
   // historical
@@ -85,8 +85,8 @@ rule <k> init => . ... </k>
          ) </validators>
          <slashedBalance> 0 </slashedBalance>
          <attested> 0 |-> .Attestations </attested>
-         <justified> ( 0 , true ) .BList </justified>
-         <finalized> ( 0 , true ) .BList </finalized>
+         <justified> .BList [ 0 <- true ]bb </justified>
+         <finalized> .BList [ 0 <- true ]bb </finalized>
        </state>
      </states>
      <lastBlock> .IMap => .IMap [ 0 <- 0 ]i </lastBlock>
