@@ -104,12 +104,10 @@ Validation of block signatures and state roots is omitted in the abstract model.
 ```k
 // state_transition
 rule <k> stateTransition(NewBlock)
-      => processSlots(NewBlock.slot)
+      => #assert(Slot <Int NewBlock.slot) // TODO: <=Int or <Int ?
+      ~> processSlots(NewBlock.slot)
       ~> processBlock(NewBlock) ... </k>
      <currentSlot> Slot </currentSlot>
-     requires Slot <Int NewBlock.slot // TODO: <=Int or <Int ?
-// TODO:
-// rule stateTransition(NewBlock) => #bottom [owise]
 ```
 
 The `process_epoch()` in the concrete model is called before increasing the slot number, while it is called after increasing `Slot` here.
