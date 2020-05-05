@@ -143,11 +143,11 @@ process-justification-finalization-spec.k: process-justification-finalization-sp
 # Static validators model
 
 $(static_kompiled): $(static_files)
-	/kompile --debug --main-module $(MAIN_MODULE) --backend haskell             \
-	         --syntax-module $(SYNTAX_MODULE) $(static_dir)/$(MAIN_DEFN_FILE).k \
-	         --directory $(static_dir) -I $(static_dir)                         \
-	         --emit-json                                                        \
-	         $(KOMPILE_OPTS)
+	kompile --debug --main-module $(MAIN_MODULE) --backend haskell             \
+	        --syntax-module $(SYNTAX_MODULE) $(static_dir)/$(MAIN_DEFN_FILE).k \
+	        --directory $(static_dir) -I $(static_dir)                         \
+	        --emit-json                                                        \
+	        $(KOMPILE_OPTS)
 
 $(static_verification_kompiled): $(static_files) verification.k
 	kompile --debug --main-module VERIFICATION --backend haskell    \
