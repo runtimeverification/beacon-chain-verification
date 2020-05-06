@@ -93,7 +93,7 @@ syntax Attestation ::= Slashing ".attestation_2" [function, functional, klabel(s
 rule #Slashing(X,_).attestation_1 => X
 rule #Slashing(_,X).attestation_2 => X
 
-syntax Slashings ::= ".Slashings"       [klabel(nilS), smtlib(nilS)]
+syntax Slashings ::= ".Slashings"       [klabel(nilS),  smtlib(nilS)]
 syntax Slashings ::= Slashing Slashings [klabel(consS), smtlib(consS)]
 
 syntax Bool ::= Slashing "inS" Slashings [function, klabel(inS), smtlib(inS)]
@@ -115,7 +115,7 @@ An abstract attestation denotes a single attestation, consisting of an attester,
 The `Attestation` of the concrete model can be represented as a set of abstract attestations whose slot, source, and target are the same.
 
 ```k
-syntax Attestation  ::= #Attestation(Int,Int,Pair,Pair,Int,Int,Int) // attester, assigned slot, source epoch/block, target epoch/block, head block (LMD GHOST vote), proposer, inclusion delay
+syntax Attestation ::= #Attestation(Int,Int,Pair,Pair,Int,Int,Int) // attester, assigned slot, source epoch/block, target epoch/block, head block (LMD GHOST vote), proposer, inclusion delay
 syntax Int ::= Attestation ".attester"        [function, functional, klabel(a_attester)       , smtlib(a_attester)       ]
 syntax Int ::= Attestation ".slot"            [function, functional, klabel(a_slot)           , smtlib(a_slot)           ]
 syntax Int ::= Attestation ".source_epoch"    [function, functional, klabel(a_source_epoch)   , smtlib(a_source_epoch)   ]
@@ -134,47 +134,20 @@ rule #Attestation(_,_,(_,_),(_,X),_,_,_).target_block    => X
 rule #Attestation(_,_,(_,_),(_,_),X,_,_).head_block      => X
 rule #Attestation(_,_,(_,_),(_,_),_,X,_).proposer        => X
 rule #Attestation(_,_,(_,_),(_,_),_,_,X).inclusion_delay => X
-```
 
-```k
 syntax Attestations ::= ".Attestations"          [klabel(nilA),  smtlib(nilA)]
 syntax Attestations ::= Attestation Attestations [klabel(consA), smtlib(consA)]
-
-syntax Int ::= sizeA(Attestations) [function, smtlib(sizeA)]
-rule sizeA(_ As) => 1 +Int sizeA(As)
-rule sizeA(.Attestations) => 0
-
-rule sizeA(_) >=Int 0 => true [smt-lemma]
-
-// `minByInclusionDelay(V, As)` returns the first included attestation attested by V
-// it is defined only when `V inA As`
-syntax Attestation ::= minByInclusionDelay(Int, Attestations) [function, klabel(minA), smtlib(minA)]
-rule minByInclusionDelay(V, As) => minByInclusionDelayAux1(V, As) [concrete]
-
-syntax Attestation ::= minByInclusionDelayAux1(Int, Attestations) [function]
-rule minByInclusionDelayAux1(V, A As) => minByInclusionDelayAux2(A, As) requires V  ==Int A.attester
-rule minByInclusionDelayAux1(V, A As) => minByInclusionDelayAux1(V, As) requires V =/=Int A.attester
-
-syntax Attestation ::= minByInclusionDelayAux2(Attestation, Attestations) [function]
-rule minByInclusionDelayAux2(A0, A As) => minByInclusionDelayAux2(#if A0.inclusion_delay <=Int A.inclusion_delay #then A0 #else A #fi, As) 
-rule minByInclusionDelayAux2(A0, .Attestations) => A0
 
 syntax Bool ::= Int "inA" Attestations [function, klabel(inA), smtlib(inA)]
 rule V inA (A As) => true     requires V  ==Int A.attester
 rule V inA (A As) => V inA As requires V =/=Int A.attester
 rule V inA .Attestations => false
 
-syntax Attestations ::= revA(Attestations) [function, smtlib(revA)]
+syntax Int ::= sizeA(Attestations) [function, smtlib(sizeA)]
+rule sizeA(_ As) => 1 +Int sizeA(As)
+rule sizeA(.Attestations) => 0
 
-rule revA(.Attestations) => .Attestations
-
-syntax Attestations ::= Attestations "++A" Attestations [function, klabel(concatA), smtlib(concatA)]
-
-rule L ++A .Attestations => L
-rule .Attestations ++A L => L
-
-rule (X Xs) ++A Ys => X (Xs ++A Ys)
-rule revA(X Ys) ++A Xs => revA(Ys) ++A (X Xs)
+rule sizeA(_) >=Int 0 => true [smt-lemma]
 ```
 
 ## Abstract Deposits
@@ -184,12 +157,13 @@ An abstract deposit is simply a pair of the deposit owner and the deposit amount
 The extra data (e.g., signatures and Merkle proofs) for validating the deposit information is omitted in the abstract model.
 
 ```k
-syntax Deposits ::= List{Deposit,""}
-syntax Deposit  ::= #Deposit(Int,Int) // sender, amount
+syntax Deposit ::= #Deposit(Int,Int) // sender, amount
 syntax Int ::= Deposit ".sender" [function, functional, klabel(d_sender), smtlib(d_sender)]
 syntax Int ::= Deposit ".amount" [function, functional, klabel(d_amount), smtlib(d_amount)]
 rule #Deposit(X,_).sender => X
 rule #Deposit(_,X).amount => X
+
+syntax Deposits ::= List{Deposit,""}
 ```
 
 ## Voluntary Exits
@@ -199,7 +173,7 @@ This is a pair of a validator ID and an epoch to exit requested.
 This is the same with the concrete model.
 
 ```k
-syntax VoluntaryExit  ::= #VoluntaryExit(Int,Int) // validator id, epoch to exit
+syntax VoluntaryExit ::= #VoluntaryExit(Int,Int) // validator id, epoch to exit
 syntax Int ::= VoluntaryExit ".validator" [function, functional, klabel(e_validator), smtlib(e_validator)]
 syntax Int ::= VoluntaryExit ".epoch"     [function, functional, klabel(e_epoch)    , smtlib(e_epoch)    ]
 rule #VoluntaryExit(X,_).validator => X
@@ -237,46 +211,8 @@ An abstract validator consists of:
 The cryptographic data (`pubkey` and `withdrawal_credentials`) is omitted in the abstract model.
 
 ```k
-/*
-syntax Validator ::= #Validator(Int,Bool,Pair,Pair,Pair) // id, slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
-syntax Int  ::= Validator ".id"                           [function, functional, klabel(v_id)                          , smtlib(v_id)                          ]
-syntax Bool ::= Validator ".slashed"                      [function, functional, klabel(v_slashed)                     , smtlib(v_slashed)                     ]
-syntax Int  ::= Validator ".balance"                      [function, functional, klabel(v_balance)                     , smtlib(v_balance)                     ]
-syntax Int  ::= Validator ".effective_balance"            [function, functional, klabel(v_effective_balance)           , smtlib(v_effective_balance)           ]
-syntax Int  ::= Validator ".activation_eligibility_epoch" [function, functional, klabel(v_activation_eligibility_epoch), smtlib(v_activation_eligibility_epoch)]
-syntax Int  ::= Validator ".activation_epoch"             [function, functional, klabel(v_activation_epoc)             , smtlib(v_activation_epoc)             ]
-syntax Int  ::= Validator ".exit_epoch"                   [function, functional, klabel(v_exit_epoch)                  , smtlib(v_exit_epoch)                  ]
-syntax Int  ::= Validator ".withdrawable_epoch"           [function, functional, klabel(v_withdrawable_epoch)          , smtlib(v_withdrawable_epoch)          ]
-rule #Validator(X,_,(_,_),(_,_),(_,_)).id                           => X
-rule #Validator(_,X,(_,_),(_,_),(_,_)).slashed                      => X
-rule #Validator(_,_,(X,_),(_,_),(_,_)).balance                      => X
-rule #Validator(_,_,(_,X),(_,_),(_,_)).effective_balance            => X
-rule #Validator(_,_,(_,_),(X,_),(_,_)).activation_eligibility_epoch => X
-rule #Validator(_,_,(_,_),(_,X),(_,_)).activation_epoch             => X
-rule #Validator(_,_,(_,_),(_,_),(X,_)).exit_epoch                   => X
-rule #Validator(_,_,(_,_),(_,_),(_,X)).withdrawable_epoch           => X
-syntax Validator ::= Validator "with" "slashed"                      "=" Bool [function, functional, klabel(v_with_slashed)                     , smtlib(v_with_slashed)                     ]
-syntax Validator ::= Validator "with" "balance"                      "=" Int  [function, functional, klabel(v_with_balance)                     , smtlib(v_with_balance)                     ]
-syntax Validator ::= Validator "with" "effective_balance"            "=" Int  [function, functional, klabel(v_with_effective_balance)           , smtlib(v_with_effective_balance)           ]
-syntax Validator ::= Validator "with" "activation_eligibility_epoch" "=" Int  [function, functional, klabel(v_with_activation_eligibility_epoch), smtlib(v_with_activation_eligibility_epoch)]
-syntax Validator ::= Validator "with" "activation_epoch"             "=" Int  [function, functional, klabel(v_with_activation_epoc)             , smtlib(v_with_activation_epoc)             ]
-syntax Validator ::= Validator "with" "exit_epoch"                   "=" Int  [function, functional, klabel(v_with_exit_epoch)                  , smtlib(v_with_exit_epoch)                  ]
-syntax Validator ::= Validator "with" "withdrawable_epoch"           "=" Int  [function, functional, klabel(v_with_withdrawable_epoch)          , smtlib(v_with_withdrawable_epoch)          ]
-rule #Validator(A,S,(B,C),(D,E),(F,G)) with slashed                      = V => #Validator(A,V,(B,C),(D,E),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) with balance                      = V => #Validator(A,S,(V,C),(D,E),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) with effective_balance            = V => #Validator(A,S,(B,V),(D,E),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_eligibility_epoch = V => #Validator(A,S,(B,C),(V,E),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) with activation_epoch             = V => #Validator(A,S,(B,C),(D,V),(F,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) with exit_epoch                   = V => #Validator(A,S,(B,C),(D,E),(V,G))
-rule #Validator(A,S,(B,C),(D,E),(F,G)) with withdrawable_epoch           = V => #Validator(A,S,(B,C),(D,E),(F,V))
-*/
-```
-
-```k
 syntax Validators ::= v(ValidatorMap, IntList) [smtlib(v)]
-/*
-syntax ValidatorMap ::= m(slashed: BMap, balance: IMap, effective_balance: IMap, activation_eligibility_epoch: IMap, activation_epoch: IMap, exit_epoch: IMap, withdrawable_epoch: IMap) [smtlib(m)] // slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
-*/
+
 syntax ValidatorMap ::= m(BMap, IMap, IMap, IMap, IMap, IMap, IMap) [smtlib(m)] // slashed, (balance, effective_balance), join epoch (eligible, actual), (exit epoch, withdrawable epoch)
 syntax BMap ::= ValidatorMap ".slashed"                      [function, functional, klabel(v_slashed)                     , smtlib(v_slashed)                     ]
 syntax IMap ::= ValidatorMap ".balance"                      [function, functional, klabel(v_balance)                     , smtlib(v_balance)                     ]
@@ -295,34 +231,19 @@ rule m(_,_,_,_,_,_,X).withdrawable_epoch           => X
 ```
 
 ```k
-/*
-syntax ValidatorList ::= ".ValidatorList"        [klabel(nilV),  smtlib(nilV)]
-syntax ValidatorList ::= Validator ValidatorList [klabel(consV), smtlib(consV)]
-syntax Int ::= sizeV(ValidatorList) [function, smtlib(sizeV)]
-rule sizeV(_ Vs) => 1 +Int sizeV(Vs)
-rule sizeV(.ValidatorList) => 0
-
-rule sizeV(_) >=Int 0 => true [smt-lemma]
-
-// subset in set-like view
-syntax Bool ::= subsetV(ValidatorList, ValidatorList) [function, klabel(subsetV), smtlib(subsetV)]
-// TODO: implement
-*/
-```
-
-```k
 syntax IntList ::= ".IntList"   [klabel(nilI),  smtlib(nilI)]
 syntax IntList ::= Int IntList  [klabel(consI), smtlib(consI)]
-syntax Int ::= size(IntList) [function, klabel(sizeI), smtlib(sizeI)]
-rule size(_ Is) => 1 +Int size(Is)
-rule size(.IntList) => 0
-
-rule size(_) >=Int 0 => true [smt-lemma]
 
 syntax Bool ::= Int "in" IntList [function, klabel(inI), smtlib(inI)]
 rule J in (I Is) => true    requires J  ==Int I [smt-lemma]
 rule J in (I Is) => J in Is requires J =/=Int I [smt-lemma]
 rule _ in .IntList => false [smt-lemma]
+
+syntax Int ::= size(IntList) [function, klabel(sizeI), smtlib(sizeI)]
+rule size(_ Is) => 1 +Int size(Is)
+rule size(.IntList) => 0
+
+rule size(_) >=Int 0 => true [smt-lemma]
 
 // take the first N elements at most
 syntax IntList ::= take(Int, IntList) [function, klabel(takeI), smtlib(takeI)]
@@ -332,36 +253,9 @@ rule take(_, .IntList) => .IntList
 
 // sort in the order of activation_eligibility_epoch
 syntax IntList ::= sort(IntList) [function, klabel(sortI), smtlib(sortI)]
+// TODO: implement
+
 rule sort(.IntList) => .IntList
-// TODO: implement
-
-// subset in set-like view
-syntax Bool ::= subset(IntList, IntList) [function, klabel(subsetI), smtlib(subsetI)]
-// TODO: implement
-```
-
-```k
-/*
-syntax ValidatorMap ::= ".ValidatorMap"                          [          klabel(emptyV),  smtlib(emptyV)]
-syntax ValidatorMap ::= ValidatorMap "[" Int "<-" Validator "]v" [function, klabel(storeV),  smtlib(storeV)]
-syntax Validator    ::= ValidatorMap "[" Int "]v"                [function, klabel(selectV), smtlib(selectV)]
-
-rule ( M [ K1 <- V ]v ) [ K2 ]v => V         requires K1  ==Int K2
-rule ( M [ K1 <- V ]v ) [ K2 ]v => M [ K2 ]v requires K1 =/=Int K2
-
-// in-place update
-
-rule ( M [ K0 <- V0 ]v ) [ K1 <- V1 ]v => M [ K0 <- V1 ]v
-  requires K0 ==Int K1
-
-rule ( M [ K0 <- V0 ]v ) [ K1 <- V1 ]v => ( M [ K1 <- V1 ]v ) [ K0 <- V0 ]v
-  requires K0 =/=Int K1 andBool K1 in keys(M)
-
-syntax IntList ::= keys(ValidatorMap) [function, klabel(keysV), smtlib(keysV)]
-
-rule K1 in keys(M [ K2 <- _ ]v) => true          requires K1  ==Int K2
-rule K1 in keys(M [ K2 <- _ ]v) => K1 in keys(M) requires K1 =/=Int K2
-*/
 ```
 
 ```k
@@ -398,23 +292,6 @@ rule ( M [ K1 <- V ]b ) [ K2 ]b => M [ K2 ]b requires K1 =/=Int K2 [smt-lemma]
 ```
 
 ```k
-syntax BList ::= ".BList"
-syntax BList ::= "(" Int "," Bool ")" BList
-
-syntax BList ::= BList "[" Int "<-" Bool "]bb" [function]
-syntax Bool  ::= BList "[" Int           "]bb" [function]
-
-rule ( (K1, V) M ) [ K2 ]bb => V          requires K1 ==Int K2
-rule ( (K1, _) M ) [ K2 ]bb => M [ K2 ]bb requires K1  >Int K2
-
-rule ( (K1, _ ) M ) [ K2 <- V2 ]bb => (K1, V2)   M                  requires K1 ==Int K2
-rule ( (K1, V1) M ) [ K2 <- V2 ]bb => (K1, V1) ( M [ K2 <- V2 ]bb ) requires K1  >Int K2
-rule ( (K1, V1) M ) [ K2 <- V2 ]bb => (K2, V2) (K1, V1) M           requires K1  <Int K2
-
-rule .BList [ K <- V ]bb => (K, V) .BList
-```
-
-```k
 syntax IList ::= ".IList"
 syntax IList ::= "(" Int "," Int ")" IList
 
@@ -429,6 +306,23 @@ rule ( (K1, V1) M ) [ K2 <- V2 ]ii => (K1, V1) ( M [ K2 <- V2 ]ii ) requires K1 
 rule ( (K1, V1) M ) [ K2 <- V2 ]ii => (K2, V2) (K1, V1) M           requires K1  <Int K2
 
 rule .IList [ K <- V ]ii => (K, V) .IList
+```
+
+```k
+syntax BList ::= ".BList"
+syntax BList ::= "(" Int "," Bool ")" BList
+
+syntax BList ::= BList "[" Int "<-" Bool "]bb" [function]
+syntax Bool  ::= BList "[" Int           "]bb" [function]
+
+rule ( (K1, V) M ) [ K2 ]bb => V          requires K1 ==Int K2
+rule ( (K1, _) M ) [ K2 ]bb => M [ K2 ]bb requires K1  >Int K2
+
+rule ( (K1, _ ) M ) [ K2 <- V2 ]bb => (K1, V2)   M                  requires K1 ==Int K2
+rule ( (K1, V1) M ) [ K2 <- V2 ]bb => (K1, V1) ( M [ K2 <- V2 ]bb ) requires K1  >Int K2
+rule ( (K1, V1) M ) [ K2 <- V2 ]bb => (K2, V2) (K1, V1) M           requires K1  <Int K2
+
+rule .BList [ K <- V ]bb => (K, V) .BList
 ```
 
 ## Constants
@@ -500,15 +394,6 @@ rule EPOCHS_PER_SLASHINGS_VECTOR         =>      1                  [macro]
 rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1                  [macro]
 ```
 
-```k
-syntax Int ::= sqrtInt(Int) [function, smtlib(sqrtInt)]
-rule sqrtInt(N) => sqrtIntAux(N, N, (N +Int 1) /Int 2) [concrete]
-
-syntax Int ::= sqrtIntAux(Int, Int, Int) [function]
-rule sqrtIntAux(N, X, Y) => sqrtIntAux(N, Y, (Y +Int (N /Int Y)) /Int 2) requires Y <Int X
-rule sqrtIntAux(N, X, Y) => X requires Y >=Int X
-```
-
 ## Macros
 
 ```k
@@ -542,6 +427,15 @@ rule lastSlotOf(Epoch) >=Int firstSlotOf(Epoch) => true [concrete, smt-lemma]
 // injectivity of firstSlotOf
 rule implies(firstSlotOf(E1) ==K firstSlotOf(E1), E1 ==K E2) => true [concrete, smt-lemma]
 */
+```
+
+```k
+syntax Int ::= sqrtInt(Int) [function, smtlib(sqrtInt)]
+rule sqrtInt(N) => sqrtIntAux(N, N, (N +Int 1) /Int 2) [concrete]
+
+syntax Int ::= sqrtIntAux(Int, Int, Int) [function]
+rule sqrtIntAux(N, X, Y) => sqrtIntAux(N, Y, (Y +Int (N /Int Y)) /Int 2) requires Y <Int X
+rule sqrtIntAux(N, X, Y) => X requires Y >=Int X
 ```
 
 ```k

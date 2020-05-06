@@ -23,15 +23,20 @@ rule I <Int I => false
 
 endmodule
 
-module TACTIC
+module COMMON
 
-imports BOOL
+imports DYNAMIC-ABSTRACT-BEACON-CHAIN
+imports SUBSTITUTION
+
+// FOL
 
 syntax Bool ::= implies(Bool, Bool) [function, functional]
 rule implies(A, B) => notBool A orBool B [macro]
 
 syntax Bool ::= iff(Bool, Bool) [function, functional]
 rule iff(A, B) => implies(A, B) andBool implies(B, A) [macro]
+
+// Tactics
 
 syntax Tactic ::= "begin"
 rule begin => .
@@ -48,17 +53,12 @@ rule case(xor3(C, _, _)) => . requires C [trusted]
 rule case(xor3(_, C, _)) => . requires C [trusted]
 rule case(xor3(_, _, C)) => . requires C [trusted]
 
-endmodule
-
-module VERIFICATION
-
-imports DYNAMIC-ABSTRACT-BEACON-CHAIN
-imports LEMMAS-JAVA
-imports TACTIC
-imports SUBSTITUTION
+// Builtin Map
 
 rule ( K1 |-> V M:Map ) [ K2 ] => V        requires K1  ==Int K2
 rule ( K1 |-> _ M:Map ) [ K2 ] => M [ K2 ] requires K1 =/=Int K2
+
+// Quantified formula
 
 syntax KVar ::= "x" [token]
 
@@ -69,25 +69,109 @@ rule forall(_, .IntList, _) => true
 rule forall(_, _, true) => true
 rule forall(X, S, X in S) => true
 
+syntax Slashing ::= KVar
+syntax Bool ::= forallS(KVar, Slashings, Bool) [binder, function, smtlib((forall ((#1 Slashing)) (=> (inS #1 #2) #3)))]
+rule forallS(X, V Vs, E) => E[V / X] andBool forallS(X, Vs, E)
+rule forallS(_, .Slashings, _) => true
+rule forallS(_, _, true) => true
+
 syntax VoluntaryExit ::= KVar
 syntax Bool ::= forallE(KVar, VoluntaryExits, Bool) [binder, function, smtlib((forall ((#1 VoluntaryExit)) (=> (inE #1 #2) #3)))]
 rule forallE(X, V Vs, E) => E[V / X] andBool forallE(X, Vs, E)
 rule forallE(_, .VoluntaryExits, _) => true
 rule forallE(_, _, true) => true
 
+// Projections
+
+syntax IntList ::= getValidatorsA(Attestations) [function, smtlib(getValidatorsA)]
+rule getValidatorsA(A As) => A.attester getValidatorsA(As)
+rule getValidatorsA(.Attestations) => .IntList
+
+syntax IntList ::= getValidatorsD(Deposits) [function, smtlib(getValidatorsD)]
+rule getValidatorsD(D Ds) => D.sender getValidatorsD(Ds)
+rule getValidatorsD(.Deposits) => .IntList
+
+syntax IntList ::= getValidatorsS(Slashings) [function, smtlib(getValidatorsS)]
+rule getValidatorsS(S Ss) => S.attestation_1.attester getValidatorsS(Ss)
+rule getValidatorsS(.Slashings) => .IntList
+
+syntax IntList ::= getValidatorsE(VoluntaryExits) [function, smtlib(getValidatorsE)]
+rule getValidatorsE(E Es) => E.validator getValidatorsE(Es)
+rule getValidatorsE(.VoluntaryExits) => .IntList
+
+// IntList
+
+syntax IntList ::= rev(IntList) [function, smtlib(revI)]
+
+rule rev(.IntList) => .IntList
+
+rule forall(X, rev(V Vs), E) => E[V / X] andBool forall(X, rev(Vs), E)
+
+rule iff(X in rev(L), X in L) => true [concrete, smt-lemma]
+
+syntax IntList ::= IntList "++" IntList [function, smtlib(concatI)]
+
+rule L ++ .IntList => L
+rule .IntList ++ L => L
+
+rule rev(X Ys) ++ Xs => rev(Ys) ++ X Xs
+
+syntax Bool ::= subset(IntList, IntList) [function, klabel(subsetI), smtlib(subsetI)] // subset in set-like view
+
+rule implies(X in Xs1, X in Xs2) => true requires subset(Xs1, Xs2) [concrete, smt-lemma]
+
+syntax Bool ::= distinct(IntList) [function, smtlib(distinctI)]
+
+rule implies(distinct(L Ls), distinct(Ls)) => true [concrete, smt-lemma]
+
+syntax Bool ::= disjoint(IntList, IntList) [function, smtlib(disjointI)]
+              | disjoint1(IntList, Int)    [function, smtlib(disjointI1)]
+
+rule disjoint(Ls, R Rs) => disjoint1(Ls, R) andBool disjoint(Ls, Rs)
+rule disjoint(.IntList, _) => true
+rule disjoint(_, .IntList) => true
+
+rule implies(disjoint(L1, L2) andBool X in L1, notBool X in L2) => true [concrete, smt-lemma]
+rule implies(disjoint(L1, L2) andBool X in L2, notBool X in L1) => true [concrete, smt-lemma]
+
+rule implies(J in Js andBool disjoint1(Js, I), I =/=K J) => true [concrete, smt-lemma]
+
+rule disjoint1(Is, I) => true requires distinct(I Is) [concrete, smt-lemma]
+
+rule disjoint(R Ls, Rs) => true requires distinct(R Rs) andBool disjoint(Ls, Rs)
+
+// Attestations
+
+syntax Attestations ::= revA(Attestations) [function, smtlib(revA)]
+
+rule revA(.Attestations) => .Attestations
+
+syntax Attestations ::= Attestations "++A" Attestations [function, klabel(concatA), smtlib(concatA)]
+
+rule L ++A .Attestations => L
+rule .Attestations ++A L => L
+
+rule (X Xs) ++A Ys => X (Xs ++A Ys)
+rule revA(X Ys) ++A Xs => revA(Ys) ++A (X Xs)
+
+syntax Bool ::= subsetA(Attestations, Attestations) [function, functional, smtlib(subsetA)] // subset in set-like view
+
+endmodule
+
+module VERIFICATION
+
+imports DYNAMIC-ABSTRACT-BEACON-CHAIN
+imports LEMMAS-JAVA
+imports COMMON
+imports SUBSTITUTION
+
 // for processVoluntaryExits
+
 rule countValidatorsToExit(VIDs, EM [ VID <- E ]i, Exit)
   => countValidatorsToExit(VIDs, EM,               Exit) +Int 1
     requires E =/=Int EM[VID]i
      andBool E ==Int Exit
      andBool VID in VIDs
-
-syntax Bool ::= distinctVoluntaryExits(VoluntaryExits) [function]
-// TODO: implement
-// rule distinctVoluntaryExits(Es) => distinct(Es.validator)
-
-syntax Bool ::= distinct(IntList) [function, smtlib(distinctI)]
-// TODO: implement
 
 rule activeValidators(VIDs, AM, EM [ VID <- E ]i, Epoch)
   => activeValidators(VIDs, AM, EM              , Epoch)
@@ -106,11 +190,8 @@ rule forall(X, rev(L), countValidatorsToExit(VIDs, EM, (M [ Y <- _ ]i)[X]i) <=In
   => forall(X, rev(L), countValidatorsToExit(VIDs, EM,  M             [X]i) <=Int E)
      requires disjoint1(L, Y)
 
-syntax IntList ::= getValidatorsE(VoluntaryExits) [function, smtlib(getValidatorsE)]
-rule getValidatorsE(E Es) => E.validator getValidatorsE(Es)
-rule getValidatorsE(.VoluntaryExits) => .IntList
-
 // for processValidatorActivation
+
 /*
 rule sizeI(take(N, _)) <=Int M => true requires N >=Int 0 andBool N <=Int M
 */
@@ -166,28 +247,6 @@ rule getInclusionReward(B, D) >=Int 0 => true requires B >=Int 0 andBool D >=Int
 
 rule getInactivityPenalty(B, D) >=Int 0 => true requires B >=Int 0 andBool D >=Int 0 [smt-lemma]
 
-syntax IntList ::= rev(IntList) [function, smtlib(revI)]
-
-rule rev(.IntList) => .IntList
-
-syntax IntList ::= IntList "++" IntList [function, smtlib(concatI)]
-
-rule L ++ .IntList => L
-rule .IntList ++ L => L
-
-rule rev(X Ys) ++ Xs => rev(Ys) ++ X Xs
-
-rule forall(X, rev(V Vs), E) => E[V / X] andBool forall(X, rev(Vs), E)
-
-syntax Bool ::= disjoint(IntList, IntList) [function, smtlib(disjointI)]
-              | disjoint1(IntList, Int)    [function, smtlib(disjointI1)]
-rule disjoint(Ls, R Rs) => disjoint1(Ls, R) andBool disjoint(Ls, Rs)
-rule disjoint(.IntList, _) => true
-rule disjoint(_, .IntList) => true
-
-rule disjoint(R Ls, Rs) => true
-     requires distinct(R Rs) andBool disjoint(Ls, Rs)
-
 rule forall(X, rev(L), (M [ Y <- _ ]i)[X]i <=Int E)
   => forall(X, rev(L),  M             [X]i <=Int E)
      requires disjoint1(L, Y)
@@ -203,8 +262,6 @@ rule forall(X, rev(L), (M [ Y <- _ ]i)[X]i >=Int E)
 rule forall(X, Ls, (M [ L <- _ ]i)[X]i ==K E)
   => forall(X, Ls,  M             [X]i ==K E)
      requires distinct(L Ls)
-
-rule implies(distinct(L Ls), distinct(Ls)) => true [concrete, smt-lemma]
 
 rule lift(totalBalance(M, L1)) <=Int lift(totalBalance(M, L2)) => true
      requires subset(L1, L2)
@@ -238,8 +295,6 @@ rule activationQueue(VIDs, AEM [ X <- E ]i, AM, FinalizedEpoch)
 
 // for processValidatorEjections
 
-rule size(_:IntList) >=Int 0 => true [smt-lemma]
-
 rule forall(X, rev(L), #if E0 #then (M [ Y <- _ ]i)[X]i >=Int E1 andBool (M [ Y <- _ ]i)[X]i <Int E2 andBool countValidatorsToExit(VIDs, EM, (M [ Y <- _ ]i)[X]i) <=Int E3 #else (M [ Y <- _ ]i)[X]i ==K E4 #fi)
   => forall(X, rev(L), #if E0 #then  M             [X]i >=Int E1 andBool  M             [X]i <Int E2 andBool countValidatorsToExit(VIDs, EM,  M             [X]i) <=Int E3 #else  M             [X]i ==K E4 #fi)
      requires disjoint1(L, Y)
@@ -263,10 +318,6 @@ rule activeValidators(VIDs, AM, EM [ X <- E ]i, Epoch)
 syntax Bool ::= isValidDeposits(Deposits) [function, smtlib(isValidDeposits)]
 rule isValidDeposits(D Ds) => D.amount >=Int 0 andBool isValidDeposits(Ds)
 rule isValidDeposits(.Deposits) => true
-
-syntax IntList ::= getValidatorsD(Deposits) [function, smtlib(getValidatorsD)]
-rule getValidatorsD(D Ds) => D.sender getValidatorsD(Ds)
-rule getValidatorsD(.Deposits) => .IntList
 
 // remove duplicate elements in the given list: the ones that appear earlier (more left) are removed.
 syntax IntList ::= unique(IntList) [function, smtlib(uniqueI)]
@@ -293,19 +344,9 @@ rule   unique((X Xs) ++ Ys)
      requires notBool X in unique(Xs ++ Ys)
      [concrete, smt-lemma]
 
-rule implies(X in Xs1, X in Xs2) => true
-     requires subset(Xs1, Xs2)
-     [concrete, smt-lemma]
-
 rule subset(L, unique(_ ++ L)) => true
      requires distinct(L)
      [concrete, smt-lemma]
-
-rule disjoint1(Is, I) => true requires distinct(I Is) [concrete, smt-lemma]
-
-rule implies(J in Js andBool disjoint1(Js, I), I =/=K J) => true [concrete, smt-lemma]
-
-rule iff(X in rev(L), X in L) => true [concrete, smt-lemma]
 
 // for process-block
 
@@ -329,9 +370,6 @@ rule implies(
      ) => true
      [concrete, smt-lemma]
 
-rule implies(disjoint(L1, L2) andBool X in L1, notBool X in L2) => true [concrete, smt-lemma]
-rule implies(disjoint(L1, L2) andBool X in L2, notBool X in L1) => true [concrete, smt-lemma]
-
 rule X.validator in getValidatorsE(VEs) => true requires X inE VEs [concrete, smt-lemma]
 
 // for process-attestation
@@ -348,25 +386,10 @@ rule isValidAttestationListPartial(A As, Slot, SourceEpoch, SourceBlock)
      andBool isValidAttestationListPartial(As, Slot, SourceEpoch, SourceBlock)
 rule isValidAttestationListPartial(.Attestations, _, _, _) => true
 
-syntax IntList ::= getValidatorsA(Attestations) [function, smtlib(getValidatorsA)]
-rule getValidatorsA(A As) => A.attester getValidatorsA(As)
-rule getValidatorsA(.Attestations) => .IntList
-
 // for process-slashing
-
-syntax Slashing ::= KVar
-syntax Bool ::= forallS(KVar, Slashings, Bool) [binder, function, smtlib((forall ((#1 Slashing)) (=> (inS #1 #2) #3)))]
-rule forallS(X, V Vs, E) => E[V / X] andBool forallS(X, Vs, E)
-rule forallS(_, .Slashings, _) => true
-rule forallS(_, _, true) => true
 
 // for process-justification-finalization
 
-syntax IntList ::= getValidatorsS(Slashings) [function, smtlib(getValidatorsS)]
-rule getValidatorsS(S Ss) => S.attestation_1.attester getValidatorsS(Ss)
-rule getValidatorsS(.Slashings) => .IntList
-
-syntax Bool ::= subsetA(Attestations, Attestations) [function, functional, smtlib(subsetA)]
 rule implies(isJustifiable(E, B, As1, SM, EBM, AM, EM, VIDs), isJustifiable(E, B, As2, SM, EBM, AM, EM, VIDs)) => true
     requires subsetA(As1, As2)
     [concrete, smt-lemma]
