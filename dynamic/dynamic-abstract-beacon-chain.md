@@ -767,7 +767,7 @@ rule isSlashableAttestation(A1, A2)
      ( A1.source_epoch <Int A2.source_epoch andBool A2.target_epoch <Int A1.target_epoch )
      orBool
      ( A2.source_epoch <Int A1.source_epoch andBool A1.target_epoch <Int A2.target_epoch )
-     // TODO: the final case is not considered in the python spec
+     // TODO: the last case is not considered in the python spec
 ```
 
 ### Attestations
@@ -886,7 +886,7 @@ rule <k> processDeposit(D) => . ... </k>
        //)
          m(SM  => SM  [ D.sender <- false ]b
          , BM  => BM  [ D.sender <- D.amount ]i
-         , EBM => EBM [ D.sender <- minInt(D.amount, MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap
+         , EBM => EBM [ D.sender <- minInt(D.amount, MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap // TODO: rounding to Ether
          , AEM => AEM [ D.sender <- FAR_FUTURE_EPOCH ]i
          , AM  => AM  [ D.sender <- FAR_FUTURE_EPOCH ]i
          , EM  => EM  [ D.sender <- FAR_FUTURE_EPOCH ]i
