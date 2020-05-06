@@ -112,7 +112,6 @@ rule <k> stateTransition(Block)
 
 The `process_epoch()` in the concrete model is called before increasing the slot number, while it is called after increasing `Slot` here.
 
-
 ```k
 // process_slots
 rule <k> processSlots(TargetSlot)
@@ -671,17 +670,17 @@ rule isValidValidatorToActivate(VID, ActivationEligibilityEpochMap, ActivationEp
 
 ## Block Processing
 
+`process_randao` and `process_eth1_data` are omitted in the abstract model.
+
 ```k
-// process_block
-// process_block_header
-// process_operations
+// process_block, process_block_header, process_operations
 rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits))
       => processSlashings(Slashings)
       ~> processAttestations(Attestations)
       ~> processDeposits(Deposits)
       ~> processVoluntaryExits(VoluntaryExits) ... </k>
      <currentSlot> Slot </currentSlot>
-     <lastBlock> B => B [ Slot <- ID ]i </lastBlock>
+     <lastBlock> B => B [ Slot <- ID ]i </lastBlock> // TODO: check Parent matches `B [ Slot - 1 ]`
      <blocks>
        BlockMap => BlockMap [ ID <- #Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits) ]k
      </blocks>
@@ -710,7 +709,7 @@ rule processSlashingsAux(_, .Slashings, _) => .
 
 syntax KItem ::= processSlashing(Slashing)
 rule <k> processSlashing(S)
-      => #assert(isValidSlashing(S, VM.slashed))
+      => #assert(isValidSlashing(S, VM.slashed, VM.activation_epoch, VM.withdrawable_epoch, epochOf(Slot)))
       ~> initiateValidatorExit(S.attestation_1.attester)
       ~> slashValidator(S.attestation_1.attester) ... </k>
      <currentSlot> Slot </currentSlot>
@@ -748,20 +747,27 @@ rule <k> slashValidator(VID) => . ... </k>
      </state>
      // TODO: proposer and whistleblower rewards
 
-syntax Bool ::= isValidSlashing(Slashing, BMap) [function]
-rule isValidSlashing(S, SM)
-  => isSlashableAttestation(S.attestation_1, S.attestation_2)
-     andBool S.attestation_1.attester ==Int S.attestation_2.attester
-     andBool SM[S.attestation_1.attester]b ==K false
+syntax Bool ::= isValidSlashing(Slashing, BMap, IMap, IMap, Int) [function]
+rule isValidSlashing(S, SM, AM, WM, Epoch)
+  => S.attestation_1.attester ==Int S.attestation_2.attester
+     andBool isSlashableValidator(S.attestation_1.attester, SM, AM, WM, Epoch)
+     andBool isSlashableAttestation(S.attestation_1, S.attestation_2)
 
+// is_slashable_validator
+syntax Bool ::= isSlashableValidator(Int, BMap, IMap, IMap, Int) [function]
+rule isSlashableValidator(VID, SM, AM, WM, Epoch)
+  => SM[VID]b ==K false
+     andBool AM[VID]i <=Int Epoch andBool Epoch <Int WM[VID]i // withdrawable_epoch instead of exit_epoch
+
+// is_slashable_attestation_data
 syntax Bool ::= isSlashableAttestation(Attestation, Attestation) [function, functional]
 rule isSlashableAttestation(A1, A2)
   => ( A1 =/=K A2 andBool A1.target_epoch ==Int A2.target_epoch )
      orBool
      ( A1.source_epoch <Int A2.source_epoch andBool A2.target_epoch <Int A1.target_epoch )
-  // TODO: the following case not needed?
-  // orBool
-  // ( A2.source_epoch <Int A1.source_epoch andBool A1.target_epoch <Int A2.target_epoch )
+     orBool
+     ( A2.source_epoch <Int A1.source_epoch andBool A1.target_epoch <Int A2.target_epoch )
+     // TODO: the final case is not considered in the python spec
 ```
 
 ### Attestations
@@ -823,7 +829,7 @@ rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed)
      andBool A.source_block ==Int SourceBlock
      andBool A.slot +Int MIN_ATTESTATION_INCLUSION_DELAY <=Int Slot andBool Slot <=Int A.slot +Int MAX_ATTESTATION_INCLUSION_DELAY
      andBool epochOf(A.slot) ==Int A.target_epoch
-     andBool notBool Slashed // TODO: is this checked in spec?
+     andBool notBool Slashed // TODO: is this checked in the python spec?
      // TODO: check if A.attester is assigned to A.slot
 ```
 
