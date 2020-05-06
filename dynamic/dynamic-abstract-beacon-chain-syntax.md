@@ -250,12 +250,6 @@ syntax IntList ::= take(Int, IntList) [function, klabel(takeI), smtlib(takeI)]
 rule take(N, V Vs) => V take(N -Int 1, Vs) requires N >Int 0
 rule take(0, _) => .IntList
 rule take(_, .IntList) => .IntList
-
-// sort in the order of activation_eligibility_epoch
-syntax IntList ::= sort(IntList) [function, klabel(sortI), smtlib(sortI)]
-// TODO: implement
-
-rule sort(.IntList) => .IntList
 ```
 
 ```k

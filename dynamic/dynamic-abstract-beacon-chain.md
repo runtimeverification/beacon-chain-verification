@@ -665,7 +665,7 @@ syntax IntList ::= activationQueueUptoChurnLimit(IntList, IMap, IMap, IMap, Int,
 rule activationQueueUptoChurnLimit(VIDs, ActivationEligibilityEpochMap, ActivationEpochMap, ExitEpochMap, FinalizedEpoch, CurrentEpoch)
   => take(
        churnLimit(size(activeValidators(VIDs, ActivationEpochMap, ExitEpochMap, CurrentEpoch))),
-       sort(activationQueue(VIDs, ActivationEligibilityEpochMap, ActivationEpochMap, FinalizedEpoch))
+       sortByActivationEligibility(activationQueue(VIDs, ActivationEligibilityEpochMap, ActivationEpochMap, FinalizedEpoch))
      )
 
 syntax IntList ::= activationQueue(IntList, IMap, IMap, Int) [function, functional, smtlib(activationQueue)]
@@ -680,6 +680,12 @@ syntax Bool ::= isValidValidatorToActivate(Int, IMap, IMap, Int) [function]
 rule isValidValidatorToActivate(VID, ActivationEligibilityEpochMap, ActivationEpochMap, FinalizedEpoch)
   => ActivationEligibilityEpochMap[VID]i <=Int FinalizedEpoch andBool // is_eligible_for_activation
      ActivationEpochMap[VID]i ==Int FAR_FUTURE_EPOCH
+
+// sort in the order of activation_eligibility_epoch
+syntax IntList ::= sortByActivationEligibility(IntList) [function, klabel(sortI), smtlib(sortI)]
+// TODO: implement
+
+rule sortByActivationEligibility(.IntList) => .IntList
 ```
 
 ## Block Processing

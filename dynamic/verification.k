@@ -199,7 +199,7 @@ rule sizeI(take(N, _)) <=Int N => true requires N >=Int 0 [smt-lemma]
 rule sizeI(_) >=Int 0 => true [smt-lemma]
 
 rule subsetI(take(_, S1), S2) => true requires subsetI(S1, S2)
-rule subsetI(sort(S1), S2) => true requires subsetI(S1, S2)
+rule subsetI(sortByActivationEligibility(S1), S2) => true requires subsetI(S1, S2)
 rule subsetI(S, S) => true
 
 syntax Int ::= countValidatorsToActivate(IntList, IMap, Int) [function, smtlib(countValidatorsToActivate)]
@@ -226,10 +226,10 @@ rule forall(X, activationQueue(VIDs, _, _, _), X in VIDs) => true
 rule forall(X, activationQueue(VIDs, AEM, AM, FinalizedEpoch), E) => true
      requires E ==K isValidValidatorToActivate(X, AEM, AM, FinalizedEpoch)
 
-rule distinct(take(_, sort(L))) => true
+rule distinct(take(_, sortByActivationEligibility(L))) => true
      requires distinct(L)
 
-rule forall(X, take(_, sort(L)), E) => true
+rule forall(X, take(_, sortByActivationEligibility(L)), E) => true
      requires forall(X, L, E)
 
 // for processRewardsPenalties
