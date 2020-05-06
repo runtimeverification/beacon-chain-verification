@@ -491,16 +491,16 @@ rule filterNotSlashed(SlashedMap, A As) => #if SlashedMap[A.attester]b
 rule filterNotSlashed(_, .Attestations) => .Attestations
 
 syntax IntList ::= getUniqueValidators(Attestations) [function, smtlib(getUniqueValidators)]
-rule getUniqueValidators(As) => getValidatorsAux2(getValidatorsAux1(As, .Map))
+rule getUniqueValidators(As) => getUniqueValidatorsAux2(getUniqueValidatorsAux1(As, .Map))
      [concrete]
 
-syntax Map ::= getValidatorsAux1(Attestations, Map) [function]
-rule getValidatorsAux1(A As => As, M => M [ A.attester <- true ])
-rule getValidatorsAux1(.Attestations, M) => M
+syntax Map ::= getUniqueValidatorsAux1(Attestations, Map) [function]
+rule getUniqueValidatorsAux1(A As => As, M => M [ A.attester <- true ])
+rule getUniqueValidatorsAux1(.Attestations, M) => M
 
-syntax IntList ::= getValidatorsAux2(Map) [function]
-rule getValidatorsAux2(V |-> true M) => V getValidatorsAux2(M)
-rule getValidatorsAux2(.Map) => .IntList
+syntax IntList ::= getUniqueValidatorsAux2(Map) [function]
+rule getUniqueValidatorsAux2(V |-> true M) => V getUniqueValidatorsAux2(M)
+rule getUniqueValidatorsAux2(.Map) => .IntList
 ```
 
 ### Validator Updates
