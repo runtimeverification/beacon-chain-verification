@@ -886,7 +886,7 @@ rule <k> processDeposit(D) => . ... </k>
        //)
          m(SM  => SM  [ D.sender <- false ]b
          , BM  => BM  [ D.sender <- D.amount ]i
-         , EBM => EBM [ D.sender <- minInt(D.amount, MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap // TODO: rounding to Ether
+         , EBM => EBM [ D.sender <- minInt(D.amount -Int (D.amount %Int EFFECTIVE_BALANCE_INCREMENT), MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap
          , AEM => AEM [ D.sender <- FAR_FUTURE_EPOCH ]i
          , AM  => AM  [ D.sender <- FAR_FUTURE_EPOCH ]i
          , EM  => EM  [ D.sender <- FAR_FUTURE_EPOCH ]i
