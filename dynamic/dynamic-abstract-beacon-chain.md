@@ -848,7 +848,7 @@ rule <k> processDeposits(Deposits) => processDepositsAux(.IntList, Deposits, Vs)
      </state>
 
 syntax KItem ::= processDepositsAux(IntList, Deposits, Validators)
-rule processDepositsAux(L, D Deposits, Vs) => processDeposit(D) ~> processDepositsAux(D.sender L, Deposits, Vs)
+rule processDepositsAux(L, D Deposits, Vs) => #assert(D.amount >=Int 0) ~> processDeposit(D) ~> processDepositsAux(D.sender L, Deposits, Vs)
 rule processDepositsAux(_, .Deposits, _) => .
 
 syntax KItem ::= processDeposit(Deposit)
