@@ -829,6 +829,7 @@ rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed)
      andBool ( A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1 )
      andBool A.target_epoch ==Int epochOf(A.slot)
      andBool A.slot +Int MIN_ATTESTATION_INCLUSION_DELAY <=Int Slot andBool Slot <=Int A.slot +Int MAX_ATTESTATION_INCLUSION_DELAY
+     andBool A.inclusion_delay ==Int Slot -Int A.slot // TODO: in the python spec, this info is dynamically generated
      andBool notBool Slashed // TODO: this is not asserted in the python spec
      // TODO: check if A.attester is assigned to A.slot
 ```
