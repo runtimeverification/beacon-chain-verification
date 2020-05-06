@@ -337,7 +337,7 @@ rule implies(distinct(L Ls), distinct(Ls)) => true [concrete, smt-lemma]
 rule lift(totalBalance(M, L1)) <=Int lift(totalBalance(M, L2)) => true
      requires subset(L1, L2)
 
-rule subset(getValidators(As), activeValidators(VIDs, AM, EM, Epoch)) => true
+rule subset(getUniqueValidators(As), activeValidators(VIDs, AM, EM, Epoch)) => true
      requires isValidAttestations(As, VIDs, AM, EM, Epoch)
 
 // the attester of each attestation is in the list of validators, and active in the given epoch
@@ -475,7 +475,7 @@ rule implies(
 /*
 rule implies(
         forall(x, VIDs, implies(notBool x in L, SM2[x]b ==K SM1[x]b))
-        andBool disjoint(getValidators(As), L)
+        andBool disjoint(getUniqueValidators(As), L)
      ,
         isValidAttestationList(As, Slot, SourceEpoch, SourceBlock, SM2)
         ==K

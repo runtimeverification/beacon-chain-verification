@@ -119,7 +119,7 @@ rule <k> processSlots(TargetSlot)
       => processSlot()
       ~> processEpoch()
       ~> processSlots(TargetSlot) ... </k>
-     <currentSlot> Slot => Slot +Int 1 </currentSlot> // TODO: the python spec increases slot after processEpoch
+     <currentSlot> Slot => Slot +Int 1 </currentSlot> // TODO: in the python spec, slot number is increased after processEpoch
      <states>
        <state> <slot> Slot        </slot> S </state>
      (
@@ -241,7 +241,7 @@ rule <k> justify(Epoch) => . ... </k>
 
 syntax Bool ::= isJustifiable(Int, Int, Attestations, BMap, IMap, IMap, IMap, IntList) [function, functional, smtlib(isJustifiable)]
 rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, SlashedMap, EffectiveBalanceMap, ActivationEpochMap, ExitEpochMap, VIDs)
-  => isMajority(totalBalance(EffectiveBalanceMap, getValidators(filterByTarget(EpochBoundaryBlock, filterNotSlashed(SlashedMap, Attestations)))),
+  => isMajority(totalBalance(EffectiveBalanceMap, getUniqueValidators(filterByTarget(EpochBoundaryBlock, filterNotSlashed(SlashedMap, Attestations)))),
                 totalBalance(EffectiveBalanceMap, activeValidators(VIDs, ActivationEpochMap, ExitEpochMap, Epoch)))
      orBool Epoch ==Int 0 // the genesis block is justified by default
      requires #isConcrete(Attestations) // TODO: drop this
@@ -329,10 +329,10 @@ rule <k> processRewardsPenaltiesAux(Epoch)
 syntax KItem ::= processRewardsPenaltiesAux1(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations)
 rule processRewardsPenaltiesAux1(VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations)
   => processRewardsPenaltiesAux2(VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations,
-       lift(totalBalance(VM.effective_balance, getValidators(SourceAttestations))),
-       lift(totalBalance(VM.effective_balance, getValidators(TargetAttestations))),
-       lift(totalBalance(VM.effective_balance, getValidators(HeadAttestations))),
-       lift(totalBalance(VM.effective_balance, activeValidators(VIDs, VM.activation_epoch, VM.exit_epoch, Epoch)))
+       lift(totalBalance(VM.effective_balance, getUniqueValidators(SourceAttestations))),
+       lift(totalBalance(VM.effective_balance, getUniqueValidators(TargetAttestations))),
+       lift(totalBalance(VM.effective_balance, getUniqueValidators(HeadAttestations))),
+       lift(totalBalance(VM.effective_balance, activeValidators(VIDs, VM.activation_epoch, VM.exit_epoch, Epoch))) // TODO: in the python spec, the current epoch is considered when computing the total active balance
      )
 
 syntax KItem ::= processRewardsPenaltiesAux2(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
@@ -452,7 +452,7 @@ rule <k> increaseBalance(VID, N) => #bottom ... </k>
 
 // decrease_balance
 syntax KItem ::= decreaseBalance(Int, Int)
-rule decreaseBalance(VID, N) => increaseBalance(VID, 0 -Int N)
+rule decreaseBalance(VID, N) => increaseBalance(VID, 0 -Int N) // TODO: ensure balance be positive
 
 syntax Int ::= totalBalance(IMap, IntList) [function, smtlib(totalBalance)]
 rule totalBalance(EffectiveBalanceMap, VID VIDs) => EffectiveBalanceMap[VID]i +Int totalBalance(EffectiveBalanceMap, VIDs)
@@ -490,9 +490,8 @@ rule filterNotSlashed(SlashedMap, A As) => #if SlashedMap[A.attester]b
                                    #fi
 rule filterNotSlashed(_, .Attestations) => .Attestations
 
-// TODO: rename: getUniqueValidators
-syntax IntList ::= getValidators(Attestations) [function, smtlib(getValidators)]
-rule getValidators(As) => getValidatorsAux2(getValidatorsAux1(As, .Map))
+syntax IntList ::= getUniqueValidators(Attestations) [function, smtlib(getUniqueValidators)]
+rule getUniqueValidators(As) => getValidatorsAux2(getValidatorsAux1(As, .Map))
      [concrete]
 
 syntax Map ::= getValidatorsAux1(Attestations, Map) [function]
