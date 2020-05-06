@@ -813,7 +813,7 @@ rule <k> addAttestation(A) => . ... </k>
 syntax KItem ::= checkAttestation(Attestation)
 rule <k> checkAttestation(A)
       => #assert(isValidAttestation(A, Slot, JEpoch[A.target_epoch]ii, JBlock[firstSlotOf(JEpoch[A.target_epoch]ii)]i, VM.slashed[A.attester]b))
-      ~> #assertXOR(A.target_epoch ==Int epochOf(Slot), A.target_epoch ==Int epochOf(Slot) -Int 1) ... </k>
+      ~> #assert(A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
