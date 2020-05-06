@@ -16,7 +16,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -38,7 +38,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -60,7 +60,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -82,7 +82,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -104,7 +104,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -127,7 +127,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -150,7 +150,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -173,7 +173,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -196,7 +196,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- -23 ]i [ 1 <- -23 ]i [ 2 <- -23 ]i [ 3 <- -23 ]i [ 4 <- -23 ]i [ 5 <- -23 ]i [ 6 <- -23 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -220,7 +220,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- -23 ]i [ 1 <- -23 ]i [ 2 <- -23 ]i [ 3 <- -23 ]i [ 4 <- -23 ]i [ 5 <- -23 ]i [ 6 <- -23 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -244,7 +244,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- -23 ]i [ 1 <- -23 ]i [ 2 <- -23 ]i [ 3 <- -23 ]i [ 4 <- -23 ]i [ 5 <- -23 ]i [ 6 <- -23 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -268,7 +268,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- -23 ]i [ 1 <- -23 ]i [ 2 <- -23 ]i [ 3 <- -23 ]i [ 4 <- -23 ]i [ 5 <- -23 ]i [ 6 <- -23 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
@@ -292,7 +292,7 @@
         v ( m ( .BMap [ 0 <- false ]b [ 1 <- false ]b [ 2 <- false ]b [ 3 <- false ]b [ 4 <- false ]b [ 5 <- false ]b [ 6 <- false ]b , .IMap [ 0 <- -14 ]i [ 1 <- -14 ]i [ 2 <- -14 ]i [ 3 <- -14 ]i [ 4 <- -14 ]i [ 5 <- -47 ]i [ 6 <- -47 ]i , .IMap [ 0 <- 1 ]i [ 1 <- 1 ]i [ 2 <- 1 ]i [ 3 <- 1 ]i [ 4 <- 1 ]i [ 5 <- 1 ]i [ 6 <- 1 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 0 ]i [ 1 <- 0 ]i [ 2 <- 0 ]i [ 3 <- 0 ]i [ 4 <- 0 ]i [ 5 <- 0 ]i [ 6 <- 0 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i , .IMap [ 0 <- 999999 ]i [ 1 <- 999999 ]i [ 2 <- 999999 ]i [ 3 <- 999999 ]i [ 4 <- 999999 ]i [ 5 <- 999999 ]i [ 6 <- 999999 ]i ) , 0 1 2 3 4 5 6 .IntList )
       </validators>
       <slashedBalance>
-        0
+        .IMap
       </slashedBalance>
       <attested>
         0 |-> .Attestations
