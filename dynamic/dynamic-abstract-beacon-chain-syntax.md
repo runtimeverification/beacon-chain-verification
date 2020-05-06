@@ -31,6 +31,10 @@ rule #ite(false, _, K) => K
 syntax KItem ::= #it(Bool, K)
 rule #it(true,  K) => K
 rule #it(false, _) => .
+
+syntax KItem ::= #assert(Bool)
+rule #assert(true) => .
+rule #assert(false) => #bottom
 ```
 
 ## Abstract Blocks
@@ -141,10 +145,6 @@ rule sizeA(_ As) => 1 +Int sizeA(As)
 rule sizeA(.Attestations) => 0
 
 rule sizeA(_) >=Int 0 => true [smt-lemma]
-
-// sort in the order of inclusion_delay
-syntax Attestations ::= sortByInclusionDelay(Attestations) [function, klabel(sortA), smtlib(sortA)]
-// TODO: implement
 
 // `minByInclusionDelay(V, As)` returns the first included attestation attested by V
 // it is defined only when `V inA As`
@@ -458,46 +458,46 @@ syntax Int ::= "PROPOSER_REWARD_QUOTIENT"
 ```
 
 ```{.k .symbolic}
-rule SLOTS_PER_EPOCH                     =>    32            [macro]
-rule MIN_ATTESTATION_INCLUSION_DELAY     =>     1            [macro]
-rule MAX_ATTESTATION_INCLUSION_DELAY     => SLOTS_PER_EPOCH  [macro]
-rule FAR_FUTURE_EPOCH                    => 2 ^Int 64 -Int 1 [macro]
-rule MIN_DEPOSIT_AMOUNT                  =>     1            [macro] // TODO: Gwei
-rule MAX_EFFECTIVE_BALANCE               =>    32            [macro] // TODO: Gwei
-rule EJECTION_BALANCE                    =>    16            [macro] // TODO: Gwei
-rule EFFECTIVE_BALANCE_INCREMENT         =>     1            [macro] // TODO: Gwei
-rule PERSISTENT_COMMITTEE_PERIOD         =>  2048            [macro]
-rule ACTIVATION_EXIT_DELAY               =>     4            [macro] // MAX_SEED_LOOKAHEAD
-rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>   256            [macro]
-rule MIN_PER_EPOCH_CHURN_LIMIT           =>     4            [macro]
-rule CHURN_LIMIT_QUOTIENT                => 65536            [macro]
-rule EPOCHS_PER_SLASHINGS_VECTOR         =>  8192            [macro]
-rule MIN_SLASHING_PENALTY_QUOTIENT       =>    32            [macro]
+rule SLOTS_PER_EPOCH                     =>    32                   [macro]
+rule MIN_ATTESTATION_INCLUSION_DELAY     =>     1                   [macro]
+rule MAX_ATTESTATION_INCLUSION_DELAY     =>       SLOTS_PER_EPOCH   [macro]
+rule FAR_FUTURE_EPOCH                    =>       2 ^Int 64 -Int 1  [macro]
+rule MIN_DEPOSIT_AMOUNT                  =>     1 *Int (10 ^Int 9)  [macro]
+rule MAX_EFFECTIVE_BALANCE               =>    32 *Int (10 ^Int 9)  [macro]
+rule EJECTION_BALANCE                    =>    16 *Int (10 ^Int 9)  [macro]
+rule EFFECTIVE_BALANCE_INCREMENT         =>     1 *Int (10 ^Int 9)  [macro]
+rule PERSISTENT_COMMITTEE_PERIOD         =>  2048                   [macro]
+rule ACTIVATION_EXIT_DELAY               =>     4                   [macro] // MAX_SEED_LOOKAHEAD
+rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>   256                   [macro]
+rule MIN_PER_EPOCH_CHURN_LIMIT           =>     4                   [macro]
+rule CHURN_LIMIT_QUOTIENT                => 65536                   [macro]
+rule EPOCHS_PER_SLASHINGS_VECTOR         =>  8192                   [macro]
+rule MIN_SLASHING_PENALTY_QUOTIENT       =>    32                   [macro]
 ```
 ```k
-rule BASE_REWARD_FACTOR                  =>    64            [macro]
-rule BASE_REWARDS_PER_EPOCH              =>     4            [macro]
-rule INACTIVITY_PENALTY_QUOTIENT         => 2 ^Int 25        [macro]
-rule MIN_EPOCHS_TO_INACTIVITY_PENALTY    =>     4            [macro]
-rule PROPOSER_REWARD_QUOTIENT            =>     8            [macro]
+rule BASE_REWARD_FACTOR                  =>    64                   [macro]
+rule BASE_REWARDS_PER_EPOCH              =>     4                   [macro]
+rule INACTIVITY_PENALTY_QUOTIENT         =>       2 ^Int 25         [macro]
+rule MIN_EPOCHS_TO_INACTIVITY_PENALTY    =>     4                   [macro]
+rule PROPOSER_REWARD_QUOTIENT            =>     8                   [macro]
 ```
 
 ```{.k .concrete}
-rule SLOTS_PER_EPOCH                     =>      4          [macro]
-rule MIN_ATTESTATION_INCLUSION_DELAY     =>      1          [macro]
-rule MAX_ATTESTATION_INCLUSION_DELAY     => SLOTS_PER_EPOCH [macro]
-rule FAR_FUTURE_EPOCH                    => 999999          [macro]
-rule MIN_DEPOSIT_AMOUNT                  =>      1          [macro]
-rule MAX_EFFECTIVE_BALANCE               =>      2          [macro]
-rule EJECTION_BALANCE                    =>      0          [macro]
-rule EFFECTIVE_BALANCE_INCREMENT         =>      1          [macro]
-rule PERSISTENT_COMMITTEE_PERIOD         =>      1          [macro]
-rule ACTIVATION_EXIT_DELAY               =>      1          [macro]
-rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>      1          [macro]
-rule MIN_PER_EPOCH_CHURN_LIMIT           =>      1          [macro]
-rule CHURN_LIMIT_QUOTIENT                =>      1          [macro]
-rule EPOCHS_PER_SLASHINGS_VECTOR         =>      1          [macro]
-rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1          [macro]
+rule SLOTS_PER_EPOCH                     =>      4                  [macro]
+rule MIN_ATTESTATION_INCLUSION_DELAY     =>      1                  [macro]
+rule MAX_ATTESTATION_INCLUSION_DELAY     =>        SLOTS_PER_EPOCH  [macro]
+rule FAR_FUTURE_EPOCH                    => 999999                  [macro]
+rule MIN_DEPOSIT_AMOUNT                  =>      1                  [macro]
+rule MAX_EFFECTIVE_BALANCE               =>      2                  [macro]
+rule EJECTION_BALANCE                    =>      0                  [macro]
+rule EFFECTIVE_BALANCE_INCREMENT         =>      1                  [macro]
+rule PERSISTENT_COMMITTEE_PERIOD         =>      1                  [macro]
+rule ACTIVATION_EXIT_DELAY               =>      1                  [macro]
+rule MIN_VALIDATOR_WITHDRAWABILITY_DELAY =>      1                  [macro]
+rule MIN_PER_EPOCH_CHURN_LIMIT           =>      1                  [macro]
+rule CHURN_LIMIT_QUOTIENT                =>      1                  [macro]
+rule EPOCHS_PER_SLASHINGS_VECTOR         =>      1                  [macro]
+rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1                  [macro]
 ```
 
 ```k
@@ -542,12 +542,6 @@ rule lastSlotOf(Epoch) >=Int firstSlotOf(Epoch) => true [concrete, smt-lemma]
 // injectivity of firstSlotOf
 rule implies(firstSlotOf(E1) ==K firstSlotOf(E1), E1 ==K E2) => true [concrete, smt-lemma]
 */
-```
-
-```k
-syntax KItem ::= #assert(Bool)
-rule #assert(true) => .
-rule #assert(false) => #bottom
 ```
 
 ```k
