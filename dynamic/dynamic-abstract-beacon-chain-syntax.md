@@ -149,7 +149,15 @@ syntax Attestations ::= sortByInclusionDelay(Attestations) [function, klabel(sor
 // `minByInclusionDelay(V, As)` returns the first included attestation attested by V
 // it is defined only when `V inA As`
 syntax Attestation ::= minByInclusionDelay(Int, Attestations) [function, klabel(minA), smtlib(minA)]
-// TODO: implement
+rule minByInclusionDelay(V, As) => minByInclusionDelayAux1(V, As) [concrete]
+
+syntax Attestation ::= minByInclusionDelayAux1(Int, Attestations) [function]
+rule minByInclusionDelayAux1(V, A As) => minByInclusionDelayAux2(A, As) requires V  ==Int A.attester
+rule minByInclusionDelayAux1(V, A As) => minByInclusionDelayAux1(V, As) requires V =/=Int A.attester
+
+syntax Attestation ::= minByInclusionDelayAux2(Attestation, Attestations) [function]
+rule minByInclusionDelayAux2(A0, A As) => minByInclusionDelayAux2(#if A0.inclusion_delay <=Int A.inclusion_delay #then A0 #else A #fi, As) 
+rule minByInclusionDelayAux2(A0, .Attestations) => A0
 
 syntax Bool ::= Int "inA" Attestations [function, klabel(inA), smtlib(inA)]
 rule V inA (A As) => true     requires V  ==Int A.attester
