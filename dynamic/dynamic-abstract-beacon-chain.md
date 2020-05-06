@@ -683,7 +683,7 @@ rule isValidValidatorToActivate(VID, ActivationEligibilityEpochMap, ActivationEp
 
 // sort in the order of activation_eligibility_epoch
 syntax IntList ::= sortByActivationEligibility(IntList) [function, klabel(sortI), smtlib(sortI)]
-// TODO: implement
+// TODO: implement with additional argument ActivationEligibilityEpochMap
 
 rule sortByActivationEligibility(.IntList) => .IntList
 ```
