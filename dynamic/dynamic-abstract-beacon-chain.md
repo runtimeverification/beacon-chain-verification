@@ -812,8 +812,7 @@ rule <k> addAttestation(A) => . ... </k>
 
 syntax KItem ::= checkAttestation(Attestation)
 rule <k> checkAttestation(A)
-      => #assert(isValidAttestation(A, Slot, JEpoch[A.target_epoch]ii, JBlock[firstSlotOf(JEpoch[A.target_epoch]ii)]i, VM.slashed[A.attester]b))
-      ~> #assert(A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1) ... </k>
+      => #assert(isValidAttestation(A, Slot, JEpoch[A.target_epoch]ii, JBlock[firstSlotOf(JEpoch[A.target_epoch]ii)]i, VM.slashed[A.attester]b)) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -827,9 +826,10 @@ syntax Bool ::= isValidAttestation(Attestation, Int, Int, Int, Bool) [function, 
 rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed)
   =>         A.source_epoch ==Int SourceEpoch
      andBool A.source_block ==Int SourceBlock
+     andBool ( A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1 )
+     andBool A.target_epoch ==Int epochOf(A.slot)
      andBool A.slot +Int MIN_ATTESTATION_INCLUSION_DELAY <=Int Slot andBool Slot <=Int A.slot +Int MAX_ATTESTATION_INCLUSION_DELAY
-     andBool epochOf(A.slot) ==Int A.target_epoch
-     andBool notBool Slashed // TODO: is this checked in the python spec?
+     andBool notBool Slashed // TODO: this is not asserted in the python spec
      // TODO: check if A.attester is assigned to A.slot
 ```
 
