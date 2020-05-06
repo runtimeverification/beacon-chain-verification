@@ -274,13 +274,13 @@ test-symbolic-static-java: build-static-java
 #	kprove -d $(static_java_dir) -m VERIFICATION -w none tests/symbolic/kn2-spec.k | diff - tests/success.out
 
 proof: build-dynamic-java-symbolic process-justification-finalization-spec.k process-justification-finalization-lemma.k
-	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/q2-spec.k                        | diff - tests/success.out
-	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/q3-spec.k                        | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-attestation-spec.k                      | diff - tests/success.out
+	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-block-spec.k                            | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-deposit-spec.k                          | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-epoch-spec.k                            | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-justification-finalization-spec.k       | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-rewards-penalties-spec.k                | diff - tests/success.out
+	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slashing-spec.k                         | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slots-base0-spec.k                      | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slots-base1-spec.k                      | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none process-slots-inductive-spec.k                  | diff - tests/success.out
@@ -294,6 +294,7 @@ test-symbolic-dynamic-java: build-dynamic-java-symbolic
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/simple-spec.k                    | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/process-justification-spec.k     | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/process-finalization-spec.k      | diff - tests/success.out
+	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/process-rewards-penalties-and-validator-updates-spec.k | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/a-spec.k                         | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/b-spec.k                         | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/c-spec.k                         | diff - tests/success.out
@@ -335,3 +336,7 @@ test-symbolic-dynamic-java: build-dynamic-java-symbolic
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/o2-spec.k                        | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/p1-spec.k                        | diff - tests/success.out
 	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/p2-spec.k                        | diff - tests/success.out
+	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/q1-spec.k                        | diff - tests/success.out
+	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/q2-spec.k                        | diff - tests/success.out
+	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/q3-spec.k                        | diff - tests/success.out
+	kprove -d $(dynamic_java_symbolic_dir) -m VERIFICATION -w none tests/symbolic/q4-spec.k                        | diff - tests/success.out

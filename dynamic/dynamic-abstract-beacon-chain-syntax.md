@@ -83,12 +83,25 @@ This captures both proposer and attester slashings of the concrete model.
 
 ```k
 // abstract represention of both proposer slashings and attester slahsings
-syntax Slashings ::= List{Slashing,""}
 syntax Slashing  ::= #Slashing(Attestation,Attestation) // two conflict attestations
-syntax Attestation ::= Slashing ".attestation_1" [function, functional]
-syntax Attestation ::= Slashing ".attestation_2" [function, functional]
+syntax Attestation ::= Slashing ".attestation_1" [function, functional, klabel(s_attestation_1), smtlib(s_attestation_1)]
+syntax Attestation ::= Slashing ".attestation_2" [function, functional, klabel(s_attestation_2), smtlib(s_attestation_2)]
 rule #Slashing(X,_).attestation_1 => X
 rule #Slashing(_,X).attestation_2 => X
+
+syntax Slashings ::= ".Slashings"       [klabel(nilS), smtlib(nilS)]
+syntax Slashings ::= Slashing Slashings [klabel(consS), smtlib(consS)]
+
+syntax Bool ::= Slashing "inS" Slashings [function, klabel(inS), smtlib(inS)]
+rule J inS (I Is) => true     requires J  ==K I [smt-lemma]
+rule J inS (I Is) => J inS Is requires J =/=K I [smt-lemma]
+rule _ inS .Slashings => false [smt-lemma]
+
+syntax Int ::= sizeS(Slashings) [function, smtlib(sizeS)]
+rule sizeS(_ Es) => 1 +Int sizeS(Es)
+rule sizeS(.Slashings) => 0
+
+rule sizeS(_) >=Int 0 => true [smt-lemma]
 ```
 
 ## Abstract Attestations
@@ -126,6 +139,8 @@ syntax Attestations ::= Attestation Attestations [klabel(consA), smtlib(consA)]
 syntax Int ::= sizeA(Attestations) [function, smtlib(sizeA)]
 rule sizeA(_ As) => 1 +Int sizeA(As)
 rule sizeA(.Attestations) => 0
+
+rule sizeA(_) >=Int 0 => true [smt-lemma]
 
 // sort in the order of inclusion_delay
 syntax Attestations ::= sortByInclusionDelay(Attestations) [function, klabel(sortA), smtlib(sortA)]
@@ -193,6 +208,8 @@ rule _ inE .VoluntaryExits => false [smt-lemma]
 syntax Int ::= sizeE(VoluntaryExits) [function, smtlib(sizeE)]
 rule sizeE(_ Es) => 1 +Int sizeE(Es)
 rule sizeE(.VoluntaryExits) => 0
+
+rule sizeE(_) >=Int 0 => true [smt-lemma]
 ```
 
 ## Abstract Validators
@@ -277,6 +294,8 @@ syntax Int ::= sizeV(ValidatorList) [function, smtlib(sizeV)]
 rule sizeV(_ Vs) => 1 +Int sizeV(Vs)
 rule sizeV(.ValidatorList) => 0
 
+rule sizeV(_) >=Int 0 => true [smt-lemma]
+
 // subset in set-like view
 syntax Bool ::= subsetV(ValidatorList, ValidatorList) [function, klabel(subsetV), smtlib(subsetV)]
 // TODO: implement
@@ -289,6 +308,8 @@ syntax IntList ::= Int IntList  [klabel(consI), smtlib(consI)]
 syntax Int ::= size(IntList) [function, klabel(sizeI), smtlib(sizeI)]
 rule size(_ Is) => 1 +Int size(Is)
 rule size(.IntList) => 0
+
+rule size(_) >=Int 0 => true [smt-lemma]
 
 syntax Bool ::= Int "in" IntList [function, klabel(inI), smtlib(inI)]
 rule J in (I Is) => true    requires J  ==Int I [smt-lemma]
@@ -494,13 +515,13 @@ rule firstSlotOf(epochOf(Slot)) <=Int Slot => true [concrete, smt-lemma]
 rule lastSlotOf(epochOf(Slot)) >=Int Slot => true [concrete, smt-lemma]
 rule isFirstSlotOfEpoch(firstSlotOf(_)) => true [smt-lemma]
 
-rule epochOf(_)     >=Int 0 => true [concrete, smt-lemma]
-rule firstSlotOf(_) >=Int 0 => true [concrete, smt-lemma]
-rule lastSlotOf(_)  >=Int 0 => true [concrete, smt-lemma]
+rule epochOf(Slot)      >=Int 0 => true requires Slot  >=Int 0 [concrete, smt-lemma]
+rule firstSlotOf(Epoch) >=Int 0 => true requires Epoch >=Int 0 [concrete, smt-lemma]
+rule lastSlotOf(Epoch)  >=Int 0 => true requires Epoch >=Int 0 [concrete, smt-lemma]
 
-rule epochOf(Slot) <=Int Slot => true [concrete, smt-lemma]
-rule firstSlotOf(Epoch) >=Int Epoch => true [concrete, smt-lemma]
-rule lastSlotOf(Epoch) >=Int Epoch => true [concrete, smt-lemma]
+rule epochOf(Slot) <=Int Slot => true requires Slot >=Int 0 [concrete, smt-lemma]
+rule firstSlotOf(Epoch) >=Int Epoch => true requires Epoch >=Int 0 [concrete, smt-lemma]
+rule lastSlotOf(Epoch) >=Int Epoch => true requires Epoch >=Int 0 [concrete, smt-lemma]
 rule lastSlotOf(Epoch) >=Int firstSlotOf(Epoch) => true [concrete, smt-lemma]
 
 /*

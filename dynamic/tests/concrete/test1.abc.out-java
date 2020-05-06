@@ -128,6 +128,6 @@
     ( 1 , 0 ) ( 0 , 0 ) .IList
   </lastFinalized>
   <blocks>
-    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Attestations , .Slashings , .VoluntaryExits ) ]k [ 10001 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 ) .Attestations , .Slashings , .VoluntaryExits ) ]k [ 10003 <- #Block ( ( 3 , 10003 ) , ( 1 , 10001 ) , .Slashings , .Attestations , .Slashings , .VoluntaryExits ) ]k
+    .BlockMap [ 0 <- #Block ( ( 0 , 0 ) , ( -1 , -1 ) , .Slashings , .Attestations , .Deposits , .VoluntaryExits ) ]k [ 10001 <- #Block ( ( 1 , 10001 ) , ( 0 , 0 ) , .Slashings , #Attestation ( 0 , 0 , ( 0 , 0 ) , ( 0 , 10001 ) , 0 , 0 , 0 ) .Attestations , .Deposits , .VoluntaryExits ) ]k [ 10003 <- #Block ( ( 3 , 10003 ) , ( 1 , 10001 ) , .Slashings , .Attestations , .Deposits , .VoluntaryExits ) ]k
   </blocks>
 </T>
