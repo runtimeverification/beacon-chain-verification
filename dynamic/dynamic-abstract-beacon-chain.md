@@ -427,7 +427,7 @@ rule <k> increaseBalance(VID, N) => . ... </k>
        <validators> v(
        //m(... balance: BM => BM [ VID <- BM[VID]i +Int N ]i)
          m(SM
-         , BM => BM [ VID <- BM[VID]i +Int N ]i
+         , BM => BM [ VID <- maxInt(0, BM[VID]i +Int N) ]i // ensures balance to be positive
          , EBM
          , AEM
          , AM
@@ -451,7 +451,7 @@ rule <k> increaseBalance(VID, N) => #bottom ... </k>
 
 // decrease_balance
 syntax KItem ::= decreaseBalance(Int, Int)
-rule decreaseBalance(VID, N) => increaseBalance(VID, 0 -Int N) // TODO: ensure balance be positive
+rule decreaseBalance(VID, N) => increaseBalance(VID, 0 -Int N)
 
 syntax Int ::= totalBalance(IMap, IntList) [function, smtlib(totalBalance)]
 rule totalBalance(EffectiveBalanceMap, VID VIDs) => EffectiveBalanceMap[VID]i +Int totalBalance(EffectiveBalanceMap, VIDs)

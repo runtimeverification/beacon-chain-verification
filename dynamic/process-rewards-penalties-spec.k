@@ -34,6 +34,7 @@ andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
 andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
 andBool ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
+andBool forall(x, VIDs, BM1[x]i >=Int 0)
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool distinct(VIDs)
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
@@ -44,6 +45,7 @@ ensures true
 // post-conditions
 andBool forall(x, VIDs, ?BM2[x]i <=Int BM1[x]i +Int (4 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)))
 andBool forall(x, VIDs, ?BM2[x]i >=Int BM1[x]i -Int (7 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)) -Int getInactivityPenalty(EBM[x]i, ?FinalityDelay))
+andBool forall(x, VIDs, ?BM2[x]i >=Int 0)
 
 rule
 <T>
@@ -81,6 +83,7 @@ andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getUniqueValidators
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getUniqueValidators(?HeadAttestations)))
 andBool     ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
+andBool forall(x, VIDs, BM1[x]i >=Int 0)
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool distinct(VIDs)
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
@@ -93,6 +96,7 @@ ensures true
 // post-conditions
 andBool forall(x, VIDs, ?BM2[x]i <=Int BM1[x]i +Int (4 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)))
 andBool forall(x, VIDs, ?BM2[x]i >=Int BM1[x]i -Int (7 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)) -Int getInactivityPenalty(EBM[x]i, ?FinalityDelay))
+andBool forall(x, VIDs, ?BM2[x]i >=Int 0)
 
 rule
 <T>
@@ -136,6 +140,7 @@ andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getUniqueValidators
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getUniqueValidators(?HeadAttestations)))
 andBool     ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
+andBool forall(x, VIDs, BM1[x]i >=Int 0)
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool distinct(VIDs)
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
@@ -148,6 +153,7 @@ ensures true
 // post-conditions
 andBool forall(x, VIDs, ?BM2[x]i <=Int BM1[x]i +Int (4 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)))
 andBool forall(x, VIDs, ?BM2[x]i >=Int BM1[x]i -Int (7 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)) -Int getInactivityPenalty(EBM[x]i, ?FinalityDelay))
+andBool forall(x, VIDs, ?BM2[x]i >=Int 0)
 
 rule
 <T>
@@ -191,6 +197,7 @@ andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getUniqueValidators
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getUniqueValidators(?HeadAttestations)))
 andBool     ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
+andBool forall(x, R_VIDs, BM0[x]i >=Int 0)
 andBool forall(x, R_VIDs, EBM[x]i >=Int 0)
 andBool distinct(R_VIDs)
 andBool forall(x, R_VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
@@ -204,9 +211,11 @@ andBool forall(x, R_VIDs, x in VIDs)
 andBool forall(x, R_VIDs, BM1[x]i ==Int BM0[x]i)
 andBool forall(x, rev(L_VIDs),            BM1[x]i <=Int BM0[x]i +Int (4 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)))
 andBool forall(x, rev(L_VIDs),            BM1[x]i >=Int BM0[x]i -Int (7 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)) -Int getInactivityPenalty(EBM[x]i, ?FinalityDelay))
+andBool forall(x, rev(L_VIDs),            BM1[x]i >=Int 0)
 ensures true
 // post-conditions
 andBool forall(x, rev(L_VIDs) ++ R_VIDs, ?BM2[x]i <=Int BM0[x]i +Int (4 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)))
 andBool forall(x, rev(L_VIDs) ++ R_VIDs, ?BM2[x]i >=Int BM0[x]i -Int (7 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)) -Int getInactivityPenalty(EBM[x]i, ?FinalityDelay))
+andBool forall(x, rev(L_VIDs) ++ R_VIDs, ?BM2[x]i >=Int 0)
 
 endmodule

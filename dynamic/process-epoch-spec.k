@@ -178,6 +178,7 @@ andBool ?ActivationEpoch ==Int delayedActivationExitEpoch(Epoch -Int 1)
 // pre-conditions
 andBool Epoch >=Int 4
 andBool Epoch <Int FAR_FUTURE_EPOCH
+andBool forall(x, VIDs, BM1[x]i >=Int 0)
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool distinct(VIDs)
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
@@ -231,6 +232,7 @@ andBool PrevLastFinalizedEpoch <=Int ?NewLastFinalizedEpoch
 // post-conditions
 andBool forall(x, VIDs, ?BM2[x]i <=Int BM1[x]i +Int (4 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)))
 andBool forall(x, VIDs, ?BM2[x]i >=Int BM1[x]i -Int (7 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)) -Int getInactivityPenalty(EBM[x]i, ?FinalityDelay))
+andBool forall(x, VIDs, ?BM2[x]i >=Int 0)
 //
 // processValidatorEjections 
 andBool forall(x, VIDs, #if isActiveValidator(x, AM1, EM1, Epoch -Int 1) andBool EBM[x]i <=Int EJECTION_BALANCE andBool EM1[x]i ==Int FAR_FUTURE_EPOCH
