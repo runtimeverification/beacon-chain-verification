@@ -393,6 +393,7 @@ rule processRewardPenalty(VID, SlashedMap, EffectiveBalanceMap, ActivationEpochM
        )
        */
      )
+     // TODO: due to the positive balance cap, the order of rewards/penalties matters.
 
 // get_base_reward
 syntax Int ::= getBaseReward(Int, Int) [function, smtlib(getBaseReward)]
