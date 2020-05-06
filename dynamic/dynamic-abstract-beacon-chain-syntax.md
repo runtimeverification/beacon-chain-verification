@@ -465,6 +465,8 @@ rule MIN_PER_EPOCH_CHURN_LIMIT           =>     4            [macro]
 rule CHURN_LIMIT_QUOTIENT                => 65536            [macro]
 rule EPOCHS_PER_SLASHINGS_VECTOR         =>  8192            [macro]
 rule MIN_SLASHING_PENALTY_QUOTIENT       =>    32            [macro]
+```
+```k
 rule BASE_REWARD_FACTOR                  =>    64            [macro]
 rule BASE_REWARDS_PER_EPOCH              =>     4            [macro]
 rule INACTIVITY_PENALTY_QUOTIENT         => 2 ^Int 25        [macro]
@@ -492,7 +494,11 @@ rule MIN_SLASHING_PENALTY_QUOTIENT       =>      1          [macro]
 
 ```k
 syntax Int ::= sqrtInt(Int) [function, smtlib(sqrtInt)]
-// TODO: implement
+rule sqrtInt(N) => sqrtIntAux(N, N, (N +Int 1) /Int 2) [concrete]
+
+syntax Int ::= sqrtIntAux(Int, Int, Int) [function]
+rule sqrtIntAux(N, X, Y) => sqrtIntAux(N, Y, (Y +Int (N /Int Y)) /Int 2) requires Y <Int X
+rule sqrtIntAux(N, X, Y) => X requires Y >=Int X
 ```
 
 ## Macros

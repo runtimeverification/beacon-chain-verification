@@ -6,7 +6,7 @@ imports VERIFICATION
 
 rule
 <T>
-  <k> processRewardsPenalties(?Epoch) => .K ... </k>
+  <k> processRewardsPenaltiesAux(?Epoch) => .K ... </k>
   <currentSlot> Slot </currentSlot>
   <states>
     <state>
@@ -34,7 +34,6 @@ andBool ?FinalityDelay ==Int ?Epoch -Int LastFinalizedEpoch
 andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations)
 andBool ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
-andBool ?Epoch >=Int 2
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool distinct(VIDs)
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
@@ -82,7 +81,6 @@ andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?Targ
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
 andBool     ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
-andBool ?Epoch >=Int 2
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool distinct(VIDs)
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
@@ -138,7 +136,6 @@ andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?Targ
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
 andBool     ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
-andBool ?Epoch >=Int 2
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool distinct(VIDs)
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
@@ -194,7 +191,6 @@ andBool ?TargetAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?Targ
 andBool   ?HeadAttestingBalance ==Int lift(totalBalance(EBM, getValidators(?HeadAttestations)))
 andBool     ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM, EM, ?Epoch)))
 // pre-conditions
-andBool ?Epoch >=Int 2
 andBool forall(x, R_VIDs, EBM[x]i >=Int 0)
 andBool distinct(R_VIDs)
 andBool forall(x, R_VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))

@@ -157,7 +157,7 @@ Note that `Slot` is equal to `state.slot + 1` of the concrete model.
 // process_epoch
 rule <k> processEpoch()
       => processJustificationAndFinalization()
-      ~> processRewardsPenalties(epochOf(Slot) -Int 2)
+      ~> processRewardsPenalties()
       ~> processValidatorUpdates() ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
@@ -295,12 +295,22 @@ rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
 
 ```k
 // process_rewards_and_penalties
-syntax KItem ::= processRewardsPenalties(Int)
-rule <k> processRewardsPenalties(Epoch)
-      => processRewardsPenaltiesAux1(
+syntax KItem ::= processRewardsPenalties()
+rule <k> processRewardsPenalties()
+      => #it(
+           epochOf(Slot) >=Int 2
+         ,
+           processRewardsPenaltiesAux(epochOf(Slot) -Int 2)
+         ) ... </k>
+     <currentSlot> Slot </currentSlot>
+
+syntax KItem ::= processRewardsPenaltiesAux(Int)
+rule <k> processRewardsPenaltiesAux(Epoch)
+      => #assert(Epoch >=Int 0) // due to the side condition of processRewardsPenalties
+      ~> processRewardsPenaltiesAux1(
            VIDs, VM, Epoch, Epoch -Int LastFinalizedEpoch[epochOf(Slot)]ii,
-                                                                                filterNotSlashed(VM.slashed, Attestations)  ,
-                                  filterByTarget(BlockMap[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)) ,
+                                                                                filterNotSlashed(VM.slashed, Attestations) ,
+                                  filterByTarget(BlockMap[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)),
            filterByHead(BlockMap, filterByTarget(BlockMap[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)))
          ) ... </k>
      <currentSlot> Slot </currentSlot>
@@ -315,9 +325,6 @@ rule <k> processRewardsPenalties(Epoch)
      </state>
      <lastBlock> BlockMap </lastBlock>
      <lastFinalized> LastFinalizedEpoch </lastFinalized>
-     requires Epoch >=Int 2
-rule processRewardsPenalties(Epoch) => .
-     requires Epoch <Int 2
 
 syntax KItem ::= processRewardsPenaltiesAux1(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations)
 rule processRewardsPenaltiesAux1(VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations)
@@ -338,63 +345,6 @@ rule (. => processRewardPenalty(VID, VM.slashed, VM.effective_balance, VM.activa
 rule processRewardsPenaltiesAux3(_, .IntList, _, _, _, _, _, _, _, _, _, _) => .
 
 syntax KItem ::= processRewardPenalty(Int, BMap, IMap, IMap, IMap, IMap, Int, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
-/*
-rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
-                          SourceAttestations,     TargetAttestations,     HeadAttestations,
-                          SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
-  => #it(
-       isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
-     ,
-       // Matching Rewards and Penalties
-       #ite(
-         V.id inA SourceAttestations
-       ,
-         increaseBalance(V.id, getMatchingReward(BaseReward, SourceAttestingBalance, TotalActiveBalance))
-       ,
-         decreaseBalance(V.id, BaseReward)
-       )
-       ~>
-       #ite(
-         V.id inA TargetAttestations
-       ,
-         increaseBalance(V.id, getMatchingReward(BaseReward, TargetAttestingBalance, TotalActiveBalance))
-       ,
-         decreaseBalance(V.id, BaseReward)
-       )
-       ~>
-       #ite(
-         V.id inA HeadAttestations
-       ,
-         increaseBalance(V.id, getMatchingReward(BaseReward, HeadAttestingBalance, TotalActiveBalance))
-       ,
-         decreaseBalance(V.id, BaseReward)
-       )
-       ~>
-       // Proposer Rewards
-       #it(
-         V.id inA SourceAttestations
-       ,
-         increaseBalance(minByInclusionDelay(V.id, SourceAttestations).proposer, BaseReward /Int PROPOSER_REWARD_QUOTIENT)
-         ~>
-         increaseBalance(V.id, getInclusionReward(BaseReward, minByInclusionDelay(V.id, SourceAttestations).inclusion_delay))
-       )
-       ~>
-       // Inactivity Penalties
-       #it(
-         FinalityDelay >Int MIN_EPOCHS_TO_INACTIVITY_PENALTY
-       ,
-         decreaseBalance(V.id, BASE_REWARDS_PER_EPOCH *Int BaseReward)
-         ~>
-         #it(
-           notBool (V.id inA TargetAttestations)
-         ,
-           decreaseBalance(V.id, getInactivityPenalty(V.effective_balance, FinalityDelay))
-         )
-       )
-     )
-*/
-
-// TODO: process proposer rewards
 rule processRewardPenalty(VID, SlashedMap, EffectiveBalanceMap, ActivationEpochMap, ExitEpochMap, WithdrawableEpochMap, Epoch, FinalityDelay, BaseReward,
                           SourceAttestations,     TargetAttestations,     HeadAttestations,
                           SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
@@ -434,6 +384,15 @@ rule processRewardPenalty(VID, SlashedMap, EffectiveBalanceMap, ActivationEpochM
          #else 0
          #fi
        )
+       /* TODO: process proposer rewards
+       ~>
+       // Proposer Rewards
+       #it(
+         VID inA SourceAttestations
+       ,
+         increaseBalance(minByInclusionDelay(VID, SourceAttestations).proposer, BaseReward /Int PROPOSER_REWARD_QUOTIENT)
+       )
+       */
      )
 
 // get_base_reward
