@@ -51,6 +51,8 @@ andBool disjoint(getValidatorsE(VEs), getValidatorsS(Ss)) // no voluntary exits 
 //// processSlashings
 andBool forallS(x, Ss, isSlashableAttestation(x.attestation_1, x.attestation_2) andBool x.attestation_1.attester ==Int x.attestation_2.attester)
 andBool forall(x, getValidatorsS(Ss), SM1[x]b ==K false)
+andBool forall(x, getValidatorsS(Ss), AM1[x]i <=Int ?Epoch)
+andBool forall(x, getValidatorsS(Ss), WM1[x]i  >Int ?Epoch)
 andBool distinct(getValidatorsS(Ss))
 andBool forall(x, getValidatorsS(Ss), x in VIDs1)
 andBool ?Epoch <Int FAR_FUTURE_EPOCH

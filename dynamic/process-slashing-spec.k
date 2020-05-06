@@ -30,6 +30,8 @@ andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(VIDs, AM, EM1, ?Epoch
 andBool ?LastExitEpoch +Int sizeS(Ss) <Int FAR_FUTURE_EPOCH
 andBool forallS(x, Ss, isSlashableAttestation(x.attestation_1, x.attestation_2) andBool x.attestation_1.attester ==Int x.attestation_2.attester)
 andBool forall(x, getValidatorsS(Ss), SM1[x]b ==K false)
+andBool forall(x, getValidatorsS(Ss), AM[x]i <=Int ?Epoch)
+andBool forall(x, getValidatorsS(Ss), WM1[x]i >Int ?Epoch)
 andBool distinct(getValidatorsS(Ss))
 andBool forall(x, getValidatorsS(Ss), x in VIDs)
 andBool ?Epoch <Int FAR_FUTURE_EPOCH
@@ -76,6 +78,8 @@ andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(VIDs, AM, EM1, ?Epoch
 andBool ?LastExitEpoch +Int sizeS(R_Ss) <Int FAR_FUTURE_EPOCH
 andBool forallS(x, R_Ss, isSlashableAttestation(x.attestation_1, x.attestation_2) andBool x.attestation_1.attester ==Int x.attestation_2.attester)
 andBool forall(x, getValidatorsS(R_Ss), SM1[x]b ==K false)
+andBool forall(x, getValidatorsS(R_Ss), AM[x]i <=Int ?Epoch)
+andBool forall(x, getValidatorsS(R_Ss), WM1[x]i >Int ?Epoch)
 andBool distinct(getValidatorsS(R_Ss))
 andBool forall(x, getValidatorsS(R_Ss), x in VIDs)
 andBool ?Epoch <Int FAR_FUTURE_EPOCH
