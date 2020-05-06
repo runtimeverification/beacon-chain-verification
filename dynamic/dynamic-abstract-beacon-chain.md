@@ -40,7 +40,7 @@ configuration <T>
     <state multiplicity="*" type="Map">
       <slot> 0 </slot>
       <validators> v(m(.BMap, .IMap, .IMap, .IMap, .IMap, .IMap, .IMap), .IntList) </validators>
-      <slashedBalance> 0 </slashedBalance> // slashed balance
+      <slashedBalance> .IMap </slashedBalance> // epoch -> sum of slashed effective balance
       <attested> .Map </attested> // epoch -> attestations
       <justified> .BList </justified> // epoch -> bool
       <finalized> .BList </finalized> // epoch -> bool
@@ -83,7 +83,7 @@ rule <k> init => . ... </k>
          ,
            0 1 2 3 4 5 6 .IntList
          ) </validators>
-         <slashedBalance> 0 </slashedBalance>
+         <slashedBalance> .IMap </slashedBalance>
          <attested> 0 |-> .Attestations </attested>
          <justified> .BList [ 0 <- true ]bb </justified>
          <finalized> .BList [ 0 <- true ]bb </finalized>
@@ -725,7 +725,7 @@ rule <k> slashValidator(VID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <slashedBalance> S => S +Int EBM[VID]i </slashedBalance> // TODO: store slashed balance for each epoch
+       <slashedBalance> SBM => SBM [ epochOf(Slot) <- SBM[epochOf(Slot)]i +Int EBM[VID]i ]i </slashedBalance>
        <validators> v(
        //m(... slashed: SM => SM [ VID <- true ]b
        //    , balance: BM => BM [ VID <- maxInt(0, BM[VID]i -Int (EBM[VID]i /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]i
