@@ -15,10 +15,10 @@ Unset Printing Implicit Defensive.
 (******************************************************************************)
 
 
-Lemma setID_disjoint : forall (vs1 vs2:{set Validator}),
-  [disjoint (vs1 :&: vs2) & (vs1 :\: vs2)].
+Lemma setID_disjoint : forall (A B:{set Validator}),
+  [disjoint (A :&: B) & (A :\: B)].
 Proof.
-  move=> vs1 vs2.
+  move=> A B.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -28,10 +28,10 @@ Proof.
   by contradiction.
 Qed.
 
-Lemma setDD_disjoint : forall (vs1 vs2:{set Validator}),
-  [disjoint (vs1 :\: vs2) & (vs2 :\: vs1)].
+Lemma setDD_disjoint : forall (A B:{set Validator}),
+  [disjoint (A :\: B) & (B :\: A)].
 Proof.
-  move=> vs1 vs2.
+  move=> A B.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -41,10 +41,10 @@ Proof.
   by contradiction.
 Qed.
 
-Lemma setDDI_disjoint : forall (vs1 vs2:{set Validator}),
-  [disjoint vs1 :\: vs2 :|: vs2 :\: vs1 & vs1 :&: vs2].
+Lemma setDDI_disjoint : forall (A B:{set Validator}),
+  [disjoint A :\: B :|: B :\: A & A :&: B].
 Proof. 
-  move=> vs1 vs2.
+  move=> A B.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -53,10 +53,10 @@ Proof.
     move/negP: Hnotin2 => Hnotin2;contradiction.
 Qed.
 
-Lemma setU_par : forall (vs1 vs2:{set Validator}),
-  vs1 :|: vs2 = (vs1 :\: vs2) :|: (vs2 :\: vs1) :|: (vs1 :&: vs2).
+Lemma setU_par : forall (A B:{set Validator}),
+  A :|: B = (A :\: B) :|: (B :\: A) :|: (A :&: B).
 Proof.
-  move=> vs1 vs2.
+  move=> A B.
   apply/eqP.
   rewrite eqEsubset.
   apply/andP;split;apply/subsetP => x.
@@ -133,10 +133,10 @@ Proof.
     apply Hb in Hxb. by apply/setIP.
 Qed.
 
-Lemma setID2_disjoint : forall (s1 s1' s2':{set Validator}),
-  [disjoint (s1 :&: s2') & (s1' :\: s2')].
+Lemma setID2_disjoint : forall (A B C:{set Validator}),
+  [disjoint (A :&: C) & (B :\: C)].
 Proof.
-  move=> vs0 vs1 vs2.
+  move=> A B C.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -145,25 +145,25 @@ Proof.
   by move/negP: H2 => H2.
 Qed.
 
-Lemma setID2_subset : forall (s1 s1' s2':{set Validator}),
-  s1 \subset s1' ->
-  s1 \subset (s1 :&: s2') :|: (s1' :\: s2').
+Lemma setID2_subset : forall (A B C:{set Validator}),
+  A \subset B ->
+  A \subset (A :&: C) :|: (B :\: C).
 Proof.
-  move=> vs0 vs1 vs2.
+  move=> A B C.
   move/subsetP => H.
   apply/subsetP => x.
   move=> Hs0.
   apply/setUP.
-  have : (x \in vs2) || ~~(x \in vs2) by apply orbN.
+  have : (x \in C) || ~~(x \in C) by apply orbN.
   case/orP=> H'.
   - left. by apply/setIP.
   - right. apply H in Hs0. by apply/setDP.
 Qed.
 
-Lemma set3D_disjoint : forall (vs0 vs1 vs2:{set Validator}),
-  [disjoint vs0 :\: vs2 & vs1 :\: vs0].
+Lemma set3D_disjoint : forall (A B C:{set Validator}),
+  [disjoint C :\: B & A :\: C].
 Proof.
-  move=> vs0 vs1 vs2.
+  move=> A B C.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -173,14 +173,14 @@ Proof.
   by contradiction.
 Qed.
 
-Lemma set3D_subset : forall (vs0 vs1 vs2:{set Validator}),
-  vs1 :\: vs2 \subset vs0 :\: vs2 :|: vs1 :\: vs0.
+Lemma set3D_subset : forall (A B C:{set Validator}),
+  A :\: B \subset C :\: B :|: A :\: C.
 Proof. 
-  move=> vs0 vs1 vs2.
+  move=> A B C.
   apply/subsetP => x.
   move/setDP=> [H1 H2].  
   apply/setUP.
-  have : (x \in vs0) || ~~(x \in vs0) by apply orbN.
+  have : (x \in C) || ~~(x \in C) by apply orbN.
   case/orP=> H.
   - left. by apply/setDP;split.
   - right. by apply/setDP;split.  
