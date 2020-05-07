@@ -17,8 +17,6 @@ imports DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
 imports MAP
 imports LIST
-```
-```{.k .kast}
 imports K-REFLECTION
 ```
 
@@ -155,9 +153,10 @@ Note that `Slot` is equal to `state.slot + 1` of the concrete model.
 // TODO: add process_slashings, process_final_updates (for updating effective balances with hysteresis)
 // process_epoch
 rule <k> processEpoch()
-      => processJustificationAndFinalization()
-      ~> processRewardsPenalties()
-      ~> processValidatorUpdates() ... </k>
+      => #assert(epochOf(Slot) >=Int 1) // genesis block/epoch is processed separately
+      ~> processJustificationAndFinalization()  // effective for epoch >= 3
+      ~> processRewardsPenalties()              // effective for epoch >= 2
+      ~> processValidatorUpdates() ... </k>     // effective for epoch >= 1
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -426,7 +425,6 @@ rule <k> increaseBalance(VID, N) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... balance: BM => BM [ VID <- BM[VID]i +Int N ]i)
          m(SM
          , BM => BM [ VID <- maxInt(0, BM[VID]i +Int N) ]i // ensures balance to be positive
          , EBM
@@ -593,9 +591,6 @@ rule <k> setActivationEligibility(VID) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... effective_balance: EBM
-       //    , activation_eligibility: AEM => AEM [ VID <- epochOf(Slot) ]i
-       //)
          m(SM
          , BM
          , EBM
@@ -646,7 +641,6 @@ rule <k> activateValidator(VID) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... activation_epoch: AM => AM [ VID <- delayedActivationExitEpoch(epochOf(Slot) -Int 1) ]i)
          m(SM
          , BM
          , EBM
@@ -747,11 +741,6 @@ rule <k> slashValidator(VID) => . ... </k>
        <slot> Slot </slot>
        <slashedBalance> SBM => SBM [ epochOf(Slot) <- SBM[epochOf(Slot)]i +Int EBM[VID]i ]i </slashedBalance>
        <validators> v(
-       //m(... slashed: SM => SM [ VID <- true ]b
-       //    , balance: BM => BM [ VID <- maxInt(0, BM[VID]i -Int (EBM[VID]i /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]i
-       //    , effective_balance: EBM
-       //    , withdrawable_epoch: WM => WM [ VID <- maxInt(WM[VID]i, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR) ]i
-       //)
          m(SM => SM [ VID <- true ]b
          , BM => BM [ VID <- maxInt(0, BM[VID]i -Int (EBM[VID]i /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]i
          , EBM
@@ -829,6 +818,7 @@ rule <k> addAttestation(A) => . ... </k>
        ...
      </state>
      requires A.target_epoch ==Int epochOf(Slot) -Int 1
+     // TODO: merge two rules into a single one
 
 syntax KItem ::= checkAttestation(Attestation)
 rule <k> checkAttestation(A)
@@ -877,7 +867,6 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... balance: BM => BM [ D.sender <- BM[D.sender]i +Int D.amount ]i) // no change to effective_balance
          m(SM
          , BM => BM [ D.sender <- BM[D.sender]i +Int D.amount ]i // no change to effective_balance
          , EBM
@@ -897,14 +886,6 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... slashed:             SM => SM [ D.sender <- false ]b
-       //    , balance:             BM => BM [ D.sender <- D.amount ]i
-       //    , effective_balance: EBM => EBM [ D.sender <- minInt(D.amount, MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap
-       //    , activation_eligibility_epoch: FAR_FUTURE_EPOCH
-       //    , activation_epoch:             FAR_FUTURE_EPOCH
-       //    , exit_epoch:                   FAR_FUTURE_EPOCH
-       //    , withdrawable_epoch:           FAR_FUTURE_EPOCH
-       //)
          m(SM  => SM  [ D.sender <- false ]b
          , BM  => BM  [ D.sender <- D.amount ]i
          , EBM => EBM [ D.sender <- minInt(D.amount -Int (D.amount %Int EFFECTIVE_BALANCE_INCREMENT), MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap
@@ -984,9 +965,6 @@ rule <k> setExitEpoch(VID, ExitEpoch) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... exit_epoch:         EM => EM [ VID <- ExitEpoch ]i
-       //    , withdrawable_epoch: WM => WM [ VID <- ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]i
-       //)
          m(SM
          , BM
          , EBM
