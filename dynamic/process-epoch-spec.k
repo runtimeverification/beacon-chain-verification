@@ -189,7 +189,7 @@ andBool isValidAttestations(Attestations2, VIDs, AM1, EM1, Epoch -Int 2)
 //
 
 andBool Epoch <Int FAR_FUTURE_EPOCH
-andBool ?LastExitEpoch +Int size(VIDs) <Int FAR_FUTURE_EPOCH
+andBool ?LastExitEpoch +Int size(VIDs) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY <Int FAR_FUTURE_EPOCH
 andBool ?ActivationEpoch <Int FAR_FUTURE_EPOCH
 andBool countValidatorsToActivate(VIDs, AM1, ?ActivationEpoch) ==Int 0
 
@@ -256,9 +256,11 @@ andBool forall(x, VIDs, ?BM2[x]i >=Int 0)
 
 // processValidatorEjections 
 andBool forall(x, VIDs, #if isActiveValidator(x, AM1, EM1, Epoch -Int 1) andBool EBM[x]i <=Int EJECTION_BALANCE andBool EM1[x]i ==Int FAR_FUTURE_EPOCH
-                        #then ?EM2[x]i >=Int delayedActivationExitEpoch(Epoch) andBool ?EM2[x]i <Int FAR_FUTURE_EPOCH
-                              andBool countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimitA
-                        #else ?EM2[x]i ==Int EM1[x]i
+                        #then countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimitA
+                              andBool ?EM2[x]i >=Int delayedActivationExitEpoch(Epoch)                                          andBool ?EM2[x]i <Int FAR_FUTURE_EPOCH
+                              andBool ?WM2[x]i >=Int delayedActivationExitEpoch(Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY andBool ?WM2[x]i <Int FAR_FUTURE_EPOCH
+                        #else         ?EM2[x]i ==Int EM1[x]i
+                              andBool ?WM2[x]i ==Int WM1[x]i
                         #fi)
 // updateActivationEligibilities
 andBool forall(x, VIDs, ?AEM2[x]i ==Int #if isActivationEligible(x, AEM1, EBM) #then Epoch #else AEM1[x]i #fi)
@@ -268,7 +270,6 @@ andBool countValidatorsToActivate(VIDs, ?AM2, ?ActivationEpoch) <=Int ?ChurnLimi
 
 /* TODO:
  - ensure forall(x, VIDs, ?AM2[x]i ==Int #if x in ?ValidatorsToBeActivated #then ?ActivationEpoch #else AM1[x]i #fi)
- - specify ?WM2
  - base case: when Epoch ==Int 3
  - ensure countValidatorsToActivate(VIDs, ?AM2, ?ActivationEpoch +Int 1) ==Int 0
  - ensure conditions over attestations are guaranteed by process-block-spec
