@@ -1,4 +1,5 @@
 require "verification.k"
+
 require "process-justification-finalization-lemma.k"
 require "process-rewards-penalties-spec.k"
 require "process-validator-updates-spec.k"
@@ -16,11 +17,6 @@ rule
   <k> processEpoch() => .K ... </k>
   <currentSlot> Slot </currentSlot>
   <states>
-    <state>
-      <slot> firstSlotOf(Epoch4) </slot>
-      <validators> v(m(Epoch4SM, _, Epoch4EBM, _, Epoch4AM, Epoch4EM, _), Epoch4VIDs) </validators>
-      ...
-    </state>
     <state>
       <slot> firstSlotOf(Epoch3) </slot>
       <validators> v(m(Epoch3SM, _, Epoch3EBM, _, Epoch3AM, Epoch3EM, _), Epoch3VIDs) </validators>
