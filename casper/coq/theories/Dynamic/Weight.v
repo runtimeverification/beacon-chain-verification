@@ -24,11 +24,11 @@ Open Scope fmap_scope.
 (* A finite map defining the weight of a given set of validators as the sum of
  * stake values of its validators
  *)
-Definition wt (vs:{set Validator}) : nat := 
-  (\sum_(v in vs) stake.[st_fun v]).
+Definition wt (s:{set Validator}) : nat := 
+  (\sum_(v in s) stake.[st_fun v]).
 
 (* wt is always non-negative *)
-Lemma wt_nonneg : forall vs, wt vs >= 0.
+Lemma wt_nonneg : forall s, wt s >= 0.
 Proof. by []. Qed.
 
 (* wt of the empty set is always 0 *)
@@ -38,47 +38,49 @@ by rewrite /wt big_set0.
 Qed.
 
 (* set inclusion induces an order on weights *)
-Lemma wt_inc_leq : forall (vs1 vs2:{set Validator}),
-  vs1 \subset vs2 -> wt vs1 <= wt vs2.
+Lemma wt_inc_leq : forall (s1 s2:{set Validator}),
+  s1 \subset s2 -> wt s1 <= wt s2.
 Proof. 
-  move=> vs1 vs2.
+  move=> s1 s2.
   rewrite /wt.
-  rewrite [\sum_(v in vs2) _](big_setID vs1) //=.
+  rewrite [\sum_(v in s2) _](big_setID s1) //=.
   move/setIidPr => ->.
   apply: leq_addr.
 Qed.
 
 (* equal sets have the same weight *)
-Lemma wt_eq : forall (vs1 vs2:{set Validator}),
-  vs1 = vs2 -> wt vs1 = wt vs2.
+Lemma wt_eq : forall (s1 s2:{set Validator}),
+  s1 = s2 -> wt s1 = wt s2.
 Proof.
-  move=> vs1 vs2 Heq.
+  move=> s1 s2 Heq.
   by rewrite /wt Heq.
 Qed.
 
 (* sets commute under wt *)
-Lemma wt_meetC : forall vs1 vs2,
-  wt (vs1 :&: vs2) = wt (vs2 :&: vs1).
-Proof. by [rewrite /wt => vs1 vs2;rewrite setIC]. Qed.
+Lemma wt_meetC : forall s1 s2,
+  wt (s1 :&: s2) = wt (s2 :&: s1).
+Proof. 
+  by [rewrite /wt => s1 s2;rewrite setIC].
+Qed.
 
 (* the weight of the union of two disjoint sets is exactly the sum of 
  * their weights 
  *)
-Lemma wt_join_disjoint : forall (vs1 vs2:{set Validator}),
-  [disjoint vs1 & vs2] -> wt (vs1 :|: vs2) = wt vs1 + wt vs2.
+Lemma wt_join_disjoint : forall (s1 s2:{set Validator}),
+  [disjoint s1 & s2] -> wt (s1 :|: s2) = wt s1 + wt s2.
 Proof.
-  move=> vs1 vs2 Hdis.
+  move=> s1 s2 Hdis.
   rewrite /wt.
-  rewrite (eq_bigl [predU vs1 & vs2]); last by move=> i; rewrite !inE.
+  rewrite (eq_bigl [predU s1 & s2]); last by move=> i; rewrite !inE.
   rewrite bigU //=.  
 Qed.
 
 (* The weight of the difference of two sets *)
-Lemma wt_diff : forall vs1 vs2,
-  wt (vs1 :\: vs2) = wt vs1 - wt (vs1 :&: vs2).
+Lemma wt_diff : forall s1 s2,
+  wt (s1 :\: s2) = wt s1 - wt (s1 :&: s2).
 Proof.
-  move=> vs1 vs2.
-  rewrite -{2}(setID vs1 vs2).
+  move=> s1 s2.
+  rewrite -{2}(setID s1 s2).
   rewrite (wt_join_disjoint).
     rewrite addnC -addnBA; last by [].
     by rewrite sub_eq addn0.
@@ -86,10 +88,10 @@ Proof.
 Qed.
 
 (* The weight of the union of two sets as the sum of weights of its partitions *)
-Lemma wt_join_partition : forall vs1 vs2,
-  wt (vs1 :|: vs2) = wt (vs1 :\: vs2) + wt (vs2 :\: vs1) + wt (vs1 :&: vs2).
+Lemma wt_join_partition : forall s1 s2,
+  wt (s1 :|: s2) = wt (s1 :\: s2) + wt (s2 :\: s1) + wt (s1 :&: s2).
 Proof.
-  move=> vs1 vs2.
+  move=> s1 s2.
   rewrite -!wt_join_disjoint. 
   apply: wt_eq. apply: setU_par.
   apply: setDDI_disjoint.
@@ -97,41 +99,41 @@ Proof.
 Qed.
 
 (* The weight of the union of two sets in terms of the weights of the sets *)
-Lemma wt_join : forall vs1 vs2,
-  wt (vs1 :|: vs2) = wt vs1 + wt vs2 - wt (vs1 :&: vs2).
+Lemma wt_join : forall s1 s2,
+  wt (s1 :|: s2) = wt s1 + wt s2 - wt (s1 :&: s2).
 Proof.
-  move=> vs1 vs2.
-  rewrite -{2}(setID vs1 vs2).
-  rewrite -{4}(setID vs2 vs1).
-  rewrite [wt (vs1 :&: vs2 :|: _)]wt_join_disjoint; last by apply setID_disjoint.
-  rewrite [wt (vs2 :&: vs1 :|: _)]wt_join_disjoint; last by apply setID_disjoint.
-  rewrite [vs2 :&: vs1]setIC.
-  rewrite -addnA [_ + wt (vs2 :\: vs1)]addnC.  
-  rewrite [wt (vs1 :\: vs2) + (_+_)]addnA.
+  move=> s1 s2.
+  rewrite -{2}(setID s1 s2).
+  rewrite -{4}(setID s2 s1).
+  rewrite [wt (s1 :&: s2 :|: _)]wt_join_disjoint; last by apply setID_disjoint.
+  rewrite [wt (s2 :&: s1 :|: _)]wt_join_disjoint; last by apply setID_disjoint.
+  rewrite [s2 :&: s1]setIC.
+  rewrite -addnA [_ + wt (s2 :\: s1)]addnC.  
+  rewrite [wt (s1 :\: s2) + (_+_)]addnA.
   rewrite -wt_join_partition. 
   rewrite -addnBAC; last by [].
   by rewrite sub_eq add0n.
 Qed.
 
 (* Properties of the weight of the intersection of two sets *)
-Lemma wt_meet_leq1 : forall vs1 vs2,
-  wt (vs1 :&: vs2) <= wt vs1.
+Lemma wt_meet_leq1 : forall s1 s2,
+  wt (s1 :&: s2) <= wt s1.
 Proof. 
-  move=> vs1 vs2; apply: wt_inc_leq; apply: subsetIl.
+  move=> s1 s2; apply: wt_inc_leq; apply: subsetIl.
 Qed.
 
-Lemma wt_meet_leq2 : forall vs1 vs2,
-  wt (vs1 :&: vs2) <= wt vs2.
+Lemma wt_meet_leq2 : forall s1 s2,
+  wt (s1 :&: s2) <= wt s2.
 Proof. 
-  move=> vs1 vs2; apply: wt_inc_leq; apply: subsetIr.
+  move=> s1 s2; apply: wt_inc_leq; apply: subsetIr.
 Qed.
 
-Lemma wt_meet_leq : forall vs1 vs2,
-  wt (vs1 :&: vs2) <= wt vs1 + wt vs2.
+Lemma wt_meet_leq : forall s1 s2,
+  wt (s1 :&: s2) <= wt s1 + wt s2.
 Proof.
-  move=> vs1 vs2.
-  have H1:= (wt_meet_leq1 vs1 vs2).
-  have H2:= (leq_addr (wt vs2) (wt vs1)).
+  move=> s1 s2.
+  have H1:= (wt_meet_leq1 s1 s2).
+  have H2:= (leq_addr (wt s2) (wt s1)).
   apply: (leq_trans H1 H2).
 Qed.
 
