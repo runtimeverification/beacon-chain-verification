@@ -32,15 +32,18 @@ Definition finalization_fork st :=
     finalized st b2 b2_h /\
     b2 </~* b1 /\ b1 </~* b2.
 
+(* A fork may have finalizations of different depths *)
 Definition k_finalization_fork st k1 k2 :=
   exists b1 b1_h b2 b2_h,
     k_finalized st b1 b1_h k1 /\
     k_finalized st b2 b2_h k2 /\
     b2 </~* b1 /\ b1 </~* b2.
 
+(* Or a fork may have finalizations of the same depth *)
 Definition same_k_finalization_fork st k :=
   k_finalization_fork st k k.
 
+(* finalization_fork means same_k_finalization_fork at depth 1 *)
 Lemma finalization_fork_means_same_finalization_fork_one :
   forall st,
     finalization_fork st <-> same_k_finalization_fork st 1. 
@@ -94,8 +97,8 @@ destruct Hj1 as [| sb1 sb1_h b1 b1_h Hjs1 [Hh1 [Ha1 Hsm1]]] eqn:E1.
   easy.
 Qed.
 
-(* No block can be finalized at a height at which some other block is
-   justified without a quorum being slashed *)
+(* No block can be finalized at a height at which some other block is justified without a *)
+(* quorum being slashed *)
 Lemma no_k_finalized_justified_same_height : forall st bf bf_h bj bj_h k,
   k_finalized st bf bf_h k ->
   justified st bj bj_h ->
@@ -201,8 +204,7 @@ Qed.
 
 (* Slash-surround case of the inductive step of the safety proof *)
 (* The general case *)
-(* The inductive reasoning step for the safety proof case of non-equal
-   heights*)
+(* The inductive reasoning step for the safety proof case of non-equal heights*)
 Lemma k_non_equal_height_case_ind : forall st b1 b1_h b2 b2_h k,
   justified st b1 b1_h ->
   k_finalized st b2 b2_h k ->
@@ -264,8 +266,7 @@ have Hplt: s_h - b2_h < b1_h - b2_h.
     intuition.
 Qed. 
 
-(* Safety proof case: two conflicting blocks are finalized at different
-   heights *)
+(* Safety proof case: two conflicting blocks are finalized at different heights *)
 Lemma k_non_equal_height_case : forall st b1 b1_h b2 b2_h k1 k2,
   k_finalized st b1 b1_h k1 ->
   k_finalized st b2 b2_h k2 ->
@@ -278,8 +279,7 @@ apply k_finalized_means_justified in Hb1f.
 by apply k_non_equal_height_case_ind with b1 b1_h b2 b2_h k2.
 Qed.
 
-(* Safety proof case: two conflicting blocks are finalized at the same
-   height *)
+(* Safety proof case: two conflicting blocks are finalized at the same height *)
 Lemma k_equal_height_case : forall st b1 b2 h k1 k2,
   k_finalized st b1 h k1 ->
   k_finalized st b2 h k2 ->
@@ -296,7 +296,7 @@ case: Ho => // Ho.
 apply Hconf in Ho;[contradiction|assumption].
 Qed.
 
-(* A quorum is slashed if two conflicting blocks are finalized *)
+(* A quorum is slashed if any two conflicting blocks are finalized *)
 Lemma k_safety' : forall st b1 b1_h b2 b2_h k1 k2,
   k_finalized st b1 b1_h k1 ->
   k_finalized st b2 b2_h k2 ->

@@ -76,8 +76,7 @@ Definition maximal_justification_link st s t s_h t_h : Prop :=
   forall s' t' s_h' t_h', justification_link st s' t' s_h' t_h' -> t_h' <= t_h.
 
 (* When votes are assumed good, the source of a justifiction link is
-   always justified
- *)
+   always justified *)
 Lemma good_votes_mean_source_justified : forall st s t s_h t_h,
   good_votes st ->
   justification_link st s t s_h t_h ->
@@ -96,8 +95,7 @@ Proof.
 Qed.
 
 (* A maximal justification link always exists if we assume good votes
-   that make up at least one justification link.
- *)
+   that make up at least one justification link. *)
 Lemma maximal_link_exists: forall st,
   good_votes st ->
   has_justification_link st ->
@@ -172,8 +170,7 @@ Proof.
 Qed.
 
 (* Assuming good behavior, the target of a maximal justification link
-   is a maximal-hight justified block.
- *)
+   is a maximal-hight justified block. *)
 Lemma maximal_link_highest_block: forall st s t s_h t_h b b_h,
   ~ q_intersection_slashed st ->
   good_votes st ->
@@ -252,14 +249,13 @@ Definition unslashed_can_extend st st' : Prop :=
 Definition no_new_slashed st st' :=
   forall v, slashed st' v -> slashed st v.
 
-(** And finally, the overall plausible liveness theorem **)
-(* In addition to gloabal axioms, the theorem requires the following
-   assumptions:
-   (1) There exists a well behaving 2/3 quorum (for every block)
-   (2) 2/3-quorum validators' votes are valid votes (with respect to all blocks)
-   (2) The conditions of slashing have not been met
-   (3) Blocks exist sufficiently high over the highest justified block
- *)
+(** And finally, the overall plausible liveness theorem                           **)
+(* In addition to gloabal axioms, the theorem requires the following               *)
+(*   assumptions:                                                                  *)
+(*   (1) There exists a well behaving 2/3 quorum (for every block)                 *)
+(*   (2) 2/3-quorum validators' votes are valid votes (with respect to all blocks) *)
+(*   (2) The conditions of slashing have not been met                              *)
+(*   (3) Blocks exist sufficiently high over the highest justified block           *)
 Theorem plausible_liveness : forall st,
   two_thirds_good st ->
   ~ q_intersection_slashed st ->
@@ -468,7 +464,6 @@ Proof.
     apply (@justified_link _ just_max just_max_h).
       revert Hjust_max_just. apply justified_weaken.
       apply/fsubsetP. by eapply fsubset_trans;apply fsubsetUl.
-      (* intros. apply (votes_from_target_vset H). *)
 
     unfold justification_link. split.
     rewrite <- addn1 with (highest_target.+1 - just_max_h) in Hdist.
@@ -497,8 +492,6 @@ Proof.
     assert (0 <= highest_target).
     apply highest_ub.
     rewrite in_fsetU. apply/orP. left. apply fset11. by auto with arith.
-
-    (* split. assumption. *)
 
     unfold supermajority_link, link_supporters, vote_msg.
     apply quorum_2_upclosed with good_quorum_c.

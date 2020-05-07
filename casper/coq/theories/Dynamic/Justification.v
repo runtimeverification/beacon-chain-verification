@@ -7,7 +7,7 @@ From mathcomp.finmap
 Require Import finmap.
 
 From Dynamic
-Require Import Validator Weight HashTree State Slashing Quorums.
+Require Import NatExt Validator Weight HashTree State Slashing Quorums.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -41,7 +41,7 @@ Definition supermajority_link (st:State) (s t : Hash) (s_h t_h : nat) : bool :=
   quorum_2 (link_supporters st s t s_h t_h) t.
 
 (* Adding more votes (from the same validators) to a state preserves supermajority links *)
-(** Note: Needed the assumption that the extra votes must have come from vset.[target] **)
+(** Note: Needs the assumption that the extra votes must have come from vset.[target] **)
 Lemma supermajority_weaken: forall (st st':State) s t s_h t_h
   (HSub:forall (v: Vote), v \in st -> v \in st'),
       supermajority_link st s t s_h t_h
@@ -56,14 +56,16 @@ Proof.
   apply votes_from_target_vset.
 Qed.
 
+(* Justification links must be proper: In addition to being a supermajority link, *)
+(* a justification link must be a valid forward link in the block tree with the   *)
+(* target's height being greater than the source's *)
 Definition justification_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
   t_h > s_h /\
   nth_ancestor (t_h - s_h) s t /\
   supermajority_link st s t s_h t_h.
 
-(* We define justification of a block inductively in terms of a path
-   from the genesis block all the way to that block.
- *)
+(* We define justification of a block inductively in terms of a path from the     *)
+(* genesis block all the way to that block. *)
 Inductive justified (st:State) : Hash -> nat -> Prop :=
 | justified_genesis : justified st genesis 0
 | justified_link : forall s s_h t t_h,
@@ -71,8 +73,8 @@ Inductive justified (st:State) : Hash -> nat -> Prop :=
     justification_link st s t s_h t_h ->
     justified st t t_h.
 
-(* Justification is preserved when the state is expanded with new votes
-   (coming from validators in the v-set of the justified block) *)
+(* Justification is preserved when the state is expanded with new votes (coming   *)
+(* from validators in the v-set of the justified block) *)
 Lemma justified_weaken: forall (st st':State) t t_h
     (HSub:forall (v: Vote), v \in st -> v \in st'),
   justified st t t_h -> justified st' t t_h.
@@ -86,13 +88,15 @@ Proof.
   apply supermajority_weaken. assumption.
 Qed.
 
-(* A finalized block is a justified block that has a child who is also
-   justified by a supermajority link to the block *)
+(* A finalized block is a justified block that has a child who is also justified  *)
+(* by a supermajority link to the block *)
 Definition finalized st b b_h :=
   justified st b b_h /\
   exists c, (b <~ c /\ supermajority_link st b c b_h b_h.+1).
 
-(* A k-finalized block is a justified block that has a k-descendent who is also justified by a supermajority link to the block, and all blocks to the descendent are also justified *)
+(* A k-finalized block is a justified block that has a k-descendent who is also     *)
+(* justified by a supermajority link to the block, and all blocks to the descendent *)
+(* are also justified *)
 Definition k_finalized st b b_h k :=
   k >= 1 /\ 
   exists ls, size ls = k.+1 /\
@@ -102,15 +106,6 @@ Definition k_finalized st b b_h k :=
               nth_ancestor n b (nth b ls n)
         ) /\
         supermajority_link st b (last b ls) b_h (b_h+k). 
-
-Lemma leq_one_means_zero_or_one : forall n,
-    n <= 1 -> n = 0 \/ n = 1. 
-Proof.
-  intros n H_leq.
-  induction n. left; reflexivity.
-  spec IHn. intuition. destruct IHn. right.
-  subst. easy. subst. inversion H_leq.
-Qed.
 
 (* 1-finalized <-> k-finalized *)
 Lemma finalized_means_one_finalized : forall st b b_h,
