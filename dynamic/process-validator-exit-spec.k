@@ -46,6 +46,8 @@ andBool forall(x, VIDs, implies(notBool x in getValidatorsE(VEs), ?WM2[x]i ==K W
 andBool forall(x, getValidatorsE(VEs), ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch))
 andBool forall(x, getValidatorsE(VEs), ?EM2[x]i  <Int FAR_FUTURE_EPOCH)
 andBool forall(x, getValidatorsE(VEs), countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit)
+andBool forall(x, getValidatorsE(VEs), ?WM2[x]i >=Int delayedActivationExitEpoch(?Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
+andBool forall(x, getValidatorsE(VEs), ?WM2[x]i  <Int FAR_FUTURE_EPOCH)
 //
 andBool forall(x, VIDs, ?EM2[x]i >=Int 0)
 andBool forall(x, VIDs, ?WM2[x]i >=Int 0)
@@ -93,6 +95,8 @@ andBool forall(x, VIDs, implies(notBool x in rev(L_VIDs)                        
 andBool forall(x, rev(L_VIDs)                         , EM1[x]i >=Int delayedActivationExitEpoch(?Epoch))
 andBool forall(x, rev(L_VIDs)                         , EM1[x]i  <Int FAR_FUTURE_EPOCH)
 andBool forall(x, rev(L_VIDs)                         , countValidatorsToExit(VIDs, EM1, EM1[x]i) <=Int ?ChurnLimit)
+andBool forall(x, rev(L_VIDs)                         , WM1[x]i >=Int delayedActivationExitEpoch(?Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
+andBool forall(x, rev(L_VIDs)                         , WM1[x]i  <Int FAR_FUTURE_EPOCH)
 //
 andBool forall(x, rev(L_VIDs)                         , EM1[x]i >=Int 0)
 andBool forall(x, rev(L_VIDs)                         , WM1[x]i >=Int 0)
@@ -103,6 +107,8 @@ andBool forall(x, VIDs, implies(notBool x in rev(L_VIDs) ++ getValidatorsE(R_VEs
 andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch))
 andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?EM2[x]i  <Int FAR_FUTURE_EPOCH)
 andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit)
+andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?WM2[x]i >=Int delayedActivationExitEpoch(?Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
+andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?WM2[x]i  <Int FAR_FUTURE_EPOCH)
 //
 andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?EM2[x]i >=Int 0)
 andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?WM2[x]i >=Int 0)
