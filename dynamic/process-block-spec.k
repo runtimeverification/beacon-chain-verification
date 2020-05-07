@@ -98,14 +98,6 @@ ensures true
 
 //// processSlashings
 
-// andBool forall(x, getValidatorsS(Ss), ?SM2[x]b ==K true)
-// andBool forall(x, VIDs1, implies(notBool x in getValidatorsS(Ss), ?SM2[x]b ==K SM1[x]b))
-
-
-/* TODO:
-andBool forall(x, getValidatorsS(Ss), implies(EM1[x]i ==Int FAR_FUTURE_EPOCH, ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch) andBool ?EM2[x]i <Int FAR_FUTURE_EPOCH andBool countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit))
-*/
-
 //// processAttestations
 
 andBool ?PrevAs2 ==K revA(getAttestations(As, ?Epoch -Int 1)) ++A PrevAs1
@@ -115,31 +107,17 @@ andBool ?CurrAs2 ==K revA(getAttestations(As, ?Epoch       )) ++A CurrAs1
 
 andBool distinct(?VIDs2)
 andBool ?VIDs2 ==K unique(rev(getValidatorsD(Ds)) ++ VIDs1)
-andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?SM2[x]b ==K false))
-andBool forall(x, ?VIDs2, implies(notBool x in VIDs1, ?EBM2[x]i >=Int 0 andBool ?EBM2[x]i <=Int MAX_EFFECTIVE_BALANCE))
-andBool forall(x, ?VIDs2, implies(notBool x in VIDs1, ?AEM2[x]i ==Int FAR_FUTURE_EPOCH))
-andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?AM2[x]i ==Int FAR_FUTURE_EPOCH))
-//andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?EM2[x]i ==Int FAR_FUTURE_EPOCH))
-//andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?WM2[x]i ==Int FAR_FUTURE_EPOCH))
 
 //// processVoluntaryExits
 
-andBool forall(x, getValidatorsE(VEs), ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch))
-andBool forall(x, getValidatorsE(VEs), ?EM2[x]i  <Int FAR_FUTURE_EPOCH)
-andBool forall(x, getValidatorsE(VEs), countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit)
+//// summary
 
+// existing validators
+andBool forall(x, VIDs1, #if x in getValidatorsS(Ss) #then ?SM2[x]b ==K true #else ?SM2[x]b ==K SM1[x]b #fi)
+andBool forall(x, VIDs1, #if x in getValidatorsS(Ss) orBool x in getValidatorsD(Ds) #then ?BM2[x]i >=Int 0 #else ?BM2[x]i ==Int BM1[x]i #fi)
 andBool forall(x, VIDs1, ?EBM2[x]i ==Int EBM1[x]i)
 andBool forall(x, VIDs1, ?AEM2[x]i ==Int AEM1[x]i)
 andBool forall(x, VIDs1,  ?AM2[x]i ==Int  AM1[x]i)
-
-
-andBool forall(x, VIDs1, #if x in getValidatorsS(Ss) #then ?SM2[x]b ==K true #else ?SM2[x]b ==K SM1[x]b #fi)
-andBool forall(x, VIDs1, #if x in getValidatorsS(Ss) orBool x in getValidatorsD(Ds) #then ?BM2[x]i >=Int 0 #else ?BM2[x]i ==Int BM1[x]i #fi)
-/*
-andBool forall(x, VIDs1, ?EBM2[x]i ==Int EBM1[x]i)
-andBool forall(x, VIDs1, ?AEM2[x]i ==Int AEM1[x]i)
-andBool forall(x, VIDs1,  ?AM2[x]i ==Int ?AM1[x]i)
-*/
 /*
 andBool forall(x, VIDs1, #if (x in getValidatorsS(Ss) andBool EM1[x]i ==Int FAR_FUTURE_EPOCH) orBool x in getValidatorsE(VEs)
                          #then ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch) andBool ?EM2[x]i <Int FAR_FUTURE_EPOCH andBool countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit
@@ -149,11 +127,30 @@ andBool forall(x, VIDs1, #if x in getValidatorsS(Ss) #then ?WM2[x]i >=Int ?Epoch
                          #else ?WM2[x]i ==Int WM1[x]i #fi)
 */
 
+andBool forall(x, getValidatorsE(VEs), ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch))
+andBool forall(x, getValidatorsE(VEs), ?EM2[x]i  <Int FAR_FUTURE_EPOCH)
+andBool forall(x, getValidatorsE(VEs), countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit)
+
+// new validators
+andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?SM2[x]b ==K false))
+andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?BM2[x]i >=Int 0))
+andBool forall(x, ?VIDs2, implies(notBool x in VIDs1, ?EBM2[x]i >=Int 0 andBool ?EBM2[x]i <=Int MAX_EFFECTIVE_BALANCE))
+andBool forall(x, ?VIDs2, implies(notBool x in VIDs1, ?AEM2[x]i ==Int FAR_FUTURE_EPOCH))
+andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?AM2[x]i ==Int FAR_FUTURE_EPOCH))
+andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?EM2[x]i ==Int FAR_FUTURE_EPOCH))
+andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?WM2[x]i ==Int FAR_FUTURE_EPOCH))
+
+// no negative values
+andBool forall(x, ?VIDs2,  ?BM2[x]i >=Int 0)
+andBool forall(x, ?VIDs2, ?EBM2[x]i >=Int 0)
+andBool forall(x, ?VIDs2, ?AEM2[x]i >=Int 0)
+andBool forall(x, ?VIDs2,  ?AM2[x]i >=Int 0)
+andBool forall(x, ?VIDs2,  ?EM2[x]i >=Int 0)
+andBool forall(x, ?VIDs2,  ?WM2[x]i >=Int 0)
 
 /* TODO:
  - specify <slashedBalance> update
  - base case: when ?Epoch ==Int 0
- - specify unchanged entries of validator maps
  */
 
 endmodule

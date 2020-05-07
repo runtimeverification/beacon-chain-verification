@@ -28,13 +28,13 @@ andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationEx
 andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(VIDs, AM, EM1, ?Epoch)))
 // pre-conditions
 andBool ?LastExitEpoch +Int sizeS(Ss) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY <Int FAR_FUTURE_EPOCH
+andBool ?Epoch +Int EPOCHS_PER_SLASHINGS_VECTOR <Int FAR_FUTURE_EPOCH
 andBool forallS(x, Ss, isSlashableAttestation(x.attestation_1, x.attestation_2) andBool x.attestation_1.attester ==Int x.attestation_2.attester)
 andBool forall(x, getValidatorsS(Ss), SM1[x]b ==K false)
 andBool forall(x, getValidatorsS(Ss), AM[x]i <=Int ?Epoch)
 andBool forall(x, getValidatorsS(Ss), WM1[x]i >Int ?Epoch)
 andBool distinct(getValidatorsS(Ss))
 andBool forall(x, getValidatorsS(Ss), x in VIDs)
-andBool ?Epoch +Int EPOCHS_PER_SLASHINGS_VECTOR <Int FAR_FUTURE_EPOCH
 //
 andBool forall(x, VIDs, BM1[x]i >=Int 0)
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
@@ -89,13 +89,13 @@ andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationEx
 andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(VIDs, AM, EM1, ?Epoch)))
 // pre-conditions
 andBool ?LastExitEpoch +Int sizeS(R_Ss) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY <Int FAR_FUTURE_EPOCH
+andBool ?Epoch +Int EPOCHS_PER_SLASHINGS_VECTOR <Int FAR_FUTURE_EPOCH
 andBool forallS(x, R_Ss, isSlashableAttestation(x.attestation_1, x.attestation_2) andBool x.attestation_1.attester ==Int x.attestation_2.attester)
 andBool forall(x, getValidatorsS(R_Ss), SM1[x]b ==K false)
 andBool forall(x, getValidatorsS(R_Ss), AM[x]i <=Int ?Epoch)
 andBool forall(x, getValidatorsS(R_Ss), WM1[x]i >Int ?Epoch)
 andBool distinct(getValidatorsS(R_Ss))
 andBool forall(x, getValidatorsS(R_Ss), x in VIDs)
-andBool ?Epoch +Int EPOCHS_PER_SLASHINGS_VECTOR <Int FAR_FUTURE_EPOCH
 andBool forall(x, VIDs, BM0[x]i >=Int 0)
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool forall(x, VIDs, AEM[x]i >=Int 0)
