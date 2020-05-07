@@ -3,7 +3,6 @@ From mathcomp.ssreflect
 Require Import all_ssreflect.
 Set Warnings "parsing".
 
-Require Import Nat. 
 From mathcomp.finmap
 Require Import finmap.
 
@@ -131,20 +130,20 @@ Proof.
   simpl. rewrite <- plus_n_O. exact Hjust. 
   apply justified_link with b b_h. exact Hjust.
   repeat split. rewrite <- addn1.
-  easy. rewrite Minus.minus_plus.
+  easy. rewrite addn1 subSnn.
   apply parent_ancestor. assumption.
-  rewrite PeanoNat.Nat.add_1_r. exact H_link.
+  rewrite addn1. exact H_link.
   apply leq_one_means_zero_or_one in H.
   destruct H as [H_zero | H_one]; subst. 
   simpl. apply nth_ancestor_0.
   simpl. apply parent_ancestor. exact H_rel.
-  simpl. rewrite PeanoNat.Nat.add_1_r. exact H_link.
+  simpl. rewrite addn1. exact H_link.
   (* <- *)
   destruct Hfin as [H_k [ls [H_size [H_hd [H_rel H_link]]]]].
   split. spec H_rel 0. spec H_rel. easy. destruct H_rel as [H_just H_an].
   rewrite <- nth0 in H_hd.
   rewrite H_hd in H_just.
-  rewrite PeanoNat.Nat.add_0_r in H_just.
+  rewrite addn0 in H_just.
   exact H_just.
   spec H_rel 1. 
   spec H_rel. easy.
@@ -155,7 +154,7 @@ Proof.
   rewrite <- nth_last in H_link. 
   rewrite H_size in H_link.
   replace (2.-1) with 1 in H_link by auto.
-  rewrite PeanoNat.Nat.add_1_r in H_link.
+  rewrite addn1 in H_link.
   assumption.
 Qed. 
 
@@ -171,7 +170,7 @@ Proof.
   rewrite H_hd in H.
   replace (b_h + 0) with b_h in H.
   assumption.
-  rewrite PeanoNat.Nat.add_0_r. reflexivity.
+  rewrite addn0. reflexivity.
 Qed. 
 
 (* A finalized block has a child who is justified *)
