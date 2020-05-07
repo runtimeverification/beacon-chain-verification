@@ -155,9 +155,10 @@ Note that `Slot` is equal to `state.slot + 1` of the concrete model.
 // TODO: add process_slashings, process_final_updates (for updating effective balances with hysteresis)
 // process_epoch
 rule <k> processEpoch()
-      => processJustificationAndFinalization()  // effective for epoch >= 3
+      => #assert(epochOf(Slot) >=Int 1) // genesis block/epoch is processed separately
+      ~> processJustificationAndFinalization()  // effective for epoch >= 3
       ~> processRewardsPenalties()              // effective for epoch >= 2
-      ~> processValidatorUpdates() ... </k>     // effective for epoch >= 0 (or 1)?
+      ~> processValidatorUpdates() ... </k>     // effective for epoch >= 1
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
