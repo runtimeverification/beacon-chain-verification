@@ -28,7 +28,7 @@ Definition wt (s:{set Validator}) : nat :=
   (\sum_(v in s) stake.[st_fun v]).
 
 (* wt is always non-negative *)
-Lemma wt_nonneg : forall s, wt s >= 0.
+Lemma wt_nonneg s: wt s >= 0.
 Proof. by []. Qed.
 
 (* wt of the empty set is always 0 *)
@@ -38,10 +38,9 @@ by rewrite /wt big_set0.
 Qed.
 
 (* set inclusion induces an order on weights *)
-Lemma wt_inc_leq : forall (s1 s2:{set Validator}),
+Lemma wt_inc_leq (s1 s2:{set Validator}):
   s1 \subset s2 -> wt s1 <= wt s2.
 Proof. 
-  move=> s1 s2.
   rewrite /wt.
   rewrite [\sum_(v in s2) _](big_setID s1) //=.
   move/setIidPr => ->.
@@ -49,37 +48,36 @@ Proof.
 Qed.
 
 (* equal sets have the same weight *)
-Lemma wt_eq : forall (s1 s2:{set Validator}),
+Lemma wt_eq (s1 s2:{set Validator}):
   s1 = s2 -> wt s1 = wt s2.
 Proof.
-  move=> s1 s2 Heq.
+  move=> Heq.
   by rewrite /wt Heq.
 Qed.
 
 (* sets commute under wt *)
-Lemma wt_meetC : forall s1 s2,
+Lemma wt_meetC (s1 s2:{set Validator}):
   wt (s1 :&: s2) = wt (s2 :&: s1).
 Proof. 
-  by [rewrite /wt => s1 s2;rewrite setIC].
+  by [rewrite /wt setIC].
 Qed.
 
 (* the weight of the union of two disjoint sets is exactly the sum of 
  * their weights 
  *)
-Lemma wt_join_disjoint : forall (s1 s2:{set Validator}),
+Lemma wt_join_disjoint (s1 s2:{set Validator}):
   [disjoint s1 & s2] -> wt (s1 :|: s2) = wt s1 + wt s2.
 Proof.
-  move=> s1 s2 Hdis.
+  move=> Hdis.
   rewrite /wt.
   rewrite (eq_bigl [predU s1 & s2]); last by move=> i; rewrite !inE.
-  rewrite bigU //=.  
+  rewrite bigU //=.
 Qed.
 
 (* The weight of the difference of two sets *)
-Lemma wt_diff : forall s1 s2,
+Lemma wt_diff (s1 s2:{set Validator}):
   wt (s1 :\: s2) = wt s1 - wt (s1 :&: s2).
 Proof.
-  move=> s1 s2.
   rewrite -{2}(setID s1 s2).
   rewrite (wt_join_disjoint).
     rewrite addnC -addnBA; last by [].
@@ -88,10 +86,9 @@ Proof.
 Qed.
 
 (* The weight of the union of two sets as the sum of weights of its partitions *)
-Lemma wt_join_partition : forall s1 s2,
+Lemma wt_join_partition (s1 s2:{set Validator}):
   wt (s1 :|: s2) = wt (s1 :\: s2) + wt (s2 :\: s1) + wt (s1 :&: s2).
 Proof.
-  move=> s1 s2.
   rewrite -!wt_join_disjoint. 
   apply: wt_eq. apply: setU_par.
   apply: setDDI_disjoint.
@@ -99,10 +96,9 @@ Proof.
 Qed.
 
 (* The weight of the union of two sets in terms of the weights of the sets *)
-Lemma wt_join : forall s1 s2,
+Lemma wt_join (s1 s2:{set Validator}):
   wt (s1 :|: s2) = wt s1 + wt s2 - wt (s1 :&: s2).
 Proof.
-  move=> s1 s2.
   rewrite -{2}(setID s1 s2).
   rewrite -{4}(setID s2 s1).
   rewrite [wt (s1 :&: s2 :|: _)]wt_join_disjoint; last by apply setID_disjoint.
@@ -116,22 +112,21 @@ Proof.
 Qed.
 
 (* Properties of the weight of the intersection of two sets *)
-Lemma wt_meet_leq1 : forall s1 s2,
+Lemma wt_meet_leq1 (s1 s2:{set Validator}):
   wt (s1 :&: s2) <= wt s1.
 Proof. 
-  move=> s1 s2; apply: wt_inc_leq; apply: subsetIl.
+  apply: wt_inc_leq; apply: subsetIl.
 Qed.
 
-Lemma wt_meet_leq2 : forall s1 s2,
+Lemma wt_meet_leq2 (s1 s2:{set Validator}):
   wt (s1 :&: s2) <= wt s2.
 Proof. 
-  move=> s1 s2; apply: wt_inc_leq; apply: subsetIr.
+  apply: wt_inc_leq; apply: subsetIr.
 Qed.
 
-Lemma wt_meet_leq : forall s1 s2,
+Lemma wt_meet_leq (s1 s2:{set Validator}):
   wt (s1 :&: s2) <= wt s1 + wt s2.
 Proof.
-  move=> s1 s2.
   have H1:= (wt_meet_leq1 s1 s2).
   have H2:= (leq_addr (wt s2) (wt s1)).
   apply: (leq_trans H1 H2).
