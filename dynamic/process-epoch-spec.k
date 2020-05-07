@@ -204,7 +204,7 @@ andBool ?FinalityDelay >=Int 0
 //// processRewardsPenalties
 andBool ?FinalityDelay ==Int Epoch -Int 2 -Int ?NewLastFinalizedEpoch
 //// processValidatorUpdates
-andBool ?ValidatorsToBeActivated ==K activationQueueUptoChurnLimit(VIDs, AEM1, AM1, EM1, ?NewLastFinalizedEpoch, Epoch -Int 1)
+andBool ?ValidatorsToBeActivated:IntList ==K activationQueueUptoChurnLimit(VIDs, AEM1, AM1, EM1, ?NewLastFinalizedEpoch, Epoch -Int 1)
 
 ////////////////////
 // post-conditions
@@ -265,11 +265,10 @@ andBool forall(x, VIDs, #if isActiveValidator(x, AM1, EM1, Epoch -Int 1) andBool
 // updateActivationEligibilities
 andBool forall(x, VIDs, ?AEM2[x]i ==Int #if isActivationEligible(x, AEM1, EBM) #then Epoch #else AEM1[x]i #fi)
 // processValidatorActivation
-andBool forall(x, ?ValidatorsToBeActivated, ?AM2[x]i ==Int ?ActivationEpoch)
+andBool forall(x, VIDs, ?AM2[x]i ==Int #if x in ?ValidatorsToBeActivated #then ?ActivationEpoch #else AM1[x]i #fi)
 andBool countValidatorsToActivate(VIDs, ?AM2, ?ActivationEpoch) <=Int ?ChurnLimitB
 
 /* TODO:
- - ensure forall(x, VIDs, ?AM2[x]i ==Int #if x in ?ValidatorsToBeActivated #then ?ActivationEpoch #else AM1[x]i #fi)
  - base case: when Epoch ==Int 3
  - ensure countValidatorsToActivate(VIDs, ?AM2, ?ActivationEpoch +Int 1) ==Int 0
  - ensure conditions over attestations are guaranteed by process-block-spec

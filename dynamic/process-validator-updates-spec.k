@@ -35,7 +35,7 @@ andBool ?ChurnLimitA ==Int churnLimit(size(activeValidators(VIDs, AM1, EM1, ?Epo
 andBool ?ChurnLimitB ==Int churnLimit(size(activeValidators(VIDs, AM1, EM1, ?Epoch -Int 1)))
 andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(?Epoch))
 andBool ?ActivationEpoch ==Int delayedActivationExitEpoch(?Epoch -Int 1)
-andBool ?ValidatorsToBeActivated ==K activationQueueUptoChurnLimit(VIDs, AEM1, AM1, EM1, FinalizedEpoch, ?Epoch -Int 1)
+andBool ?ValidatorsToBeActivated:IntList ==K activationQueueUptoChurnLimit(VIDs, AEM1, AM1, EM1, FinalizedEpoch, ?Epoch -Int 1)
 // pre-conditions
 andBool distinct(VIDs)
 andBool FinalizedEpoch <Int FAR_FUTURE_EPOCH
@@ -57,7 +57,7 @@ andBool forall(x, VIDs, #if isActiveValidator(x, AM1, EM1, ?Epoch -Int 1) andBoo
 // updateActivationEligibilities
 andBool forall(x, VIDs, ?AEM2[x]i ==Int #if isActivationEligible(x, AEM1, EBM) #then ?Epoch #else AEM1[x]i #fi)
 // processValidatorActivation
-andBool forall(x, ?ValidatorsToBeActivated, ?AM2[x]i ==Int ?ActivationEpoch)
+andBool forall(x, VIDs, ?AM2[x]i ==Int #if x in ?ValidatorsToBeActivated #then ?ActivationEpoch #else AM1[x]i #fi)
 andBool countValidatorsToActivate(VIDs, ?AM2, ?ActivationEpoch) <=Int ?ChurnLimitB
 
 endmodule
