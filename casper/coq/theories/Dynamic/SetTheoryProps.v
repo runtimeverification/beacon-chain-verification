@@ -3,9 +3,6 @@ From mathcomp.ssreflect
 Require Import all_ssreflect.
 Set Warnings "parsing".
 
-From Dynamic
-Require Import NatExt Validator.
-
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -15,7 +12,7 @@ Unset Printing Implicit Defensive.
 (******************************************************************************)
 
 
-Lemma setID_disjoint (A B:{set Validator}):
+Lemma setID_disjoint {T : finType} (A B:{set T}):
   [disjoint (A :&: B) & (A :\: B)].
 Proof.
   rewrite -setI_eq0 eqEsubset.
@@ -27,7 +24,7 @@ Proof.
   by contradiction.
 Qed.
 
-Lemma setDD_disjoint (A B:{set Validator}):
+Lemma setDD_disjoint {T : finType} (A B:{set T}):
   [disjoint (A :\: B) & (B :\: A)].
 Proof.
   rewrite -setI_eq0 eqEsubset.
@@ -39,7 +36,7 @@ Proof.
   by contradiction.
 Qed.
 
-Lemma setDDI_disjoint (A B:{set Validator}):
+Lemma setDDI_disjoint {T : finType} (A B:{set T}):
   [disjoint A :\: B :|: B :\: A & A :&: B].
 Proof. 
   rewrite -setI_eq0 eqEsubset.
@@ -50,7 +47,7 @@ Proof.
     move/negP: Hnotin2 => Hnotin2;contradiction.
 Qed.
 
-Lemma setU_par (A B:{set Validator}):
+Lemma setU_par {T : finType} (A B:{set T}):
   A :|: B = (A :\: B) :|: (B :\: A) :|: (A :&: B).
 Proof.
   apply/eqP.
@@ -73,7 +70,7 @@ Proof.
     by apply/setUP;left.
 Qed.
 
-Lemma setIs_disjoint (A B C: {set Validator}):
+Lemma setIs_disjoint {T : finType} (A B C: {set T}):
   [disjoint A & B] -> [disjoint A & B :&: C].
 Proof.
   move/setDidPl=> <-.
@@ -85,7 +82,7 @@ Proof.
   by move/negP: H1 => H1.
 Qed.
 
-Lemma setIID_disjoint (A B C: {set Validator}):
+Lemma setIID_disjoint {T : finType} (A B C: {set T}):
   [disjoint (A :&: B) & (A :&: C :\: B)].
 Proof.
   rewrite setDIl.
@@ -93,7 +90,7 @@ Proof.
   apply: setID_disjoint.
 Qed.
 
-Lemma setIIDD_disjoint (A B C D: {set Validator}):
+Lemma setIIDD_disjoint {T : finType} (A B C D: {set T}):
 [disjoint A :&: B :|: A :&: C :\: B & B :&: D :\: A].
 Proof.
   rewrite -setI_eq0 eqEsubset.
@@ -106,7 +103,7 @@ Proof.
   - move/setDP=> [H _]. move/setIP: H => [H _]. by move/negP: H2b.
 Qed.
 
-Lemma setIIDD_subset (A B C D: {set Validator}): 
+Lemma setIIDD_subset {T : finType} (A B C D: {set T}): 
   A \subset C ->
   B \subset D ->
   A :&: B :|: A :&: D :\: B :|: B :&: C :\: A \subset C :&: D.
@@ -126,7 +123,7 @@ Proof.
     apply Hb in Hxb. by apply/setIP.
 Qed.
 
-Lemma setID2_disjoint (A B C:{set Validator}):
+Lemma setID2_disjoint {T : finType} (A B C:{set T}):
   [disjoint (A :&: C) & (B :\: C)].
 Proof.
   rewrite -setI_eq0 eqEsubset.
@@ -137,7 +134,7 @@ Proof.
   by move/negP: H2 => H2.
 Qed.
 
-Lemma setID2_subset (A B C:{set Validator}):
+Lemma setID2_subset {T : finType} (A B C:{set T}):
   A \subset B ->
   A \subset (A :&: C) :|: (B :\: C).
 Proof.
@@ -151,7 +148,7 @@ Proof.
   - right. apply H in Hs0. by apply/setDP.
 Qed.
 
-Lemma set3D_disjoint (A B C:{set Validator}):
+Lemma set3D_disjoint {T : finType} (A B C:{set T}):
   [disjoint C :\: B & A :\: C].
 Proof.
   rewrite -setI_eq0 eqEsubset.
@@ -163,7 +160,7 @@ Proof.
   by contradiction.
 Qed.
 
-Lemma set3D_subset (A B C:{set Validator}):
+Lemma set3D_subset {T : finType} (A B C:{set T}):
   A :\: B \subset C :\: B :|: A :\: C.
 Proof. 
   apply/subsetP => x.

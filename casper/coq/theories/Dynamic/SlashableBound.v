@@ -7,7 +7,7 @@ From mathcomp.finmap
 Require Import finmap.
 
 From Dynamic
-Require Import NatExt Validator SetTheoryProps Weight HashTree State Slashing Quorums Justification AccountableSafety.
+Require Import NatExt SetTheoryProps Validator Weight HashTree State Slashing Quorums Justification AccountableSafety.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

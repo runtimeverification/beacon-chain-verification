@@ -1,15 +1,15 @@
 -Q . Dynamic
 
 NatExt.v
-Validator.v
+StrongInductionLtn.v
 SetTheoryProps.v
+Validator.v
 Weight.v
 HashTree.v
 State.v
 Slashing.v
 Quorums.v
 Justification.v
-StrongInductionLtn.v
 AccountableSafety.v
 PlausibleLiveness.v
 SlashableBound.v

@@ -7,7 +7,7 @@ From mathcomp.finmap
 Require Import finmap.
 
 From Dynamic
-Require Import NatExt Validator SetTheoryProps.
+Require Import NatExt SetTheoryProps Validator.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
