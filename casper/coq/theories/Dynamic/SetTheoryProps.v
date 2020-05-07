@@ -15,10 +15,9 @@ Unset Printing Implicit Defensive.
 (******************************************************************************)
 
 
-Lemma setID_disjoint : forall (A B:{set Validator}),
+Lemma setID_disjoint (A B:{set Validator}):
   [disjoint (A :&: B) & (A :\: B)].
 Proof.
-  move=> A B.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -28,10 +27,9 @@ Proof.
   by contradiction.
 Qed.
 
-Lemma setDD_disjoint : forall (A B:{set Validator}),
+Lemma setDD_disjoint (A B:{set Validator}):
   [disjoint (A :\: B) & (B :\: A)].
 Proof.
-  move=> A B.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -41,10 +39,9 @@ Proof.
   by contradiction.
 Qed.
 
-Lemma setDDI_disjoint : forall (A B:{set Validator}),
+Lemma setDDI_disjoint (A B:{set Validator}):
   [disjoint A :\: B :|: B :\: A & A :&: B].
 Proof. 
-  move=> A B.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -53,10 +50,9 @@ Proof.
     move/negP: Hnotin2 => Hnotin2;contradiction.
 Qed.
 
-Lemma setU_par : forall (A B:{set Validator}),
+Lemma setU_par (A B:{set Validator}):
   A :|: B = (A :\: B) :|: (B :\: A) :|: (A :&: B).
 Proof.
-  move=> A B.
   apply/eqP.
   rewrite eqEsubset.
   apply/andP;split;apply/subsetP => x.
@@ -77,10 +73,9 @@ Proof.
     by apply/setUP;left.
 Qed.
 
-Lemma setIs_disjoint : forall (A B C: {set Validator}),
+Lemma setIs_disjoint (A B C: {set Validator}):
   [disjoint A & B] -> [disjoint A & B :&: C].
 Proof.
-  move=> A B C.
   move/setDidPl=> <-.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
@@ -90,19 +85,17 @@ Proof.
   by move/negP: H1 => H1.
 Qed.
 
-Lemma setIID_disjoint : forall (A B C: {set Validator}),
+Lemma setIID_disjoint (A B C: {set Validator}):
   [disjoint (A :&: B) & (A :&: C :\: B)].
 Proof.
-  move=> A B C.
   rewrite setDIl.
   apply: setIs_disjoint.
   apply: setID_disjoint.
 Qed.
 
-Lemma setIIDD_disjoint : forall (A B C D: {set Validator}),
+Lemma setIIDD_disjoint (A B C D: {set Validator}):
 [disjoint A :&: B :|: A :&: C :\: B & B :&: D :\: A].
 Proof.
-  move=> A B C D.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -113,12 +106,12 @@ Proof.
   - move/setDP=> [H _]. move/setIP: H => [H _]. by move/negP: H2b.
 Qed.
 
-Lemma setIIDD_subset : forall (A B C D: {set Validator}), 
+Lemma setIIDD_subset (A B C D: {set Validator}): 
   A \subset C ->
   B \subset D ->
   A :&: B :|: A :&: D :\: B :|: B :&: C :\: A \subset C :&: D.
 Proof.
-  move=> A B C D Ha Hb.
+  move=> Ha Hb.
   move/subsetP:Ha => Ha.
   move/subsetP:Hb => Hb.
   apply/subsetP => x.
@@ -133,10 +126,9 @@ Proof.
     apply Hb in Hxb. by apply/setIP.
 Qed.
 
-Lemma setID2_disjoint : forall (A B C:{set Validator}),
+Lemma setID2_disjoint (A B C:{set Validator}):
   [disjoint (A :&: C) & (B :\: C)].
 Proof.
-  move=> A B C.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -145,11 +137,10 @@ Proof.
   by move/negP: H2 => H2.
 Qed.
 
-Lemma setID2_subset : forall (A B C:{set Validator}),
+Lemma setID2_subset (A B C:{set Validator}):
   A \subset B ->
   A \subset (A :&: C) :|: (B :\: C).
 Proof.
-  move=> A B C.
   move/subsetP => H.
   apply/subsetP => x.
   move=> Hs0.
@@ -160,10 +151,9 @@ Proof.
   - right. apply H in Hs0. by apply/setDP.
 Qed.
 
-Lemma set3D_disjoint : forall (A B C:{set Validator}),
+Lemma set3D_disjoint (A B C:{set Validator}):
   [disjoint C :\: B & A :\: C].
 Proof.
-  move=> A B C.
   rewrite -setI_eq0 eqEsubset.
   apply/andP;split;apply/subsetP => x;last by rewrite in_set0.
   move/setIP=> [H1 H2].
@@ -173,10 +163,9 @@ Proof.
   by contradiction.
 Qed.
 
-Lemma set3D_subset : forall (A B C:{set Validator}),
+Lemma set3D_subset (A B C:{set Validator}):
   A :\: B \subset C :\: B :|: A :\: C.
 Proof. 
-  move=> A B C.
   apply/subsetP => x.
   move/setDP=> [H1 H2].  
   apply/setUP.
