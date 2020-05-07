@@ -829,6 +829,7 @@ rule <k> addAttestation(A) => . ... </k>
        ...
      </state>
      requires A.target_epoch ==Int epochOf(Slot) -Int 1
+     // TODO: merge two rules into a single one
 
 syntax KItem ::= checkAttestation(Attestation)
 rule <k> checkAttestation(A)
