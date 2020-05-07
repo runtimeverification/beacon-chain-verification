@@ -415,4 +415,6 @@ rule isCorrectLastFinalizedEpoch(LastFinalizedEpoch, Epoch, Epoch2Finalized, Epo
      andBool implies(LastFinalizedEpoch ==Int Epoch -Int 2,                                                                     Epoch2Finalized ==K true)
      andBool         LastFinalizedEpoch <=Int Epoch -Int 2
 
+// TODO: prove lemmas
+
 endmodule
