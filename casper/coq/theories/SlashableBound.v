@@ -6,8 +6,11 @@ Set Warnings "parsing".
 From mathcomp.finmap
 Require Import finmap.
 
-From Dynamic
-Require Import NatExt SetTheoryProps Validator Weight HashTree State Slashing Quorums Justification AccountableSafety.
+From Casper
+Require Import NatExt SetTheoryProps. 
+
+From Casper
+Require Import Validator Weight HashTree State Slashing Quorums Justification AccountableSafety.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
