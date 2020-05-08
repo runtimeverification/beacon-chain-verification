@@ -124,15 +124,12 @@ andBool forall(x, VIDs1, ?EBM2[x]i ==Int EBM1[x]i)
 andBool forall(x, VIDs1, ?AEM2[x]i ==Int AEM1[x]i)
 andBool forall(x, VIDs1,  ?AM2[x]i ==Int  AM1[x]i)
 andBool forall(x, VIDs1, #if (x in getValidatorsS(Ss) andBool EM1[x]i ==Int FAR_FUTURE_EPOCH) orBool x in getValidatorsE(VEs)
-                         #then ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch) andBool ?EM2[x]i <Int FAR_FUTURE_EPOCH // andBool countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit
+                         #then ?EM2[x]i >=Int delayedActivationExitEpoch(?Epoch) andBool ?EM2[x]i <Int FAR_FUTURE_EPOCH
                          #else ?EM2[x]i ==Int EM1[x]i #fi)
 andBool forall(x, VIDs1, #if       x in getValidatorsS(Ss)  #then ?WM2[x]i >=Int ?Epoch +Int EPOCHS_PER_SLASHINGS_VECTOR                            // TODO: andBool ?WM2[x]i <Int FAR_FUTURE_EPOCH
                          #else #if x in getValidatorsE(VEs) #then ?WM2[x]i >=Int delayedActivationExitEpoch(?Epoch) +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY andBool ?WM2[x]i <Int FAR_FUTURE_EPOCH
                          #else ?WM2[x]i ==Int WM1[x]i #fi #fi)
-/* TODO:
-andBool forall(x, getValidatorsS(Ss), implies(EM1[x]i ==Int FAR_FUTURE_EPOCH, countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit))
-*/
-andBool forall(x, getValidatorsE(VEs), countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit)
+andBool forall(x, VIDs1, implies(EM1[x]i =/=Int ?EM2[x]i, countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit))
 
 // new validators
 andBool forall(x, ?VIDs2, implies(notBool x in VIDs1,  ?SM2[x]b ==K false))

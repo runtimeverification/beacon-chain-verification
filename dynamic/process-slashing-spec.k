@@ -69,6 +69,7 @@ andBool forall(x, VIDs, ?WM2[x]i >=Int 0)
 // rely-guarantee conditions
 andBool maxInt(maxExitEpoch(VIDs, ?EM2), delayedActivationExitEpoch(?Epoch)) <=Int ?LastExitEpoch +Int sizeS(Ss)
 andBool activeValidators(VIDs, AM, ?EM2, ?Epoch) ==K activeValidators(VIDs, AM, EM1, ?Epoch)
+andBool forall(x, VIDs, implies(EM1[x]i =/=Int ?EM2[x]i, countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit))
 
 rule
 <T>
@@ -130,11 +131,14 @@ andBool forall(x, rev(L_VIDs)                         , #if EM0[x]i ==Int FAR_FU
                                                         #else EM1[x]i ==Int EM0[x]i
                                                         #fi)
 andBool forall(x, rev(L_VIDs)                         , WM1[x]i >=Int ?Epoch +Int EPOCHS_PER_SLASHINGS_VECTOR /* andBool WM1[x]i <Int FAR_FUTURE_EPOCH */)
+//
 andBool forall(x, rev(L_VIDs)                         , BM1[x]i >=Int 0)
 andBool forall(x, rev(L_VIDs)                         , EM1[x]i >=Int 0)
 andBool forall(x, rev(L_VIDs)                         , WM1[x]i >=Int 0)
+// rely-guarantee conditions
 andBool maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(?Epoch)) <=Int maxInt(maxExitEpoch(VIDs, EM0), delayedActivationExitEpoch(?Epoch)) +Int size(L_VIDs)
 andBool activeValidators(VIDs, AM, EM1, ?Epoch) ==K activeValidators(VIDs, AM, EM0, ?Epoch)
+andBool forall(x, VIDs, implies(EM0[x]i =/=Int EM1[x]i, countValidatorsToExit(VIDs, EM1, EM1[x]i) <=Int ?ChurnLimit))
 ensures true
 // post-conditions
 andBool forall(x, VIDs, implies(notBool x in rev(L_VIDs) ++ getValidatorsS(R_Ss), ?SM2[x]b ==K SM0[x]b))
@@ -149,11 +153,13 @@ andBool forall(x, rev(L_VIDs) ++ getValidatorsS(R_Ss), #if EM0[x]i ==Int FAR_FUT
                                                        #else ?EM2[x]i ==Int EM0[x]i
                                                        #fi)
 andBool forall(x, rev(L_VIDs) ++ getValidatorsS(R_Ss), ?WM2[x]i >=Int ?Epoch +Int EPOCHS_PER_SLASHINGS_VECTOR /* andBool ?WM2[x]i <Int FAR_FUTURE_EPOCH */)
+//
 andBool forall(x, rev(L_VIDs) ++ getValidatorsS(R_Ss), ?BM2[x]i >=Int 0)
 andBool forall(x, rev(L_VIDs) ++ getValidatorsS(R_Ss), ?EM2[x]i >=Int 0)
 andBool forall(x, rev(L_VIDs) ++ getValidatorsS(R_Ss), ?WM2[x]i >=Int 0)
 // rely-guarantee conditions
 andBool maxInt(maxExitEpoch(VIDs, ?EM2), delayedActivationExitEpoch(?Epoch)) <=Int maxInt(maxExitEpoch(VIDs, EM0), delayedActivationExitEpoch(?Epoch)) +Int size(L_VIDs) +Int sizeS(R_Ss)
 andBool activeValidators(VIDs, AM, ?EM2, ?Epoch) ==K activeValidators(VIDs, AM, EM0, ?Epoch)
+andBool forall(x, VIDs, implies(EM0[x]i =/=Int ?EM2[x]i, countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit))
 
 endmodule

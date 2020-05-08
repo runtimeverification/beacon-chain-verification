@@ -16,7 +16,7 @@ rule
     </state>
     <state>
       <slot> Slot -Int 1 </slot>
-      <validators> v(ORIG_VM, ORIG_VIDs) </validators>
+      <validators> v(ORIG_VM, VIDs1) </validators>
       ...
     </state>
     ...
@@ -27,6 +27,8 @@ requires true
 // types
 andBool Slot >=Int 1
 // let-bindings
+andBool ?Epoch ==Int epochOf(Slot)
+andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(VIDs1, ORIG_VM.activation_epoch, ORIG_VM.exit_epoch, ?Epoch)))
 // pre-conditions
 andBool distinct(VIDs1)
 andBool isValidDeposits(Ds)
@@ -37,6 +39,9 @@ andBool forall(x, VIDs1, AEM1[x]i >=Int 0)
 andBool forall(x, VIDs1,  AM1[x]i >=Int 0)
 andBool forall(x, VIDs1,  EM1[x]i >=Int 0)
 andBool forall(x, VIDs1,  WM1[x]i >=Int 0)
+// rely-guarantee conditions
+andBool forall(x, VIDs1, implies(ORIG_VM.exit_epoch[x]i =/=Int EM1[x]i, EM1[x]i <Int FAR_FUTURE_EPOCH))
+andBool forall(x, VIDs1, implies(ORIG_VM.exit_epoch[x]i =/=Int EM1[x]i, countValidatorsToExit(VIDs1, EM1, EM1[x]i) <=Int ?ChurnLimit))
 // invariants
 ensures true
 // post-conditions
@@ -58,6 +63,9 @@ andBool forall(x, ?VIDs2, ?AEM2[x]i >=Int 0)
 andBool forall(x, ?VIDs2,  ?AM2[x]i >=Int 0)
 andBool forall(x, ?VIDs2,  ?EM2[x]i >=Int 0)
 andBool forall(x, ?VIDs2,  ?WM2[x]i >=Int 0)
+// rely-guarantee conditions
+andBool forall(x, VIDs1, implies(ORIG_VM.exit_epoch[x]i =/=Int ?EM2[x]i, ?EM2[x]i <Int FAR_FUTURE_EPOCH))
+andBool forall(x, VIDs1, implies(ORIG_VM.exit_epoch[x]i =/=Int ?EM2[x]i, countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit))
 
 rule
 <T>
@@ -71,7 +79,7 @@ rule
     </state>
     <state>
       <slot> Slot -Int 1 </slot>
-      <validators> v(ORIG_VM, ORIG_VIDs) </validators>
+      <validators> v(ORIG_VM, VIDs0) </validators>
       ...
     </state>
     ...

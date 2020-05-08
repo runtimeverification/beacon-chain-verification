@@ -43,6 +43,10 @@ andBool forall(x, VIDs, AEM[x]i >=Int 0)
 andBool forall(x, VIDs,  AM[x]i >=Int 0)
 andBool forall(x, VIDs, EM1[x]i >=Int 0)
 andBool forall(x, VIDs, WM1[x]i >=Int 0)
+// rely-guarantee conditions
+andBool forall(x, ORIG_VIDs, x in VIDs)
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int EM1[x]i, EM1[x]i <Int FAR_FUTURE_EPOCH))
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int EM1[x]i, countValidatorsToExit(VIDs, EM1, EM1[x]i) <=Int ?ChurnLimit))
 // invariants
 ensures true
 // post-conditions
@@ -56,6 +60,9 @@ andBool forall(x, getValidatorsE(VEs), ?WM2[x]i  <Int FAR_FUTURE_EPOCH)
 //
 andBool forall(x, VIDs, ?EM2[x]i >=Int 0)
 andBool forall(x, VIDs, ?WM2[x]i >=Int 0)
+// rely-guarantee conditions
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int ?EM2[x]i, ?EM2[x]i <Int FAR_FUTURE_EPOCH))
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int ?EM2[x]i, countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit))
 
 rule
 <T>
@@ -96,6 +103,10 @@ andBool forall(x, VIDs, AEM[x]i >=Int 0)
 andBool forall(x, VIDs,  AM[x]i >=Int 0)
 andBool forall(x, VIDs, EM0[x]i >=Int 0)
 andBool forall(x, VIDs, WM0[x]i >=Int 0)
+// rely-guarantee conditions
+andBool forall(x, ORIG_VIDs, x in VIDs)
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int EM0[x]i, EM0[x]i <Int FAR_FUTURE_EPOCH))
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int EM0[x]i, countValidatorsToExit(VIDs, EM0, EM0[x]i) <=Int ?ChurnLimit))
 // invariants
 andBool disjoint(L_VIDs, getValidatorsE(R_VEs))
 andBool forall(x, getValidatorsE(R_VEs), EM1[x]i ==K EM0[x]i)
@@ -110,6 +121,9 @@ andBool forall(x, rev(L_VIDs)                         , WM1[x]i  <Int FAR_FUTURE
 //
 andBool forall(x, rev(L_VIDs)                         , EM1[x]i >=Int 0)
 andBool forall(x, rev(L_VIDs)                         , WM1[x]i >=Int 0)
+// rely-guarantee conditions
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int EM1[x]i, EM1[x]i <Int FAR_FUTURE_EPOCH))
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int EM1[x]i, countValidatorsToExit(VIDs, EM1, EM1[x]i) <=Int ?ChurnLimit))
 ensures true
 // post-conditions
 andBool forall(x, VIDs, implies(notBool x in rev(L_VIDs) ++ getValidatorsE(R_VEs), ?EM2[x]i ==K EM0[x]i))
@@ -122,5 +136,8 @@ andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?WM2[x]i  <Int FAR_FUTUR
 //
 andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?EM2[x]i >=Int 0)
 andBool forall(x, rev(L_VIDs) ++ getValidatorsE(R_VEs), ?WM2[x]i >=Int 0)
+// rely-guarantee conditions
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int ?EM2[x]i, ?EM2[x]i <Int FAR_FUTURE_EPOCH))
+andBool forall(x, ORIG_VIDs, implies(ORIG_VM.exit_epoch[x]i =/=Int ?EM2[x]i, countValidatorsToExit(VIDs, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit))
 
 endmodule
