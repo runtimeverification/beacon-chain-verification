@@ -3,10 +3,10 @@ From mathcomp
 Require Import all_ssreflect.
 Set Warnings "parsing".
 
-(*
-  This utility module proves a few induction principles
-  used in other proofs.
- *)
+(******************************************************************************)
+(*  This utility module proves a few induction principles used in other       *)
+(*  proofs.                                                                   *)
+(******************************************************************************)
 
 (* Two strong induction principles over natural numbers,
    as represented in the MathComp library.

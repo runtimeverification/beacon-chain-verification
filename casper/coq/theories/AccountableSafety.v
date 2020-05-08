@@ -15,13 +15,15 @@ From Casper
 Require Import StrongInductionLtn.
 
 From Casper
-Require Import Quorums HashTree State Slashing Justification.
+Require Import Validator Weight HashTree State Slashing Quorums Justification.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* The accountable safety theorem *)
+(******************************************************************************)
+(* The accountable safety theorem                                             *)
+(******************************************************************************)
 
 (* A state has a fork when two conflicting blocks are both finalized *)
 Definition finalization_fork st :=
@@ -30,15 +32,18 @@ Definition finalization_fork st :=
     finalized st b2 b2_h /\
     b2 </~* b1 /\ b1 </~* b2.
 
+(* A fork may have finalizations of different depths *)
 Definition k_finalization_fork st k1 k2 :=
   exists b1 b1_h b2 b2_h,
     k_finalized st b1 b1_h k1 /\
     k_finalized st b2 b2_h k2 /\
     b2 </~* b1 /\ b1 </~* b2.
 
+(* Or a fork may have finalizations of the same depth *)
 Definition same_k_finalization_fork st k :=
   k_finalization_fork st k k.
 
+(* finalization_fork means same_k_finalization_fork at depth 1 *)
 Lemma finalization_fork_means_same_finalization_fork_one :
   forall st,
     finalization_fork st <-> same_k_finalization_fork st 1. 
@@ -58,7 +63,7 @@ Qed.
 Lemma no_two_justified_same_height: forall st b1 b1_h b2 b2_h,
   justified st b1 b1_h ->
   justified st b2 b2_h ->
-  ~ quorum_slashed st ->
+  ~ q_intersection_slashed st ->
   b1 <> b2 ->
   b1_h <> b2_h.
 Proof.
@@ -69,31 +74,35 @@ destruct Hj1 as [| sb1 sb1_h b1 b1_h Hjs1 [Hh1 [Ha1 Hsm1]]] eqn:E1.
 - destruct Hj2 as [| sb2 sb2_h b2 b2_h Hjs2 [Hh2 [Ha2 Hsm2]]] eqn:E2; first by Reconstr.scrush.
   unfold supermajority_link, link_supporters, vote_msg in Hsm1.
   unfold supermajority_link, link_supporters, vote_msg in Hsm2.
-  have [q1 [Hq1 Hq1dblvote]]: exists q1, q1 \in quorum_1 /\
-    forall v, v \in q1 ->
-      v \in [set v | (v, sb1, b1, sb1_h, b1_h) \in st] /\
-      v \in [set v | (v, sb2, b2, sb2_h, b2_h) \in st]
-    by Reconstr.reasy (@quorums_property) Reconstr.Empty.
   contradict Hs.
   subst b1_h.
-  unfold quorum_slashed.
-  exists q1. split;[assumption|].
-  intros v Hvinq. unfold slashed. left.
+  unfold q_intersection_slashed.
+  exists b1, b2.
+  exists [set v | (v, sb1, b1, sb1_h, b2_h) \in st],
+         [set v | (v, sb2, b2, sb2_h, b2_h) \in st].
+
+  clear E1 E2.
+  repeat (split; try assumption).
+  unfold quorum_2 in Hsm1, Hsm2.
+      by move/andP: Hsm1 => [Hsub1 _].
+    by move/andP: Hsm2 => [Hsub2 _].
+  
+  intros v Hvinq1 Hvinq2. unfold slashed. left.
   unfold slashed_dbl_vote.
   exists b1, b2. split;[assumption|].
   exists sb1, sb1_h, sb2, sb2_h, b2_h.
   unfold vote_msg.
-  have H:= @Hq1dblvote v Hvinq.
-  repeat rewrite in_set in H.
-  assumption.
+  rewrite in_set in Hvinq1.
+  rewrite in_set in Hvinq2.
+  easy.
 Qed.
 
-(* No block can be finalized at a height at which some other block is
-   justified without a quorum being slashed *)
+(* No block can be finalized at a height at which some other block is justified without a *)
+(* quorum being slashed *)
 Lemma no_k_finalized_justified_same_height : forall st bf bf_h bj bj_h k,
   k_finalized st bf bf_h k ->
   justified st bj bj_h ->
-  ~ quorum_slashed st ->
+  ~ q_intersection_slashed st ->
   bj <> bf ->
   bj_h <> bf_h.
 Proof.
@@ -114,25 +123,25 @@ Lemma k_slash_surround_case_general : forall st s t final s_h t_h final_h k,
   final_h < t_h ->
   final </~* t ->
   s_h < final_h ->
-  quorum_slashed st.
+  q_intersection_slashed st.
 Proof.
   move => st s t final s_h t_h final_h k Hsj [Htgts [Hnth Hsm]] Hfinal Hft Hnoans Hsf.
   destruct Hfinal as [H_k [ls [H_size [H_hd [H_rel H_link]]]]].
-  assert (final_h + k < t_h \/ final_h + k = t_h \/ final_h + k > t_h)%coq_nat by apply PeanoNat.Nat.lt_total.  
+  assert (final_h + k < t_h \/ final_h + k = t_h \/ final_h + k > t_h)%coq_nat by apply PeanoNat.Nat.lt_total.
   destruct H as [H_lt | H_ge].
   (* Full containment *) 
   unfold supermajority_link, link_supporters, vote_msg in Hsm.
   unfold supermajority_link, link_supporters, vote_msg in H_link.
-  have [q1 [Hq1 Hq1slashed]]: exists q1, q1 \in quorum_1 /\ 
-    forall v, v \in q1 ->
-      v \in [set v | (v, s, t, s_h, t_h) \in st] /\
-      v \in [set v | (v, final, last final ls, final_h, final_h+k) \in st]
-    by Reconstr.reasy (@quorums_property) Reconstr.Empty.
-  unfold quorum_slashed.
-  exists q1. split;[assumption|].
-  intros v Hvinq.
-  apply Hq1slashed in Hvinq as [H1 H2].
-  rewrite in_set in H1. rewrite in_set in H2.
+  unfold q_intersection_slashed.
+  exists t, (last final ls).
+  exists [set v | (v, s, t, s_h, t_h) \in st],
+         [set v | (v, final, last final ls, final_h, (final_h + k)%coq_nat) \in st].
+  repeat (split; try assumption).
+  unfold quorum_2 in Hsm, H_link.
+      by move/andP: Hsm => [Hsub1 _].
+    by move/andP: H_link => [Hsub2 _].  
+  intros v Hvinq1 Hvinq2.
+  rewrite in_set in Hvinq1. rewrite in_set in Hvinq2.
   unfold slashed. right.
   unfold slashed_surround.
   exists s, t, s_h, t_h. exists final, (last final ls), final_h, (final_h + k).
@@ -150,7 +159,7 @@ Proof.
   subst; contradiction. 
   (** In the case that they do not overlap, we find a contradiction via two non-equal blocks justified at the same height *)
   destruct H_ge as [H_eq | H_gt]. 
-  destruct (classic (quorum_slashed st)).
+  destruct (classic (q_intersection_slashed st)).
   (* In the yes case, we're done *)
   assumption.
   (* In the no case, we find another contradiction *)
@@ -185,24 +194,23 @@ Proof.
   contradiction.
   (* In the case that t is outside of the justification chain *)
   assert (H_useful := no_two_justified_same_height Htj H_just). 
-  destruct (classic (quorum_slashed st)).
+  destruct (classic (q_intersection_slashed st)).
   assumption. spec H_useful H1.
   spec H_useful H0.
   assert (final_h <= t_h). intuition.
   erewrite subnKC in H_useful. 
   contradiction. assumption. 
-Qed. 
+Qed.
 
 (* Slash-surround case of the inductive step of the safety proof *)
 (* The general case *)
-(* The inductive reasoning step for the safety proof case of non-equal
-   heights*)
+(* The inductive reasoning step for the safety proof case of non-equal heights*)
 Lemma k_non_equal_height_case_ind : forall st b1 b1_h b2 b2_h k,
   justified st b1 b1_h ->
   k_finalized st b2 b2_h k ->
   b2 </~* b1 ->
   b1_h > b2_h ->
-  quorum_slashed st.
+  q_intersection_slashed st.
 Proof.
 move => st b1 b1_h b2 b2_h k Hb1j Hb2f Hconfl Hh.
 pose P (h1_h : nat) (h1 : Hash) :=
@@ -210,7 +218,7 @@ pose P (h1_h : nat) (h1 : Hash) :=
   k_finalized st b2 b2_h k ->
   b2 </~* h1 ->
   b2_h < h1_h ->
-  quorum_slashed st. 
+  q_intersection_slashed st. 
 suff Hsuff: forall h1_h h1, P h1_h h1 by apply: Hsuff; eauto.
 apply (@strong_induction_sub b2_h).
 clear b1 b1_h Hb1j Hconfl Hh Hb2f.
@@ -223,7 +231,7 @@ have Hor: (b1 = genesis /\ b1_h = 0) \/
   right.
   by exists s, s_h.
 case: Hor => Hor; first by move: Hor => [H1 H2]; rewrite H2 in Hh.
-have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.
+have Ho: q_intersection_slashed st \/ ~ q_intersection_slashed st by apply classic.
 case: Ho => // Ho.
 move: Hor => [s [s_h [Hsj [Hsh [Hsa Hsm]]]]].
 have IH' := IH s_h s _ _ Hsj Hb2f.
@@ -258,45 +266,43 @@ have Hplt: s_h - b2_h < b1_h - b2_h.
     intuition.
 Qed. 
 
-(* Safety proof case: two conflicting blocks are finalized at different
-   heights *)
+(* Safety proof case: two conflicting blocks are finalized at different heights *)
 Lemma k_non_equal_height_case : forall st b1 b1_h b2 b2_h k1 k2,
   k_finalized st b1 b1_h k1 ->
   k_finalized st b2 b2_h k2 ->
   b2 </~* b1 ->
   b1_h > b2_h ->
-  quorum_slashed st.
+  q_intersection_slashed st.
 Proof.
 intros st b1 b1_h b2 b2_h k1 k2 Hb1f Hb2f Hx Hh.
 apply k_finalized_means_justified in Hb1f. 
 by apply k_non_equal_height_case_ind with b1 b1_h b2 b2_h k2.
 Qed.
 
-(* Safety proof case: two conflicting blocks are finalized at the same
-   height *)
+(* Safety proof case: two conflicting blocks are finalized at the same height *)
 Lemma k_equal_height_case : forall st b1 b2 h k1 k2,
   k_finalized st b1 h k1 ->
   k_finalized st b2 h k2 ->
   b1 <> b2 ->
-  quorum_slashed st.
+  q_intersection_slashed st.
 Proof.
 move => st b1 b2 h k1 k2 Hf1 Hf2 Hh.
 unfold k_finalized, supermajority_link, link_supporters, vote_msg in Hf1, Hf2.
 apply k_finalized_means_justified in Hf1. 
 apply k_finalized_means_justified in Hf2.
 have Hconf := no_two_justified_same_height Hf1 Hf2.
-have Ho: quorum_slashed st \/ ~ quorum_slashed st by apply classic.
+have Ho: q_intersection_slashed st \/ ~ q_intersection_slashed st by apply classic.
 case: Ho => // Ho.
 apply Hconf in Ho;[contradiction|assumption].
 Qed.
 
-(* A quorum is slashed if two conflicting blocks are finalized *)
+(* A quorum is slashed if any two conflicting blocks are finalized *)
 Lemma k_safety' : forall st b1 b1_h b2 b2_h k1 k2,
   k_finalized st b1 b1_h k1 ->
   k_finalized st b2 b2_h k2 ->
   b2 </~* b1 ->
   b1 </~* b2 ->
-  quorum_slashed st.
+  q_intersection_slashed st.
 Proof.
   move => st b1 b1_h b2 b2_h k1 k2 Hf1 Hf2 Hh1 Hh2.
   have Hn:= hash_nonancestor_nonequal Hh2.
@@ -319,14 +325,16 @@ Proof.
 Qed.
 
 (* The main accountable safety theorem *)
-Theorem k_accountable_safety : forall st k1 k2, k_finalization_fork st k1 k2 -> quorum_slashed st.
+Theorem k_accountable_safety : forall st k1 k2, 
+  k_finalization_fork st k1 k2 -> q_intersection_slashed st.
 Proof.
 by Reconstr.hobvious Reconstr.Empty
 		(@k_safety')
 		(@k_finalization_fork).
 Qed.
 
-Theorem accountable_safety : forall st, finalization_fork st -> quorum_slashed st.
+Theorem accountable_safety : forall st, 
+  finalization_fork st -> q_intersection_slashed st.
 Proof.
   intros st Hfin.
   apply finalization_fork_means_same_finalization_fork_one in Hfin.

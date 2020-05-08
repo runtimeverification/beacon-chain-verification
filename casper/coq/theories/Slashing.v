@@ -7,13 +7,15 @@ From mathcomp.finmap
 Require Import finmap.
 
 From Casper
-Require Import Quorums HashTree State.
+Require Import Validator HashTree State.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Definitions of the slashing conditions *)
+(******************************************************************************)
+(* Definitions of the slashing conditions                                     *)
+(******************************************************************************)
 
 (* A validator may not make two votes with different target hashes at
    the same target height (whatever the source blocks)
@@ -35,8 +37,3 @@ Definition slashed_surround st v :=
 (* A slashed validator is one that has double-voted or surround-voted *)
 Definition slashed st v : Prop :=
  slashed_dbl_vote st v \/ slashed_surround st v.
-
-(* An "at least 1/3 weight" quorum of validators is slashed *)
-Definition quorum_slashed st :=
-  exists q, q \in quorum_1 /\ forall v, v \in q -> slashed st v.
-
