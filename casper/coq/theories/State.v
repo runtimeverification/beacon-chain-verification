@@ -7,15 +7,22 @@ From mathcomp.finmap
 Require Import finmap.
 
 From Casper
-Require Import Quorums HashTree.
+Require Import Validator HashTree.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Each vote names source and target nodes by giving hash and height,
-   and is signed by a particular validator. This is taken directly from
-   the way votes are expressed in the Casper paper.
+(******************************************************************************)
+(* A representation of state as a set of votes cast.                          *)
+(*                                                                            *)
+(* Each vote names source and target nodes by giving hash and height, and is  *)
+(* signed by a particular validator. This is taken directly from the way      *)
+(* votes are expressed in the Casper paper.                                   *)
+(******************************************************************************)
+
+(* A vote is a tuple: 
+ *        (attestor, source, target, source height, target height) 
  *)
 Definition Vote := (Validator * Hash * Hash * nat * nat)%type.
 
@@ -24,7 +31,7 @@ Definition Vote := (Validator * Hash * Hash * nat * nat)%type.
 Definition State := {fset Vote}.
 
 (* A boolean vote_msg predicate that tells us whether a vote belongs to
-   the state
+ * the state
  *)
 Definition vote_msg (st:State) v s t (s_h t_h:nat) : bool
   := (v,s,t,s_h,t_h) \in st .
