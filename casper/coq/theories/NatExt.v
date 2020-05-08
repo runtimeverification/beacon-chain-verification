@@ -34,6 +34,16 @@ Proof.
 by apply/negP/negP; rewrite leqNgt; apply/negP; case/negP.
 Qed.
 
+(* Basic fact about nats *)
+Lemma leq_one_means_zero_or_one : forall n,
+    n <= 1 -> n = 0 \/ n = 1. 
+Proof.
+  intros n H_leq.
+  induction n. left; reflexivity.
+  intuition. destruct IHn. by apply ltnW.
+  subst. right. easy. subst. inversion H_leq.
+Qed.
+
 (* Basic subtraction fact *)
 Lemma sub_eq n : n - n = 0. 
 Proof. by elim: n => [|n IHn]. Qed.
