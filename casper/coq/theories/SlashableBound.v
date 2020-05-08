@@ -6,8 +6,11 @@ Set Warnings "parsing".
 From mathcomp.finmap
 Require Import finmap.
 
-From Dynamic
-Require Import NatExt Validator SetTheoryProps Weight HashTree State Slashing Quorums Justification AccountableSafety.
+From Casper
+Require Import NatExt SetTheoryProps. 
+
+From Casper
+Require Import Validator Weight HashTree State Slashing Quorums Justification AccountableSafety.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -20,21 +23,21 @@ Open Scope fmap_scope.
 (******************************************************************************)
 
 (** Activation and Exit Sets **)
-(* The set of validators who activated from vs1 to vs2 *)
-Definition activated (vs1 vs2: {set Validator}): {set Validator} :=
-  vs2 :\: vs1.
+(* The set of validators who activated from s1 to s2 *)
+Definition activated (s1 s2: {set Validator}): {set Validator} :=
+  s2 :\: s1.
 
-(* The set of validators who exited from vs1 to vs2 *)
-Definition exited (vs1 vs2: {set Validator}): {set Validator} :=
-  vs1 :\: vs2.
+(* The set of validators who exited from s1 to s2 *)
+Definition exited (s1 s2: {set Validator}): {set Validator} :=
+  s1 :\: s2.
 
-(* The weight of new activations from vs1 to vs2 *)
-Definition actwt (vs1 vs2: {set Validator}): nat :=
-  wt (activated vs1 vs2).
+(* The weight of new activations from s1 to s2 *)
+Definition actwt (s1 s2: {set Validator}): nat :=
+  wt (activated s1 s2).
 
-(* The weight of validators who exited from vs1 to vs2 *)
-Definition extwt (vs1 vs2: {set Validator}): nat :=
-  wt (exited vs1 vs2).
+(* The weight of validators who exited from s1 to s2 *)
+Definition extwt (s1 s2: {set Validator}): nat :=
+  wt (exited s1 s2).
 
 (* Some additional lemmas about wt *)
 Lemma wt_meet_bound : forall (s1 s2 s1' s2':{set Validator}),
@@ -76,10 +79,10 @@ Proof.
   by apply setID2_subset.
 Qed.
 
-Lemma wt_meet_tri_bound : forall vs0 vs1 vs2,
-  wt (vs1 :\: vs2) <= wt (vs0 :\: vs2) + wt (vs1 :\: vs0).
+Lemma wt_meet_tri_bound : forall s0 s1 s2,
+  wt (s1 :\: s2) <= wt (s0 :\: s2) + wt (s1 :\: s0).
 Proof.
-  move=> vs0 vs1 vs2.
+  move=> s0 s1 s2.
   rewrite -wt_join_disjoint;last by apply set3D_disjoint. 
   apply: wt_inc_leq. apply: set3D_subset.
 Qed.

@@ -1,10 +1,15 @@
 -Q theories Casper
 
+theories/NatExt.v
 theories/StrongInductionLtn.v
-theories/Quorums.v
+theories/SetTheoryProps.v
+theories/Validator.v
+theories/Weight.v
 theories/HashTree.v
 theories/State.v
 theories/Slashing.v
+theories/Quorums.v
 theories/Justification.v
 theories/AccountableSafety.v
 theories/PlausibleLiveness.v
+theories/SlashableBound.v
