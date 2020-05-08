@@ -15,13 +15,18 @@ rule
       <slashedBalance> _ => ?_ </slashedBalance>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(m(SM1, BM1, EBM, AEM, AM, EM1, WM1), VIDs) </validators>
+      ...
+    </state>
     ...
   </states>
   ...
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot)
 andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(?Epoch))
@@ -76,13 +81,18 @@ rule
       <slashedBalance> _ => ?_ </slashedBalance>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(m(SM0, BM0, EBM, AEM, AM, EM0, WM0), VIDs) </validators>
+      ...
+    </state>
     ...
   </states>
   ...
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot)
 andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(?Epoch))

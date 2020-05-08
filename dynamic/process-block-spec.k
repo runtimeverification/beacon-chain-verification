@@ -30,6 +30,11 @@ rule
       <slashedBalance> _ => ?_ </slashedBalance>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(m(SM1, BM1, EBM1, AEM1, AM1, EM1, WM1), VIDs1) </validators>
+      ...
+    </state>
     ...
   </states>
   <lastJustified> LastJustifiedEpoch </lastJustified>
@@ -40,7 +45,7 @@ rule
 requires true
 
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 
 // let-bindings
 //// processVoluntaryExits

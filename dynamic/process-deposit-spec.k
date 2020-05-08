@@ -14,13 +14,18 @@ rule
       <validators> v(m(SM1 => ?SM2, BM1 => ?BM2, EBM1 => ?EBM2, AEM1 => ?AEM2, AM1 => ?AM2, EM1 => ?EM2, WM1 => ?WM2), VIDs1 => ?VIDs2) </validators>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(ORIG_VM, ORIG_VIDs) </validators>
+      ...
+    </state>
     ...
   </states>
   ...
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
 // pre-conditions
 andBool distinct(VIDs1)
@@ -64,13 +69,18 @@ rule
       <validators> v(m(SM1 => ?SM2, BM1 => ?BM2, EBM1 => ?EBM2, AEM1 => ?AEM2, AM1 => ?AM2, EM1 => ?EM2, WM1 => ?WM2), VIDs1 => ?VIDs2) </validators>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(ORIG_VM, ORIG_VIDs) </validators>
+      ...
+    </state>
     ...
   </states>
   ...
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
 // pre-conditions
 andBool distinct(VIDs0)

@@ -14,13 +14,18 @@ rule
       <validators> v(m(SM, BM, EBM, AEM, AM, EM1 => ?EM2, WM1 => ?WM2), VIDs) </validators>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(ORIG_VM, ORIG_VIDs) </validators>
+      ...
+    </state>
     ...
   </states>
   ...
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot)
 andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(?Epoch))
@@ -62,13 +67,18 @@ rule
       <validators> v(m(SM, BM, EBM, AEM, AM, EM1 => ?EM2, WM1 => ?WM2), VIDs) </validators>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(ORIG_VM, ORIG_VIDs) </validators>
+      ...
+    </state>
     ...
   </states>
   ...
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot)
 andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(?Epoch))

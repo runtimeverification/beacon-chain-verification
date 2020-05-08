@@ -19,6 +19,11 @@ rule
       </attested>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(ORIG_VM, ORIG_VIDs) </validators>
+      ...
+    </state>
     ...
   </states>
   <lastJustified> LastJustifiedEpoch </lastJustified>
@@ -27,7 +32,7 @@ rule
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot)
 // pre-conditions
@@ -55,6 +60,11 @@ rule
       </attested>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(ORIG_VM, ORIG_VIDs) </validators>
+      ...
+    </state>
     ...
   </states>
   <lastJustified> LastJustifiedEpoch </lastJustified>
@@ -63,7 +73,7 @@ rule
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
 andBool ?Epoch ==Int epochOf(Slot)
 andBool ?PrevAs1 ==K getAttestations(L_As, ?Epoch -Int 1) ++A PrevAs0
