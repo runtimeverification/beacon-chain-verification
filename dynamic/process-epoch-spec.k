@@ -1,4 +1,5 @@
 require "verification.k"
+
 require "process-justification-finalization-lemma.k"
 require "process-rewards-penalties-spec.k"
 require "process-validator-updates-spec.k"
@@ -14,16 +15,11 @@ imports PROCESS-VALIDATOR-UPDATES-SPEC
 rule
 <T>
   <k> processEpoch() => .K ... </k>
-  <currentSlot> Slot </currentSlot>
+  <currentSlot> Slot /* firstSlotOf(Epoch) */ </currentSlot>
   <states>
     <state>
-      <slot> firstSlotOf(Epoch4) </slot>
-      <validators> v(m(_, _, EBM4, _, _, _, _), VIDs4) </validators>
-      ...
-    </state>
-    <state>
       <slot> firstSlotOf(Epoch3) </slot>
-      <validators> v(m(_, _, EBM3, _, _, _, _), VIDs3) </validators>
+      <validators> v(m(Epoch3SM, _, Epoch3EBM, _, Epoch3AM, Epoch3EM, _), Epoch3VIDs) </validators>
       <justified>
         ( Epoch3 , _ )
         ( Epoch4 , Epoch3Epoch4Justified:Bool )
@@ -33,7 +29,7 @@ rule
     </state>
     <state>
       <slot> firstSlotOf(Epoch2) </slot>
-      <validators> v(m(_, _, EBM2, _, _, _, _), VIDs2) </validators>
+      <validators> v(m(Epoch2SM, _, Epoch2EBM, _, Epoch2AM, Epoch2EM, _), Epoch2VIDs) </validators>
       <justified>
         ( Epoch2 , _ )
         ( Epoch3 , Epoch2Epoch3Justified:Bool )
@@ -44,7 +40,7 @@ rule
     </state>
     <state>
       <slot> firstSlotOf(Epoch1) </slot>
-      <validators> v(m(_, _, EBM1, _, _, _, _), VIDs1) </validators>
+      <validators> v(m(Epoch1SM, _, Epoch1EBM, _, Epoch1AM, Epoch1EM, _), Epoch1VIDs) </validators>
       <attested>
         Epoch3 |-> Epoch1Attestations3:Attestations
         Epoch2 |-> Epoch1Attestations2:Attestations
@@ -67,7 +63,7 @@ rule
       ...
     </state>
     <state>
-      <slot> /* firstSlotOf(Epoch) */ Slot </slot>
+      <slot> Slot /* firstSlotOf(Epoch) */ </slot>
       <validators> v(m(SM, BM1 => ?BM2, EBM, AEM1 => ?AEM2, AM1 => ?AM2, EM1 => ?EM2, WM1 => ?WM2), VIDs) </validators>
       <attested>
         Epoch2 |-> Attestations2:Attestations
@@ -110,23 +106,50 @@ rule
   ...
 </T>
 requires true
+
+// types
+andBool Slot   >=Int 0
+andBool Epoch  >=Int 0
+andBool Epoch1 >=Int 0
+andBool Epoch2 >=Int 0
+andBool Epoch3 >=Int 0
+andBool Epoch4 >=Int 0
+andBool Epoch1LastJustifiedEpoch >=Int 0
+andBool Epoch2LastJustifiedEpoch >=Int 0
+andBool Epoch1LastFinalizedEpoch >=Int 0
+andBool PrevLastJustifiedEpoch >=Int 0
+andBool PrevLastFinalizedEpoch >=Int 0
+
+// let-bindings
+//// processJustificationAndFinalization
 andBool Epoch4 ==Int Epoch -Int 4
 andBool Epoch3 ==Int Epoch -Int 3
 andBool Epoch2 ==Int Epoch -Int 2
 andBool Epoch1 ==Int Epoch -Int 1
-//
-andBool Epoch ==Int epochOf(Slot)
-andBool Slot ==Int firstSlotOf(Epoch)
-//
+andBool Epoch  ==Int epochOf(Slot)
 andBool ?Epoch4BoundaryBlock ==Int EpochBoundaryBlock[firstSlotOf(Epoch4)]i
 andBool ?Epoch3BoundaryBlock ==Int EpochBoundaryBlock[firstSlotOf(Epoch3)]i
 andBool ?Epoch2BoundaryBlock ==Int EpochBoundaryBlock[firstSlotOf(Epoch2)]i
 andBool ?Epoch1BoundaryBlock ==Int EpochBoundaryBlock[firstSlotOf(Epoch1)]i
+//// processRewardsPenalties
+andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations2)
+andBool ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM1, EM1, Epoch -Int 2)))
+//// processValidatorUpdates
+andBool ?ChurnLimitA ==Int churnLimit(size(activeValidators(VIDs, AM1, EM1, Epoch)))
+andBool ?ChurnLimitB ==Int churnLimit(size(activeValidators(VIDs, AM1, EM1, Epoch -Int 1)))
+andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(Epoch))
+andBool ?ActivationEpoch ==Int delayedActivationExitEpoch(Epoch -Int 1)
+
+////////////////////
+// pre-conditions
+////////////////////
+
+andBool Slot ==Int firstSlotOf(Epoch)
+
 //
-// justification-finalization
+// processJustificationAndFinalization
 //
-// invariant
-//
+
 // process slots increase attestations
 andBool subsetA(Epoch1Attestations2, Attestations2)
 // process slots preserve justification/finalization
@@ -142,65 +165,58 @@ andBool implies(Epoch3Epoch4Justified, Epoch2Epoch4Justified)
 andBool implies(Epoch2Epoch3Justified, Epoch1Epoch3Justified)
 andBool Epoch1Epoch4Justified ==K Epoch2Epoch4Justified
 // state validness of e-1
-andBool iff(Epoch1Epoch3Justified, isJustifiable(Epoch3, ?Epoch3BoundaryBlock, Epoch1Attestations3, EBM3, VIDs3))
-andBool iff(Epoch1Epoch2Justified, isJustifiable(Epoch2, ?Epoch2BoundaryBlock, Epoch1Attestations2, EBM2, VIDs2))
+andBool iff(Epoch1Epoch3Justified, isJustifiable(Epoch3, ?Epoch3BoundaryBlock, Epoch1Attestations3, Epoch3SM, Epoch3EBM, Epoch3AM, Epoch3EM, Epoch3VIDs))
+andBool iff(Epoch1Epoch2Justified, isJustifiable(Epoch2, ?Epoch2BoundaryBlock, Epoch1Attestations2, Epoch2SM, Epoch2EBM, Epoch2AM, Epoch2EM, Epoch2VIDs))
 andBool iff(Epoch1Epoch3Finalized, Epoch2LastJustifiedEpoch ==Int Epoch3 andBool Epoch1Epoch2Justified andBool Epoch1Epoch3Justified)
 andBool isCorrectLastJustifiedEpoch(Epoch1LastJustifiedEpoch, Epoch1, Epoch1Epoch2Justified, Epoch1Epoch3Justified)
 andBool isCorrectLastFinalizedEpoch(Epoch1LastFinalizedEpoch, Epoch1, Epoch1Epoch3Finalized, Epoch1Epoch4Finalized)
 // state validness of e-2
 andBool isCorrectLastJustifiedEpoch(Epoch2LastJustifiedEpoch, Epoch2, Epoch2Epoch3Justified, Epoch2Epoch4Justified)
+
 //
-// ranges
+// processRewardsPenalties
 //
-andBool Epoch  >=Int 0
-andBool Epoch1 >=Int 0
-andBool Epoch2 >=Int 0
-andBool Epoch3 >=Int 0
-andBool Epoch4 >=Int 0
-andBool Epoch1LastJustifiedEpoch >=Int 0
-andBool Epoch2LastJustifiedEpoch >=Int 0
-andBool Epoch1LastFinalizedEpoch >=Int 0
-andBool PrevLastJustifiedEpoch >=Int 0
-andBool PrevLastFinalizedEpoch >=Int 0
-//
-// rewards-penalties-update
-//
-// types
-andBool Slot >=Int 0
-// let-bindings
-andBool ?SourceAttestations ==K filterNotSlashed(SM, Attestations2)
-andBool ?TotalActiveBalance ==Int lift(totalBalance(EBM, activeValidators(VIDs, AM1, EM1, Epoch -Int 2)))
-//
-andBool ?ChurnLimitA ==Int churnLimit(size(activeValidators(VIDs, AM1, EM1, Epoch)))
-andBool ?ChurnLimitB ==Int churnLimit(size(activeValidators(VIDs, AM1, EM1, Epoch -Int 1)))
-andBool ?LastExitEpoch ==Int maxInt(maxExitEpoch(VIDs, EM1), delayedActivationExitEpoch(Epoch))
-andBool ?ActivationEpoch ==Int delayedActivationExitEpoch(Epoch -Int 1)
-// pre-conditions
-andBool Epoch >=Int 4
-andBool Epoch <Int FAR_FUTURE_EPOCH
+
+andBool forall(x, VIDs, BM1[x]i >=Int 0)
 andBool forall(x, VIDs, EBM[x]i >=Int 0)
 andBool distinct(VIDs)
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).inclusion_delay >=Int 1))
 andBool forall(x, VIDs, implies(x inA ?SourceAttestations, minByInclusionDelay(x, ?SourceAttestations).proposer in VIDs))
 andBool isValidAttestations(Attestations2, VIDs, AM1, EM1, Epoch -Int 2)
+
 //
+// processValidatorUpdates
+//
+
+andBool Epoch <Int FAR_FUTURE_EPOCH
 andBool ?LastExitEpoch +Int size(VIDs) <Int FAR_FUTURE_EPOCH
 andBool ?ActivationEpoch <Int FAR_FUTURE_EPOCH
 andBool countValidatorsToActivate(VIDs, AM1, ?ActivationEpoch) ==Int 0
-//
+
 ensures true
+
+// types
 andBool ?NewLastJustifiedEpoch >=Int 0
 andBool ?NewLastFinalizedEpoch >=Int 0
-//
-andBool ?ValidatorsToBeActivated ==K activationQueueUptoChurnLimit(VIDs, AEM1, AM1, EM1, ?NewLastFinalizedEpoch, Epoch -Int 1)
-andBool ?FinalityDelay ==Int Epoch -Int 2 -Int ?NewLastFinalizedEpoch
 andBool ?FinalityDelay >=Int 0
+
+// let-bindings
+//// processRewardsPenalties
+andBool ?FinalityDelay ==Int Epoch -Int 2 -Int ?NewLastFinalizedEpoch
+//// processValidatorUpdates
+andBool ?ValidatorsToBeActivated ==K activationQueueUptoChurnLimit(VIDs, AEM1, AM1, EM1, ?NewLastFinalizedEpoch, Epoch -Int 1)
+
+////////////////////
+// post-conditions
+////////////////////
+
 //
-// justification-finalization
+// processJustificationAndFinalization
 //
+
 // justification of e-1 and e-2
-andBool iff(?NewEpoch2Justified, isJustifiable(Epoch2, ?Epoch2BoundaryBlock, Attestations2, EBM2, VIDs2))
-andBool iff(?NewEpoch1Justified, isJustifiable(Epoch1, ?Epoch1BoundaryBlock, Attestations1, EBM1, VIDs1))
+andBool iff(?NewEpoch2Justified, isJustifiable(Epoch2, ?Epoch2BoundaryBlock, Attestations2, Epoch2SM, Epoch2EBM, Epoch2AM, Epoch2EM, Epoch2VIDs))
+andBool iff(?NewEpoch1Justified, isJustifiable(Epoch1, ?Epoch1BoundaryBlock, Attestations1, Epoch1SM, Epoch1EBM, Epoch1AM, Epoch1EM, Epoch1VIDs))
 // finalization of e-4
 andBool implies(PrevEpoch4Finalized ==K false,
             iff(?NewEpoch4Finalized, Epoch2LastJustifiedEpoch ==Int Epoch4 andBool ?NewEpoch2Justified andBool Epoch3Justified andBool Epoch4Justified)
@@ -225,13 +241,19 @@ andBool implies(PrevEpoch4Finalized, ?NewEpoch4Finalized)
 andBool implies(PrevEpoch3Finalized, ?NewEpoch3Finalized)
 andBool PrevLastJustifiedEpoch <=Int ?NewLastJustifiedEpoch
 andBool PrevLastFinalizedEpoch <=Int ?NewLastFinalizedEpoch
+
 //
-// rewards-penalties-update
+// processRewardsPenalties
 //
-// post-conditions
+
 andBool forall(x, VIDs, ?BM2[x]i <=Int BM1[x]i +Int (4 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)))
 andBool forall(x, VIDs, ?BM2[x]i >=Int BM1[x]i -Int (7 *Int getBaseReward(EBM[x]i, ?TotalActiveBalance)) -Int getInactivityPenalty(EBM[x]i, ?FinalityDelay))
+andBool forall(x, VIDs, ?BM2[x]i >=Int 0)
+
 //
+// processValidatorUpdates
+//
+
 // processValidatorEjections 
 andBool forall(x, VIDs, #if isActiveValidator(x, AM1, EM1, Epoch -Int 1) andBool EBM[x]i <=Int EJECTION_BALANCE andBool EM1[x]i ==Int FAR_FUTURE_EPOCH
                         #then ?EM2[x]i >=Int delayedActivationExitEpoch(Epoch) andBool ?EM2[x]i <Int FAR_FUTURE_EPOCH
@@ -243,5 +265,13 @@ andBool forall(x, VIDs, ?AEM2[x]i ==Int #if isActivationEligible(x, AEM1, EBM) #
 // processValidatorActivation
 andBool forall(x, ?ValidatorsToBeActivated, ?AM2[x]i ==Int ?ActivationEpoch)
 andBool countValidatorsToActivate(VIDs, ?AM2, ?ActivationEpoch) <=Int ?ChurnLimitB
+
+/* TODO:
+ - ensure forall(x, VIDs, ?AM2[x]i ==Int #if x in ?ValidatorsToBeActivated #then ?ActivationEpoch #else AM1[x]i #fi)
+ - specify ?WM2
+ - base case: when Epoch ==Int 3
+ - ensure countValidatorsToActivate(VIDs, ?AM2, ?ActivationEpoch +Int 1) ==Int 0
+ - ensure conditions over attestations are guaranteed by process-block-spec
+ */
 
 endmodule

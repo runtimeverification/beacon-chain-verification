@@ -17,8 +17,6 @@ imports DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 imports INT
 imports MAP
 imports LIST
-```
-```{.k .kast}
 imports K-REFLECTION
 ```
 
@@ -40,10 +38,10 @@ configuration <T>
     <state multiplicity="*" type="Map">
       <slot> 0 </slot>
       <validators> v(m(.BMap, .IMap, .IMap, .IMap, .IMap, .IMap, .IMap), .IntList) </validators>
-      <slashedBalance> 0 </slashedBalance> // slashed balance
-      <attested> .Map </attested> // Epoch -> Attestations
-      <justified> .BList </justified> // Epoch -> bool
-      <finalized> .BList </finalized> // Epoch -> bool
+      <slashedBalance> .IMap </slashedBalance> // epoch -> sum of slashed effective balance
+      <attested> .Map </attested> // epoch -> attestations
+      <justified> .BList </justified> // epoch -> bool
+      <finalized> .BList </finalized> // epoch -> bool
     </state>
   </states>
   // historical
@@ -83,10 +81,10 @@ rule <k> init => . ... </k>
          ,
            0 1 2 3 4 5 6 .IntList
          ) </validators>
-         <slashedBalance> 0 </slashedBalance>
+         <slashedBalance> .IMap </slashedBalance>
          <attested> 0 |-> .Attestations </attested>
-         <justified> ( 0 , true ) .BList </justified>
-         <finalized> ( 0 , true ) .BList </finalized>
+         <justified> .BList [ 0 <- true ]bb </justified>
+         <finalized> .BList [ 0 <- true ]bb </finalized>
        </state>
      </states>
      <lastBlock> .IMap => .IMap [ 0 <- 0 ]i </lastBlock>
@@ -103,24 +101,22 @@ Validation of block signatures and state roots is omitted in the abstract model.
 
 ```k
 // state_transition
-rule <k> stateTransition(NewBlock)
-      => processSlots(NewBlock.slot)
-      ~> processBlock(NewBlock) ... </k>
+rule <k> stateTransition(Block)
+      => #assert(Slot <Int Block.slot) // TODO: <=Int or <Int ?
+      ~> processSlots(Block.slot)
+      ~> processBlock(Block) ... </k>
      <currentSlot> Slot </currentSlot>
-     requires Slot <Int NewBlock.slot // TODO: <=Int or <Int ?
-// TODO:
-// rule stateTransition(NewBlock) => #bottom [owise]
 ```
 
 The `process_epoch()` in the concrete model is called before increasing the slot number, while it is called after increasing `Slot` here.
 
-
 ```k
 // process_slots
-rule <k> (. => processSlot()
-            ~> processEpoch())
+rule <k> processSlots(TargetSlot)
+      => processSlot()
+      ~> processEpoch()
       ~> processSlots(TargetSlot) ... </k>
-     <currentSlot> Slot => Slot +Int 1 </currentSlot>
+     <currentSlot> Slot => Slot +Int 1 </currentSlot> // TODO: in the python spec, slot number is increased after processEpoch
      <states>
        <state> <slot> Slot        </slot> S </state>
      (
@@ -157,23 +153,16 @@ Note that `Slot` is equal to `state.slot + 1` of the concrete model.
 // TODO: add process_slashings, process_final_updates (for updating effective balances with hysteresis)
 // process_epoch
 rule <k> processEpoch()
-      => processJustification(epochOf(Slot) -Int 2)
-      ~> processJustification(epochOf(Slot) -Int 1)
-      ~> processFinalization(epochOf(Slot) -Int 2)
-      ~> processFinalization(epochOf(Slot) -Int 1)
-```
-```{.k .dynamic}
-      ~> processRewardsPenalties(epochOf(Slot) -Int 2)
-      ~> processValidatorUpdates()
-```
-```k
-      ... </k>
+      => #assert(epochOf(Slot) >=Int 1) // genesis block/epoch is processed separately
+      ~> processJustificationAndFinalization()  // effective for epoch >= 3
+      ~> processRewardsPenalties()              // effective for epoch >= 2
+      ~> processValidatorUpdates() ... </k>     // effective for epoch >= 1
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
 ```
 ```{.k .symbolic}
-       <attested>  epochOf(Slot) |-> (_ => .Attestations) ... </attested>
+       <attested> epochOf(Slot) |-> (_ => .Attestations) ... </attested>
 ```
 ```{.k .concrete}
        <attested> A => A[epochOf(Slot) <- .Attestations] </attested>
@@ -192,13 +181,35 @@ rule <k> processEpoch() => . ... </k>
      requires notBool isFirstSlotOfEpoch(Slot)
 ```
 
+### Justification and Finalization
+
+```k
+syntax KItem ::= processJustificationAndFinalization()
+
+rule <k> processJustificationAndFinalization()
+      => processJustification(epochOf(Slot) -Int 2)
+      ~> processJustification(epochOf(Slot) -Int 1)
+      ~> processFinalization(epochOf(Slot) -Int 2)
+      ~> processFinalization(epochOf(Slot) -Int 1) ... </k>
+     <currentSlot> Slot </currentSlot>
+     requires epochOf(Slot) >=Int 3
+
+rule <k> processJustificationAndFinalization() => . ... </k>
+     <currentSlot> Slot </currentSlot>
+     requires epochOf(Slot) <Int 3
+```
+
 ### Justification
 
 ```k
 syntax KItem ::= processJustification(Int)
 rule <k> processJustification(Epoch)
-      => isJustifiable(Epoch, EpochBoundaryBlock[firstSlotOf(Epoch)]i, Attestations, VM.effective_balance, VIDs)
-      ~> justify(Epoch) ... </k>
+      => #assert(Epoch >=Int 1) // due to the side condition of processJustificationAndFinalization
+      ~> #it(
+           isJustifiable(Epoch, EpochBoundaryBlock[firstSlotOf(Epoch)]i, Attestations, VM.slashed, VM.effective_balance, VM.activation_epoch, VM.exit_epoch, VIDs)
+         ,
+           justify(Epoch)
+         ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -215,12 +226,9 @@ rule <k> processJustification(Epoch)
        ...
      </state>
      <lastBlock> EpochBoundaryBlock </lastBlock>
-     requires Epoch >=Int 1
-rule <k> processJustification(Epoch) => . ... </k>
-     requires Epoch <Int 1
 
 syntax KItem ::= justify(Int)
-rule <k> true ~> justify(Epoch) => . ... </k>
+rule <k> justify(Epoch) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -228,32 +236,17 @@ rule <k> true ~> justify(Epoch) => . ... </k>
        ...
      </state>
      <lastJustified> LJ => LJ [ epochOf(Slot) <- Epoch ]ii </lastJustified>
-rule <k> false ~> justify(_) => . ... </k>
 
-syntax Bool ::= isJustifiable(Int, Int, Attestations, IMap, IntList) [function, functional, smtlib(isJustifiable)]
-rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, EffectiveBalanceMap, VIDs)
-  => isMajority(attestationsBalance(EpochBoundaryBlock, Attestations, EffectiveBalanceMap), totalBalance(EffectiveBalanceMap, VIDs))
+syntax Bool ::= isJustifiable(Int, Int, Attestations, BMap, IMap, IMap, IMap, IntList) [function, functional, smtlib(isJustifiable)]
+rule isJustifiable(Epoch, EpochBoundaryBlock, Attestations, SlashedMap, EffectiveBalanceMap, ActivationEpochMap, ExitEpochMap, VIDs)
+  => isMajority(totalBalance(EffectiveBalanceMap, getUniqueValidators(filterByTarget(EpochBoundaryBlock, filterNotSlashed(SlashedMap, Attestations)))),
+                totalBalance(EffectiveBalanceMap, activeValidators(VIDs, ActivationEpochMap, ExitEpochMap, Epoch)))
      orBool Epoch ==Int 0 // the genesis block is justified by default
-```
-```{.k .kast}
-  requires #isConcrete(Attestations) // TODO: drop this
-```
-```{.k .kore}
-     [concrete]
-```
+     requires #isConcrete(Attestations) // TODO: drop this
 
-```k
 syntax Bool ::= isMajority(Int, Int) [function, functional]
 rule isMajority(X, Total) => (X *Int 3) >=Int (Total *Int 2)  // (X / Total) >= 2/3
                              andBool Total >Int 0             // ensure no div-by-zero
-
-syntax Int ::= attestationsBalance(Int, Attestations, IMap) [function, functional]
-rule attestationsBalance(Target, A Attestations, EffectiveBalanceMap)
-  => #if A.target_block ==Int Target
-     #then EffectiveBalanceMap[A.attester]i
-     #else 0
-     #fi +Int attestationsBalance(Target, Attestations, EffectiveBalanceMap)
-rule attestationsBalance(_, .Attestations, _) => 0
 ```
 
 ### Finalization
@@ -261,8 +254,12 @@ rule attestationsBalance(_, .Attestations, _) => 0
 ```k
 syntax KItem ::= processFinalization(Int)
 rule <k> processFinalization(TargetEpoch)
-      => isFinalizable(SourceEpoch[TargetEpoch]ii, TargetEpoch, Justified)
-      ~> finalize(SourceEpoch[TargetEpoch]ii) ... </k>
+      => #assert(TargetEpoch >=Int 1) // due to the side condition of processJustificationAndFinalization
+      ~> #it(
+           isFinalizable(SourceEpoch[TargetEpoch]ii, TargetEpoch, Justified)
+         ,
+           finalize(SourceEpoch[TargetEpoch]ii)
+         ) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -270,12 +267,9 @@ rule <k> processFinalization(TargetEpoch)
        ...
      </state>
      <lastJustified> SourceEpoch </lastJustified>
-     requires TargetEpoch >=Int 1
-rule <k> processFinalization(TargetEpoch) => . ... </k>
-     requires TargetEpoch <Int 1
 
 syntax KItem ::= finalize(Int)
-rule <k> true ~> finalize(Epoch) => . ... </k>
+rule <k> finalize(Epoch) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -283,40 +277,38 @@ rule <k> true ~> finalize(Epoch) => . ... </k>
        ...
      </state>
      <lastFinalized> LF => LF [ epochOf(Slot) <- Epoch ]ii </lastFinalized>
-rule <k> false ~> finalize(_) => . ... </k>
 
 // source : source+1 = target justified
 // source : source+1 : source+2 = target justified
 syntax Bool ::= isFinalizable(Int, Int, BList) [function] // not functional
 rule isFinalizable(SourceEpoch, TargetEpoch, Justified)
-  => isJustified(SourceEpoch, Justified) andBool isJustified(TargetEpoch, Justified)
+  => Justified[SourceEpoch]bb andBool Justified[TargetEpoch]bb
      andBool (
                 SourceEpoch +Int 1 ==Int TargetEpoch
-       orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool isJustified(SourceEpoch +Int 1, Justified) )
+       orBool ( SourceEpoch +Int 2 ==Int TargetEpoch andBool Justified[SourceEpoch +Int 1]bb )
      )
-// TODO: use rule priority
-  requires TargetEpoch -Int SourceEpoch <=Int 2
-rule isFinalizable(SourceEpoch, TargetEpoch, Justified) => false
-  requires TargetEpoch -Int SourceEpoch >Int 2
-
-syntax Bool ::= isJustified(Int, BList) [function] // not functional
-rule isJustified(Epoch, Justified) => Justified[Epoch]bb
-/*
-rule isJustified(Epoch, Epoch |-> true  _:Map) => true
-rule isJustified(Epoch, Epoch |-> false _:Map) => false
-*/
 ```
 
 ### Rewards and Penalties
 
-```{.k .dynamic}
+```k
 // process_rewards_and_penalties
-syntax KItem ::= processRewardsPenalties(Int)
-rule <k> processRewardsPenalties(Epoch)
-      => processRewardsPenaltiesAux1(
+syntax KItem ::= processRewardsPenalties()
+rule <k> processRewardsPenalties()
+      => #it(
+           epochOf(Slot) >=Int 2
+         ,
+           processRewardsPenaltiesAux(epochOf(Slot) -Int 2)
+         ) ... </k>
+     <currentSlot> Slot </currentSlot>
+
+syntax KItem ::= processRewardsPenaltiesAux(Int)
+rule <k> processRewardsPenaltiesAux(Epoch)
+      => #assert(Epoch >=Int 0) // due to the side condition of processRewardsPenalties
+      ~> processRewardsPenaltiesAux1(
            VIDs, VM, Epoch, Epoch -Int LastFinalizedEpoch[epochOf(Slot)]ii,
-                                                                                          filterNotSlashed(VM.slashed, Attestations)  ,
-                                  filterByTarget(BlockMap[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)) ,
+                                                                                filterNotSlashed(VM.slashed, Attestations) ,
+                                  filterByTarget(BlockMap[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)),
            filterByHead(BlockMap, filterByTarget(BlockMap[firstSlotOf(Epoch)]i, filterNotSlashed(VM.slashed, Attestations)))
          ) ... </k>
      <currentSlot> Slot </currentSlot>
@@ -331,17 +323,14 @@ rule <k> processRewardsPenalties(Epoch)
      </state>
      <lastBlock> BlockMap </lastBlock>
      <lastFinalized> LastFinalizedEpoch </lastFinalized>
-     requires Epoch >=Int 2
-rule processRewardsPenalties(Epoch) => .
-     requires Epoch <Int 2
 
 syntax KItem ::= processRewardsPenaltiesAux1(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations)
 rule processRewardsPenaltiesAux1(VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations)
   => processRewardsPenaltiesAux2(VIDs, VM, Epoch, FinalityDelay, SourceAttestations, TargetAttestations, HeadAttestations,
-       lift(totalBalance(VM.effective_balance, getValidators(SourceAttestations))),
-       lift(totalBalance(VM.effective_balance, getValidators(TargetAttestations))),
-       lift(totalBalance(VM.effective_balance, getValidators(HeadAttestations))),
-       lift(totalBalance(VM.effective_balance, activeValidators(VIDs, VM.activation_epoch, VM.exit_epoch, Epoch)))
+       lift(totalBalance(VM.effective_balance, getUniqueValidators(SourceAttestations))),
+       lift(totalBalance(VM.effective_balance, getUniqueValidators(TargetAttestations))),
+       lift(totalBalance(VM.effective_balance, getUniqueValidators(HeadAttestations))),
+       lift(totalBalance(VM.effective_balance, activeValidators(VIDs, VM.activation_epoch, VM.exit_epoch, Epoch))) // TODO: in the python spec, the current epoch is considered when computing the total active balance
      )
 
 syntax KItem ::= processRewardsPenaltiesAux2(IntList, ValidatorMap, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
@@ -354,63 +343,6 @@ rule (. => processRewardPenalty(VID, VM.slashed, VM.effective_balance, VM.activa
 rule processRewardsPenaltiesAux3(_, .IntList, _, _, _, _, _, _, _, _, _, _) => .
 
 syntax KItem ::= processRewardPenalty(Int, BMap, IMap, IMap, IMap, IMap, Int, Int, Int, Attestations, Attestations, Attestations, Int, Int, Int, Int)
-/*
-rule processRewardPenalty(V, Epoch, FinalityDelay, BaseReward,
-                          SourceAttestations,     TargetAttestations,     HeadAttestations,
-                          SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
-  => #it(
-       isActiveValidator(V, Epoch) orBool ( V.slashed andBool Epoch +Int 1 <Int V.withdrawable_epoch )
-     ,
-       // Matching Rewards and Penalties
-       #ite(
-         V.id inA SourceAttestations
-       ,
-         increaseBalance(V.id, getMatchingReward(BaseReward, SourceAttestingBalance, TotalActiveBalance))
-       ,
-         decreaseBalance(V.id, BaseReward)
-       )
-       ~>
-       #ite(
-         V.id inA TargetAttestations
-       ,
-         increaseBalance(V.id, getMatchingReward(BaseReward, TargetAttestingBalance, TotalActiveBalance))
-       ,
-         decreaseBalance(V.id, BaseReward)
-       )
-       ~>
-       #ite(
-         V.id inA HeadAttestations
-       ,
-         increaseBalance(V.id, getMatchingReward(BaseReward, HeadAttestingBalance, TotalActiveBalance))
-       ,
-         decreaseBalance(V.id, BaseReward)
-       )
-       ~>
-       // Proposer Rewards
-       #it(
-         V.id inA SourceAttestations
-       ,
-         increaseBalance(minByInclusionDelay(V.id, SourceAttestations).proposer, BaseReward /Int PROPOSER_REWARD_QUOTIENT)
-         ~>
-         increaseBalance(V.id, getInclusionReward(BaseReward, minByInclusionDelay(V.id, SourceAttestations).inclusion_delay))
-       )
-       ~>
-       // Inactivity Penalties
-       #it(
-         FinalityDelay >Int MIN_EPOCHS_TO_INACTIVITY_PENALTY
-       ,
-         decreaseBalance(V.id, BASE_REWARDS_PER_EPOCH *Int BaseReward)
-         ~>
-         #it(
-           notBool (V.id inA TargetAttestations)
-         ,
-           decreaseBalance(V.id, getInactivityPenalty(V.effective_balance, FinalityDelay))
-         )
-       )
-     )
-*/
-
-// TODO: process proposer rewards
 rule processRewardPenalty(VID, SlashedMap, EffectiveBalanceMap, ActivationEpochMap, ExitEpochMap, WithdrawableEpochMap, Epoch, FinalityDelay, BaseReward,
                           SourceAttestations,     TargetAttestations,     HeadAttestations,
                           SourceAttestingBalance, TargetAttestingBalance, HeadAttestingBalance, TotalActiveBalance)
@@ -450,7 +382,17 @@ rule processRewardPenalty(VID, SlashedMap, EffectiveBalanceMap, ActivationEpochM
          #else 0
          #fi
        )
+       /* TODO: process proposer rewards
+       ~>
+       // Proposer Rewards
+       #it(
+         VID inA SourceAttestations
+       ,
+         increaseBalance(minByInclusionDelay(VID, SourceAttestations).proposer, BaseReward /Int PROPOSER_REWARD_QUOTIENT)
+       )
+       */
      )
+     // TODO: due to the positive balance cap, the order of rewards/penalties matters.
 
 // get_base_reward
 syntax Int ::= getBaseReward(Int, Int) [function, smtlib(getBaseReward)]
@@ -483,9 +425,8 @@ rule <k> increaseBalance(VID, N) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... balance: BM => BM [ VID <- BM[VID]i +Int N ]i)
          m(SM
-         , BM => BM [ VID <- BM[VID]i +Int N ]i
+         , BM => BM [ VID <- maxInt(0, BM[VID]i +Int N) ]i // ensures balance to be positive
          , EBM
          , AEM
          , AM
@@ -547,23 +488,35 @@ rule filterNotSlashed(SlashedMap, A As) => #if SlashedMap[A.attester]b
                                    #fi
 rule filterNotSlashed(_, .Attestations) => .Attestations
 
-// TODO: rename: getUniqueValidators
-syntax IntList ::= getValidators(Attestations) [function, smtlib(getValidators)]
-rule getValidators(As) => getValidatorsAux2(getValidatorsAux1(As, .Map))
+syntax IntList ::= getUniqueValidators(Attestations) [function, smtlib(getUniqueValidators)]
+rule getUniqueValidators(As) => getUniqueValidatorsAux2(getUniqueValidatorsAux1(As, .Map))
      [concrete]
 
-syntax Map ::= getValidatorsAux1(Attestations, Map) [function]
-rule getValidatorsAux1(A As => As, M => M [ A.attester <- true ])
-rule getValidatorsAux1(.Attestations, M) => M
+syntax Map ::= getUniqueValidatorsAux1(Attestations, Map) [function]
+rule getUniqueValidatorsAux1(A As => As, M => M [ A.attester <- true ])
+rule getUniqueValidatorsAux1(.Attestations, M) => M
 
-syntax IntList ::= getValidatorsAux2(Map) [function]
-rule getValidatorsAux2(V |-> true M) => V getValidatorsAux2(M)
-rule getValidatorsAux2(.Map) => .IntList
+syntax IntList ::= getUniqueValidatorsAux2(Map) [function]
+rule getUniqueValidatorsAux2(V |-> true M) => V getUniqueValidatorsAux2(M)
+rule getUniqueValidatorsAux2(.Map) => .IntList
+
+// `minByInclusionDelay(V, As)` returns the first included attestation attested by V
+// it is defined only when `V inA As`
+syntax Attestation ::= minByInclusionDelay(Int, Attestations) [function, klabel(minA), smtlib(minA)]
+rule minByInclusionDelay(V, As) => minByInclusionDelayAux1(V, As) [concrete]
+
+syntax Attestation ::= minByInclusionDelayAux1(Int, Attestations) [function]
+rule minByInclusionDelayAux1(V, A As) => minByInclusionDelayAux2(A, As) requires V  ==Int A.attester
+rule minByInclusionDelayAux1(V, A As) => minByInclusionDelayAux1(V, As) requires V =/=Int A.attester
+
+syntax Attestation ::= minByInclusionDelayAux2(Attestation, Attestations) [function]
+rule minByInclusionDelayAux2(A0, A As) => minByInclusionDelayAux2(#if A0.inclusion_delay <=Int A.inclusion_delay #then A0 #else A #fi, As) 
+rule minByInclusionDelayAux2(A0, .Attestations) => A0
 ```
 
 ### Validator Updates
 
-```{.k .dynamic}
+```k
 // TODO: check if no mistake was made as this process is associated with the previous epoch
 // process_registry_updates
 syntax KItem ::= processValidatorUpdates()
@@ -638,9 +591,6 @@ rule <k> setActivationEligibility(VID) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... effective_balance: EBM
-       //    , activation_eligibility: AEM => AEM [ VID <- epochOf(Slot) ]i
-       //)
          m(SM
          , BM
          , EBM
@@ -691,7 +641,6 @@ rule <k> activateValidator(VID) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... activation_epoch: AM => AM [ VID <- delayedActivationExitEpoch(epochOf(Slot) -Int 1) ]i)
          m(SM
          , BM
          , EBM
@@ -710,7 +659,7 @@ syntax IntList ::= activationQueueUptoChurnLimit(IntList, IMap, IMap, IMap, Int,
 rule activationQueueUptoChurnLimit(VIDs, ActivationEligibilityEpochMap, ActivationEpochMap, ExitEpochMap, FinalizedEpoch, CurrentEpoch)
   => take(
        churnLimit(size(activeValidators(VIDs, ActivationEpochMap, ExitEpochMap, CurrentEpoch))),
-       sort(activationQueue(VIDs, ActivationEligibilityEpochMap, ActivationEpochMap, FinalizedEpoch))
+       sortByActivationEligibility(activationQueue(VIDs, ActivationEligibilityEpochMap, ActivationEpochMap, FinalizedEpoch))
      )
 
 syntax IntList ::= activationQueue(IntList, IMap, IMap, Int) [function, functional, smtlib(activationQueue)]
@@ -725,26 +674,27 @@ syntax Bool ::= isValidValidatorToActivate(Int, IMap, IMap, Int) [function]
 rule isValidValidatorToActivate(VID, ActivationEligibilityEpochMap, ActivationEpochMap, FinalizedEpoch)
   => ActivationEligibilityEpochMap[VID]i <=Int FinalizedEpoch andBool // is_eligible_for_activation
      ActivationEpochMap[VID]i ==Int FAR_FUTURE_EPOCH
+
+// sort in the order of activation_eligibility_epoch
+syntax IntList ::= sortByActivationEligibility(IntList) [function, klabel(sortI), smtlib(sortI)]
+// TODO: implement with additional argument ActivationEligibilityEpochMap
+
+rule sortByActivationEligibility(.IntList) => .IntList
 ```
 
 ## Block Processing
 
+`process_randao` and `process_eth1_data` are omitted in the abstract model.
+
 ```k
-// process_block
-// process_block_header
-// process_operations
+// process_block, process_block_header, process_operations
 rule <k> processBlock(#Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits))
       => processSlashings(Slashings)
       ~> processAttestations(Attestations)
-```
-```{.k .dynamic}
       ~> processDeposits(Deposits)
-      ~> processVoluntaryExits(VoluntaryExits)
-```
-```k
-      ... </k>
+      ~> processVoluntaryExits(VoluntaryExits) ... </k>
      <currentSlot> Slot </currentSlot>
-     <lastBlock> B => B [ Slot <- ID ]i </lastBlock>
+     <lastBlock> B => B [ Slot <- ID ]i </lastBlock> // TODO: check Parent matches `B [ Slot - 1 ]`
      <blocks>
        BlockMap => BlockMap [ ID <- #Block((Slot, ID), Parent, Slashings, Attestations, Deposits, VoluntaryExits) ]k
      </blocks>
@@ -773,14 +723,9 @@ rule processSlashingsAux(_, .Slashings, _) => .
 
 syntax KItem ::= processSlashing(Slashing)
 rule <k> processSlashing(S)
-      => assert(isValidSlashing(S, VM.slashed))
-      ~>
-```
-```{.k .dynamic}
-         initiateValidatorExit(S.attestation_1.attester) ~>
-```
-```k
-         slashValidator(S.attestation_1.attester) ... </k>
+      => #assert(isValidSlashing(S, VM.slashed, VM.activation_epoch, VM.withdrawable_epoch, epochOf(Slot)))
+      ~> initiateValidatorExit(S.attestation_1.attester)
+      ~> slashValidator(S.attestation_1.attester) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -794,13 +739,8 @@ rule <k> slashValidator(VID) => . ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
-       <slashedBalance> S => S +Int EBM[VID]i </slashedBalance> // TODO: store slashed balance for each epoch
+       <slashedBalance> SBM => SBM [ epochOf(Slot) <- SBM[epochOf(Slot)]i +Int EBM[VID]i ]i </slashedBalance>
        <validators> v(
-       //m(... slashed: SM => SM [ VID <- true ]b
-       //    , balance: BM => BM [ VID <- maxInt(0, BM[VID]i -Int (EBM[VID]i /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]i
-       //    , effective_balance: EBM
-       //    , withdrawable_epoch: WM => WM [ VID <- maxInt(WM[VID]i, epochOf(Slot) +Int EPOCHS_PER_SLASHINGS_VECTOR) ]i
-       //)
          m(SM => SM [ VID <- true ]b
          , BM => BM [ VID <- maxInt(0, BM[VID]i -Int (EBM[VID]i /Int MIN_SLASHING_PENALTY_QUOTIENT)) ]i
          , EBM
@@ -816,20 +756,27 @@ rule <k> slashValidator(VID) => . ... </k>
      </state>
      // TODO: proposer and whistleblower rewards
 
-syntax Bool ::= isValidSlashing(Slashing, BMap) [function]
-rule isValidSlashing(S, SM)
-  => isSlashableAttestation(S.attestation_1, S.attestation_2)
-     andBool S.attestation_1.attester ==Int S.attestation_2.attester
-     andBool SM[S.attestation_1.attester]b ==K false
+syntax Bool ::= isValidSlashing(Slashing, BMap, IMap, IMap, Int) [function]
+rule isValidSlashing(S, SM, AM, WM, Epoch)
+  => S.attestation_1.attester ==Int S.attestation_2.attester
+     andBool isSlashableValidator(S.attestation_1.attester, SM, AM, WM, Epoch)
+     andBool isSlashableAttestation(S.attestation_1, S.attestation_2)
 
+// is_slashable_validator
+syntax Bool ::= isSlashableValidator(Int, BMap, IMap, IMap, Int) [function]
+rule isSlashableValidator(VID, SM, AM, WM, Epoch)
+  => SM[VID]b ==K false
+     andBool AM[VID]i <=Int Epoch andBool Epoch <Int WM[VID]i // withdrawable_epoch instead of exit_epoch
+
+// is_slashable_attestation_data
 syntax Bool ::= isSlashableAttestation(Attestation, Attestation) [function, functional]
 rule isSlashableAttestation(A1, A2)
   => ( A1 =/=K A2 andBool A1.target_epoch ==Int A2.target_epoch )
      orBool
      ( A1.source_epoch <Int A2.source_epoch andBool A2.target_epoch <Int A1.target_epoch )
-  // TODO: the following case not needed?
-  // orBool
-  // ( A2.source_epoch <Int A1.source_epoch andBool A1.target_epoch <Int A2.target_epoch )
+     orBool
+     ( A2.source_epoch <Int A1.source_epoch andBool A1.target_epoch <Int A2.target_epoch )
+     // TODO: the last case is not considered in the python spec
 ```
 
 ### Attestations
@@ -871,11 +818,11 @@ rule <k> addAttestation(A) => . ... </k>
        ...
      </state>
      requires A.target_epoch ==Int epochOf(Slot) -Int 1
+     // TODO: merge two rules into a single one
 
 syntax KItem ::= checkAttestation(Attestation)
 rule <k> checkAttestation(A)
-      => assert(isValidAttestation(A, Slot, JEpoch[A.target_epoch]ii, JBlock[firstSlotOf(JEpoch[A.target_epoch]ii)]i, VM.slashed[A.attester]b))
-      ~> assertXOR(A.target_epoch ==Int epochOf(Slot), A.target_epoch ==Int epochOf(Slot) -Int 1) ... </k>
+      => #assert(isValidAttestation(A, Slot, JEpoch[A.target_epoch]ii, JBlock[firstSlotOf(JEpoch[A.target_epoch]ii)]i, VM.slashed[A.attester]b)) ... </k>
      <currentSlot> Slot </currentSlot>
      <state>
        <slot> Slot </slot>
@@ -889,15 +836,17 @@ syntax Bool ::= isValidAttestation(Attestation, Int, Int, Int, Bool) [function, 
 rule isValidAttestation(A, Slot, SourceEpoch, SourceBlock, Slashed)
   =>         A.source_epoch ==Int SourceEpoch
      andBool A.source_block ==Int SourceBlock
+     andBool ( A.target_epoch ==Int epochOf(Slot) orBool A.target_epoch ==Int epochOf(Slot) -Int 1 )
+     andBool A.target_epoch ==Int epochOf(A.slot)
      andBool A.slot +Int MIN_ATTESTATION_INCLUSION_DELAY <=Int Slot andBool Slot <=Int A.slot +Int MAX_ATTESTATION_INCLUSION_DELAY
-     andBool epochOf(A.slot) ==Int A.target_epoch
-     andBool notBool Slashed // TODO: is this checked in spec?
+     andBool A.inclusion_delay ==Int Slot -Int A.slot // TODO: in the python spec, this info is dynamically generated
+     andBool notBool Slashed // TODO: this is not asserted in the python spec
      // TODO: check if A.attester is assigned to A.slot
 ```
 
 ### Deposits
 
-```{.k .dynamic}
+```k
 // process_deposit
 syntax KItem ::= processDeposits(Deposits)
 rule <k> processDeposits(Deposits) => processDepositsAux(.IntList, Deposits, Vs) ... </k>
@@ -909,7 +858,7 @@ rule <k> processDeposits(Deposits) => processDepositsAux(.IntList, Deposits, Vs)
      </state>
 
 syntax KItem ::= processDepositsAux(IntList, Deposits, Validators)
-rule processDepositsAux(L, D Deposits, Vs) => processDeposit(D) ~> processDepositsAux(D.sender L, Deposits, Vs)
+rule processDepositsAux(L, D Deposits, Vs) => #assert(D.amount >=Int 0) ~> processDeposit(D) ~> processDepositsAux(D.sender L, Deposits, Vs)
 rule processDepositsAux(_, .Deposits, _) => .
 
 syntax KItem ::= processDeposit(Deposit)
@@ -918,7 +867,6 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... balance: BM => BM [ D.sender <- BM[D.sender]i +Int D.amount ]i) // no change to effective_balance
          m(SM
          , BM => BM [ D.sender <- BM[D.sender]i +Int D.amount ]i // no change to effective_balance
          , EBM
@@ -938,17 +886,9 @@ rule <k> processDeposit(D) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... slashed:             SM => SM [ D.sender <- false ]b
-       //    , balance:             BM => BM [ D.sender <- D.amount ]i
-       //    , effective_balance: EBM => EBM [ D.sender <- minInt(D.amount, MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap
-       //    , activation_eligibility_epoch: FAR_FUTURE_EPOCH
-       //    , activation_epoch:             FAR_FUTURE_EPOCH
-       //    , exit_epoch:                   FAR_FUTURE_EPOCH
-       //    , withdrawable_epoch:           FAR_FUTURE_EPOCH
-       //)
          m(SM  => SM  [ D.sender <- false ]b
          , BM  => BM  [ D.sender <- D.amount ]i
-         , EBM => EBM [ D.sender <- minInt(D.amount, MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap
+         , EBM => EBM [ D.sender <- minInt(D.amount -Int (D.amount %Int EFFECTIVE_BALANCE_INCREMENT), MAX_EFFECTIVE_BALANCE) ]i // effective_balance cap
          , AEM => AEM [ D.sender <- FAR_FUTURE_EPOCH ]i
          , AM  => AM  [ D.sender <- FAR_FUTURE_EPOCH ]i
          , EM  => EM  [ D.sender <- FAR_FUTURE_EPOCH ]i
@@ -964,7 +904,7 @@ rule <k> processDeposit(D) => . ... </k>
 
 ### Voluntary Exits
 
-```{.k .dynamic}
+```k
 // process_voluntary_exit
 syntax KItem ::= processVoluntaryExits(VoluntaryExits)
 rule <k> processVoluntaryExits(Exits) => processVoluntaryExitsAux(.IntList, Exits, VM) ... </k>
@@ -1025,9 +965,6 @@ rule <k> setExitEpoch(VID, ExitEpoch) => . ... </k>
      <state>
        <slot> Slot </slot>
        <validators> v(
-       //m(... exit_epoch:         EM => EM [ VID <- ExitEpoch ]i
-       //    , withdrawable_epoch: WM => WM [ VID <- ExitEpoch +Int MIN_VALIDATOR_WITHDRAWABILITY_DELAY ]i
-       //)
          m(SM
          , BM
          , EBM
