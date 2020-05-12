@@ -363,6 +363,19 @@ rule activeValidators(unique(L ++ VIDs), AM2, EM2, Epoch)
       andBool forall(x, VIDs, EM2[x]i ==Int EM1[x]i) // existing validators' exit epoch is preserved
      [concrete, smt-lemma]
 
+rule countValidatorsToExit(unique(L ++ VIDs), EM2, Epoch2)
+ ==K countValidatorsToExit(            VIDs , EM1, Epoch1) => true
+     requires forall(x, unique(L ++ VIDs), implies(notBool x in VIDs, EM2[x]i ==Int FAR_FUTURE_EPOCH)) // new validators are not given an exit epoch
+      andBool forall(x, VIDs, EM2[x]i ==Int EM1[x]i) // existing validators' exit epoch is preserved
+      andBool Epoch1 ==Int Epoch2
+      andBool Epoch1 <Int FAR_FUTURE_EPOCH
+     [concrete, smt-lemma]
+
+// TODO: proof
+rule forall(X, VIDs0, implies(EM0[X]i =/=Int EM1 [ K <- V ]i [X]i, countValidatorsToExit(VIDs, EM1 [ K <- V ]i, EM1 [ K <- V ]i [X]i) <=Int ChurnLimit))
+  => forall(X, VIDs0, implies(EM0[X]i =/=Int EM1             [X]i, countValidatorsToExit(VIDs, EM1            , EM1             [X]i) <=Int ChurnLimit))
+     requires countValidatorsToExit(VIDs, EM1 [ K <- V ]i, V) <=Int ChurnLimit
+
 rule implies(
        forall(x, getValidatorsE(VEs), x in VIDs:IntList)
      ,
@@ -414,5 +427,7 @@ rule isCorrectLastFinalizedEpoch(LastFinalizedEpoch, Epoch, Epoch2Finalized, Epo
      andBool implies(LastFinalizedEpoch ==Int Epoch -Int 3,                                   Epoch3Finalized ==K true  andBool Epoch2Finalized ==K false)
      andBool implies(LastFinalizedEpoch ==Int Epoch -Int 2,                                                                     Epoch2Finalized ==K true)
      andBool         LastFinalizedEpoch <=Int Epoch -Int 2
+
+// TODO: prove lemmas
 
 endmodule

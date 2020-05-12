@@ -14,14 +14,21 @@ rule
       <validators> v(m(SM1 => ?SM2, BM1 => ?BM2, EBM1 => ?EBM2, AEM1 => ?AEM2, AM1 => ?AM2, EM1 => ?EM2, WM1 => ?WM2), VIDs1 => ?VIDs2) </validators>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(ORIG_VM, VIDs1) </validators>
+      ...
+    </state>
     ...
   </states>
   ...
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
+andBool ?Epoch ==Int epochOf(Slot)
+andBool ?ChurnLimit ==Int churnLimit(size(activeValidators(VIDs1, ORIG_VM.activation_epoch, ORIG_VM.exit_epoch, ?Epoch)))
 // pre-conditions
 andBool distinct(VIDs1)
 andBool isValidDeposits(Ds)
@@ -32,6 +39,9 @@ andBool forall(x, VIDs1, AEM1[x]i >=Int 0)
 andBool forall(x, VIDs1,  AM1[x]i >=Int 0)
 andBool forall(x, VIDs1,  EM1[x]i >=Int 0)
 andBool forall(x, VIDs1,  WM1[x]i >=Int 0)
+// rely-guarantee conditions
+andBool forall(x, VIDs1, implies(ORIG_VM.exit_epoch[x]i =/=Int EM1[x]i, EM1[x]i <Int FAR_FUTURE_EPOCH))
+andBool forall(x, VIDs1, implies(ORIG_VM.exit_epoch[x]i =/=Int EM1[x]i, countValidatorsToExit(VIDs1, EM1, EM1[x]i) <=Int ?ChurnLimit))
 // invariants
 ensures true
 // post-conditions
@@ -53,6 +63,9 @@ andBool forall(x, ?VIDs2, ?AEM2[x]i >=Int 0)
 andBool forall(x, ?VIDs2,  ?AM2[x]i >=Int 0)
 andBool forall(x, ?VIDs2,  ?EM2[x]i >=Int 0)
 andBool forall(x, ?VIDs2,  ?WM2[x]i >=Int 0)
+// rely-guarantee conditions
+andBool forall(x, VIDs1, implies(ORIG_VM.exit_epoch[x]i =/=Int ?EM2[x]i, ?EM2[x]i <Int FAR_FUTURE_EPOCH))
+andBool forall(x, VIDs1, implies(ORIG_VM.exit_epoch[x]i =/=Int ?EM2[x]i, countValidatorsToExit(?VIDs2, ?EM2, ?EM2[x]i) <=Int ?ChurnLimit))
 
 rule
 <T>
@@ -64,13 +77,18 @@ rule
       <validators> v(m(SM1 => ?SM2, BM1 => ?BM2, EBM1 => ?EBM2, AEM1 => ?AEM2, AM1 => ?AM2, EM1 => ?EM2, WM1 => ?WM2), VIDs1 => ?VIDs2) </validators>
       ...
     </state>
+    <state>
+      <slot> Slot -Int 1 </slot>
+      <validators> v(ORIG_VM, VIDs0) </validators>
+      ...
+    </state>
     ...
   </states>
   ...
 </T>
 requires true
 // types
-andBool Slot >=Int 0
+andBool Slot >=Int 1
 // let-bindings
 // pre-conditions
 andBool distinct(VIDs0)
