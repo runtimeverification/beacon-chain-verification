@@ -327,7 +327,7 @@ Proof.
   unfold no_new_slashed.
   intros badV [Hdbl|Hnest];[left|right].
   (* slashed for double vote *)
-  unfold slashed_dbl_vote, vote_msg in Hdbl |- *.
+  unfold slashed_double_vote, vote_msg in Hdbl |- *.
   destruct Hdbl as (t1 & t2 & Hneq_t & Hdouble_votes).
   exists t1. exists t2. split;[exact Hneq_t|].
   destruct Hdouble_votes as (s1 & s1_h & s2 & s2_h & t_h & Hvote1 & Hvote2).
@@ -377,7 +377,7 @@ Proof.
   clear -Hneq_t. congruence.
 
   (* slashed surround case *)
-  unfold slashed_surround in Hnest |- *.
+  unfold slashed_surround_vote in Hnest |- *.
   destruct Hnest as (s1 & t1 & s1_h & t1_h & s2 & t2 & s2_h & t2_h & Hnest).
   exists s1;exists t1;exists s1_h;exists t1_h;exists s2;exists t2;exists s2_h;exists t2_h.
   destruct Hnest as (Houter & Hinner & Hstarts & Hends).

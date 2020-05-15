@@ -88,7 +88,7 @@ destruct Hj1 as [| sb1 sb1_h b1 b1_h Hjs1 [Hh1 [Ha1 Hsm1]]] eqn:E1.
     by move/andP: Hsm2 => [Hsub2 _].
   
   intros v Hvinq1 Hvinq2. unfold slashed. left.
-  unfold slashed_dbl_vote.
+  unfold slashed_double_vote.
   exists b1, b2. split;[assumption|].
   exists sb1, sb1_h, sb2, sb2_h, b2_h.
   unfold vote_msg.
@@ -143,7 +143,7 @@ Proof.
   intros v Hvinq1 Hvinq2.
   rewrite in_set in Hvinq1. rewrite in_set in Hvinq2.
   unfold slashed. right.
-  unfold slashed_surround.
+  unfold slashed_surround_vote.
   exists s, t, s_h, t_h. exists final, (last final ls), final_h, (final_h + k).
   repeat (split;try assumption).
   by apply/ltP.
