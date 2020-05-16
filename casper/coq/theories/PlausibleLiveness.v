@@ -30,53 +30,51 @@ Unset Printing Implicit Defensive.
 (* slashing condition II. No correct validator should ever make such votes.   *)
 (******************************************************************************)
 
-(* A few minor lemmas and definitions used in the proof *)
+(** A few minor lemmas and definitions used in the proof  **)
 
-(* Votes have justified sources *)
+(* Votes have justified sources                                               *)
 Definition justified_source_votes st v :=
   forall s t s_h t_h,
     vote_msg st v s t s_h t_h -> justified st s s_h.
 
-(* Votes constitute valid forward links *)
+(* Votes constitute valid forward links                                       *)
 Definition forward_link_votes st v :=
   forall s t s_h t_h,
     vote_msg st v s t s_h t_h ->
     t_h > s_h /\ nth_ancestor (t_h - s_h) s t.
 
-(* Votes made by 2/3-quorum validators are all good
-   (holds globally for all blocks) *)
+(* Votes made by 2/3-quorum validators (at any block) are all good votes      *)
 Definition good_votes (st : State) :=
   forall b q2, quorum_2 q2 b ->
     forall v, v \in q2 ->
     justified_source_votes st v /\ forward_link_votes st v.
 
-(* There exists a 2/3-quorum that have behaved well
-   (for every block!) *)
+(* There exists a 2/3-quorum that have not been slashed (for every block!)    *)
 Definition two_thirds_good (st : State) :=
   forall b, exists q2, quorum_2 q2 b /\
     forall v, v \in q2 -> ~ slashed st v.
 
-(* Blocks exist sufficiently high over the given block *)
+(* Blocks exist sufficiently high over the given block                        *)
 Definition blocks_exist_high_over (base : Hash) : Prop :=
   forall n, exists block, nth_ancestor n base block /\ n > 1.
 
-(* The property of being the highest justified block *)
+(* The property of being the highest justified block                          *)
 Definition highest_justified st b b_h : Prop :=
   forall b' b_h', b_h' >= b_h
   -> justified st b' b_h'
   -> b' = b /\ b_h' = b_h.
 
-(* There exists a justification link with a justified source *)
+(* There exists a justification link with a justified source                  *)
 Definition has_justification_link (st : State) : Prop :=
   exists s t s_h t_h, justified st s s_h /\ justification_link st s t s_h t_h.
 
-(* The property of being a maximal justification link *)
+(* The property of being a maximal justification link                         *)
 Definition maximal_justification_link st s t s_h t_h : Prop :=
   justification_link st s t s_h t_h /\
   forall s' t' s_h' t_h', justification_link st s' t' s_h' t_h' -> t_h' <= t_h.
 
-(* When votes are assumed good, the source of a justifiction link is
-   always justified *)
+(* When votes are assumed good, the source of a justifiction link is always   *)
+(* justified                                                                  *)
 Lemma good_votes_mean_source_justified : forall st s t s_h t_h,
   good_votes st ->
   justification_link st s t s_h t_h ->
@@ -94,8 +92,8 @@ Proof.
   by apply H in Hv.
 Qed.
 
-(* A maximal justification link always exists if we assume good votes
-   that make up at least one justification link. *)
+(* A maximal justification link always exists if we assume good votes that    *)
+(* make up at least one justification link.                                   *)
 Lemma maximal_link_exists: forall st,
   good_votes st ->
   has_justification_link st ->
@@ -169,8 +167,8 @@ Proof.
   rewrite -Hval. rewrite /highest_sm_target. apply (highest_ub H2).
 Qed.
 
-(* Assuming good behavior, the target of a maximal justification link
-   is a maximal-hight justified block. *)
+(* Assuming good behavior, the target of a maximal justification linkis a     *)
+(* maximal-hight justified block.                                             *)
 Lemma maximal_link_highest_block: forall st s t s_h t_h b b_h,
   ~ q_intersection_slashed st ->
   good_votes st ->
@@ -205,7 +203,7 @@ Proof.
   move/eqP: Heq => Heq. assumption.
 Qed.
 
-(* Assuming good behavior, the highest justified block exists. *)
+(* Assuming good behavior, the highest justified block exists.                *)
 Lemma highest_exists: forall st,
   ~ q_intersection_slashed st ->
   good_votes st ->
@@ -238,18 +236,20 @@ Proof.
 Qed.
 
 (** Now we have some defintions used to state the conclusion of the theorem **)
-(* First, the solution only calls for votes from unslashed validators. *)
+
+(* First, the solution only calls for votes from unslashed validators.        *)
 Definition unslashed_can_extend st st' : Prop :=
   forall v s t s_h t_h,
     vote_msg st' v s t s_h t_h = true ->
     vote_msg st v s t s_h t_h = true \/ ~ slashed st v.
 
-(* Second, making the new votes does not cause any previously unslashed
-   validator to be slashed *)
+(* Second, making the new votes does not cause any previously unslashed       *)
+(* validator to be slashed                                                    *)
 Definition no_new_slashed st st' :=
   forall v, slashed st' v -> slashed st v.
 
 (** And finally, the overall plausible liveness theorem                           **)
+
 (* In addition to gloabal axioms, the theorem requires the following               *)
 (*   assumptions:                                                                  *)
 (*   (1) There exists a well behaving 2/3 quorum (for every block)                 *)
