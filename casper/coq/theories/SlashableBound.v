@@ -23,23 +23,23 @@ Open Scope fmap_scope.
 (******************************************************************************)
 
 (** Activation and Exit Sets **)
-(* The set of validators who activated from s1 to s2 *)
+(* The set of validators who activated from s1 to s2                          *)
 Definition activated (s1 s2: {set Validator}): {set Validator} :=
   s2 :\: s1.
 
-(* The set of validators who exited from s1 to s2 *)
+(* The set of validators who exited from s1 to s2                             *)
 Definition exited (s1 s2: {set Validator}): {set Validator} :=
   s1 :\: s2.
 
-(* The weight of new activations from s1 to s2 *)
+(* The weight of new activations from s1 to s2                                *)
 Definition actwt (s1 s2: {set Validator}): nat :=
   wt (activated s1 s2).
 
-(* The weight of validators who exited from s1 to s2 *)
+(* The weight of validators who exited from s1 to s2                          *)
 Definition extwt (s1 s2: {set Validator}): nat :=
   wt (exited s1 s2).
 
-(* Some additional lemmas about wt *)
+(** Some additional lemmas about wt **)
 Lemma wt_meet_bound : forall (s1 s2 s1' s2':{set Validator}),
   s1 \subset s1' -> 
   s2 \subset s2' ->
@@ -87,7 +87,7 @@ Proof.
   apply: wt_inc_leq. apply: set3D_subset.
 Qed.
 
-(* The main slashable bound theorem *)
+(** The main slashable bound theorem **)
 Theorem slashable_bound : forall st b0 b1 b2 b1_h b2_h k1 k2,
   k_finalized st b1 b1_h k1 ->
   k_finalized st b2 b2_h k2 ->
