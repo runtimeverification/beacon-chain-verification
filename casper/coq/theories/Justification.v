@@ -28,23 +28,25 @@ Tactic Notation "spec" hyp(H) constr(a) :=
 Tactic Notation "spec" hyp(H) constr(a) constr(b) :=
   (generalize (H a b); clear H; intro H).
 
-(* Definitions of justification and finalization *)
+(** Definitions of justification and finalization **)
 
-(* The set of validators voted for a given link *)
+(* The set of validators voted for a given link                             *)
 Definition link_supporters st s t s_h t_h : {set Validator} :=
   [set v | vote_msg st v s t s_h t_h ].
 
-(* The assumption that votes originate only from the vset of the target block
-   being voted for (Needed for liveness) *)
+(* The assumption that votes originate only from the vset of the target     *)
+(* block being voted for (Needed for liveness)                              *)
 Axiom votes_from_target_vset: forall x st s s_h t t_h, 
   x \in link_supporters st s t s_h t_h -> x \in vset.[vs_fun t].
 
-(* The voter set for a link constitute a supermajority *)
+(* The voter set for a link constitute a supermajority                      *)
 Definition supermajority_link (st:State) (s t : Hash) (s_h t_h : nat) : bool :=
   quorum_2 (link_supporters st s t s_h t_h) t.
 
-(* Adding more votes (from the same validators) to a state preserves supermajority links *)
-(** Note: Needs the assumption that the extra votes must have come from vset.[target] **)
+(* Adding more votes (from the same validators) to a state preserves        *)
+(* supermajority links.                                                     *)
+(* Note: This needs the assumption that the extra votes must have come from *)
+(* vset.[target]                                                            *)
 Lemma supermajority_weaken: forall (st st':State) s t s_h t_h
   (HSub:forall (v: Vote), v \in st -> v \in st'),
       supermajority_link st s t s_h t_h
@@ -61,14 +63,14 @@ Qed.
 
 (* Justification links must be proper: In addition to being a supermajority link, *)
 (* a justification link must be a valid forward link in the block tree with the   *)
-(* target's height being greater than the source's *)
+(* target's height being greater than the source's.                               *)
 Definition justification_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
   t_h > s_h /\
   nth_ancestor (t_h - s_h) s t /\
   supermajority_link st s t s_h t_h.
 
 (* We define justification of a block inductively in terms of a path from the     *)
-(* genesis block all the way to that block. *)
+(* genesis block all the way to that block.                                       *)
 Inductive justified (st:State) : Hash -> nat -> Prop :=
 | justified_genesis : justified st genesis 0
 | justified_link : forall s s_h t t_h,
@@ -77,7 +79,7 @@ Inductive justified (st:State) : Hash -> nat -> Prop :=
     justified st t t_h.
 
 (* Justification is preserved when the state is expanded with new votes (coming   *)
-(* from validators in the v-set of the justified block) *)
+(* from validators in the v-set of the justified block)                           *)
 Lemma justified_weaken: forall (st st':State) t t_h
     (HSub:forall (v: Vote), v \in st -> v \in st'),
   justified st t t_h -> justified st' t t_h.
@@ -91,15 +93,15 @@ Proof.
   apply supermajority_weaken. assumption.
 Qed.
 
-(* A finalized block is a justified block that has a child who is also justified  *)
-(* by a supermajority link to the block *)
+(* A finalized block is a justified block that has a child who is also justified by *)
+(* a supermajority link to the block                                                *)
 Definition finalized st b b_h :=
   justified st b b_h /\
   exists c, (b <~ c /\ supermajority_link st b c b_h b_h.+1).
 
 (* A k-finalized block is a justified block that has a k-descendent who is also     *)
 (* justified by a supermajority link to the block, and all blocks to the descendent *)
-(* are also justified *)
+(* are also justified                                                               *)
 Definition k_finalized st b b_h k :=
   k >= 1 /\ 
   exists ls, size ls = k.+1 /\
@@ -110,7 +112,7 @@ Definition k_finalized st b b_h k :=
         ) /\
         supermajority_link st b (last b ls) b_h (b_h+k). 
 
-(* 1-finalized <-> k-finalized *)
+(* finalized <-> 1-finalized                                                        *)
 Lemma finalized_means_one_finalized : forall st b b_h,
     finalized st b b_h <->
     k_finalized st b b_h 1. 
@@ -156,7 +158,7 @@ Proof.
   assumption.
 Qed. 
 
-(* A k-finalized block is justified *)
+(* A k-finalized block is justified                                                 *)
 Lemma k_finalized_means_justified: forall st b b_h k,
     k_finalized st b b_h k ->
     justified st b b_h. 
@@ -171,7 +173,7 @@ Proof.
   rewrite addn0. reflexivity.
 Qed. 
 
-(* A finalized block has a child who is justified *)
+(* A finalized block has a child who is justified                                   *)
 Lemma finalized_means_justified_child: forall st p p_h,
   finalized st p p_h -> exists c, p <~ c /\ justified st c p_h.+1.
 Proof.
