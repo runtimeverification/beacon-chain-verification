@@ -24,24 +24,25 @@ Open Scope big_scope.
 (******************************************************************************)
 
 
-(* A finite map vset defining the set of validators for a given block *)
+(* A finite map vset defining the set of validators for a given block       *)
 Parameter vset : {fmap Hash -> {set Validator}}.
 
-(* We assume the map vset is total *)
+(* We assume the map vset is total                                          *)
 Axiom vs_fun : forall h : Hash, h \in vset.
 
 (** Quorum Predicates **)
-(* A predicate for an "at least 1/3 weight" set of validators *)
+(* A predicate for an "at least 1/3 weight" set of validators               *)
 Definition quorum_1 (vs : {set Validator}) (b : Hash) : bool :=
   (vs \subset vset.[vs_fun b]) && 
   (wt vs >= one_third (wt vset.[vs_fun b])).
 
-(* A predicate for an "at least 2/3 weight" set of validators *)
+(* A predicate for an "at least 2/3 weight" set of validators               *)
 Definition quorum_2 (vs : {set Validator}) (b : Hash) : bool :=
   (vs \subset vset.[vs_fun b]) && 
   (wt vs >= two_third (wt vset.[vs_fun b])).
 
-(* Meaning of a validator set being slashed in thr context of dynamic validator sets *)
+(* Meaning of a validator set being slashed in the general context of       *)
+(* dynamic validator sets                                                   *)
 Definition q_intersection_slashed st :=
   exists (bL bR: Hash) (vL vR: {set Validator}),
     vL \subset vset.[vs_fun bL] /\ 
@@ -50,17 +51,25 @@ Definition q_intersection_slashed st :=
     quorum_2 vR bR /\
     forall v, v \in vL -> v \in vR -> slashed st v.
 
-(* The assumption on quorums that a supermajority quorum with respect to
-   a block is nonempty (Needed for liveness) *)
+(* The assumption on quorums that a supermajority quorum with respect to a  *)
+(* block is nonempty (Needed for liveness)                                  *)
 Axiom quorum_2_nonempty:
   forall (b:Hash) (q :{set Validator}), 
     quorum_2 q b -> exists v, v \in q.
 
-(* The assumption that, with respect to a block b, adding more b-validators
-   to a supermajority with respect to b leaves a supermajority (Needed for 
-   liveness) *)
-Axiom quorum_2_upclosed:
+(* The property that, with respect to a block b, adding more b-validators *)
+(* to a supermajority leaves a supermajority (Needed for liveness)        *)
+Lemma quorum_2_upclosed:
   forall (b:Hash) (q q':{set Validator}), 
     q \subset q' -> q' \subset vset.[vs_fun b] -> quorum_2 q b -> 
     quorum_2 q' b.
+Proof.
+  move=> b q q' Hqsubq' Hq'.
+  rewrite /quorum_2.
+  move/andP=> [Hq Hqwt].
+  apply/andP;split. exact Hq'.
+  apply wt_inc_leq in Hqsubq'.
+  by apply (leq_trans Hqwt Hqsubq').  
+Qed.
+
 

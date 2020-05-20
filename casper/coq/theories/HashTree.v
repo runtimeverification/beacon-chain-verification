@@ -16,9 +16,8 @@ Unset Printing Implicit Defensive.
 (* We assume finite hash values (block identifiers) *)
 Parameter Hash : finType.
 
-(* This relation links blocks (b,b'), written b <~ b', if b is a (the)
-   parent of b' in the block tree
- *)
+(* This relation links blocks (b,b'), written b <~ b', if b is the parent *)
+(* of b' in the block tree *)
 Parameter hash_parent : rel Hash.
 
 Notation "h1 <~ h2" := (hash_parent h1 h2) (at level 50).
@@ -27,7 +26,7 @@ Notation "h1 <~ h2" := (hash_parent h1 h2) (at level 50).
 Axiom hash_parent_irreflexive:
   forall h1 h2, h1 <~ h2 -> h1 <> h2.
 
-(* A block cannot have two parent blocks *)
+(* A block cannot have two distinct parent blocks *)
 Axiom hash_at_most_one_parent :
   forall h1 h2 h3, h2 <~ h1 -> h3 <~ h1 -> h2 = h3.
 
@@ -41,11 +40,10 @@ Notation "h1 </~* h2" := (~ hash_ancestor h1 h2) (at level 50).
 (* The genesis block *)
 Parameter genesis : Hash.
 
-(* We will need to use several properties of ancestry
-   inherited from the reflexive-transitive closure operation "connect".
-   We define these lemmas rather than unfolding the hash_ancestor
-   definition inside other proofs.
- *)
+(* We will need to use several properties of ancestry inherited from the *)
+(* reflexive-transitive closure operation "connect". We define these     *)
+(* lemmas rather than unfolding the hash_ancestor definition inside      *)
+(* other proofs. *)
 
 (* A block is an ancestor of itself *)
 Lemma hash_self_ancestor :

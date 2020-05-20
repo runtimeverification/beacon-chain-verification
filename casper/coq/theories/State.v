@@ -18,25 +18,23 @@ Unset Printing Implicit Defensive.
 (*                                                                            *)
 (* Each vote names source and target nodes by giving hash and height, and is  *)
 (* signed by a particular validator. This is taken directly from the way      *)
-(* votes are expressed in the Casper paper.                                   *)
+(* votes are expressed in the original Casper paper.                          *)
 (******************************************************************************)
 
-(* A vote is a tuple: 
- *        (attestor, source, target, source height, target height) 
- *)
+(* A vote is a tuple:                                                     *)
+(*        (attestor, source, target, source height, target height)        *)
+(*                                                                        *)
 Definition Vote := (Validator * Hash * Hash * nat * nat)%type.
 
-(* A State is described by the finite set of votes cast.
- *)
+(* A State is described by the finite set of votes cast.                  *)
 Definition State := {fset Vote}.
 
-(* A boolean vote_msg predicate that tells us whether a vote belongs to
- * the state
- *)
-Definition vote_msg (st:State) v s t (s_h t_h:nat) : bool
-  := (v,s,t,s_h,t_h) \in st .
+(* A boolean vote_msg predicate that tells us whether a vote belongs to   *)
+(* the state                                                              *)
+Definition vote_msg (st:State) v s t (s_h t_h:nat) : bool := 
+  (v,s,t,s_h,t_h) \in st .
 
-(* Vote projection operations *)
+(* Vote projection operations                                             *)
 Definition vote_val (v:Vote) : Validator :=
   match v with
     (x,_,_,_,_) => x

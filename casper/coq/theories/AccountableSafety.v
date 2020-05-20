@@ -25,25 +25,25 @@ Unset Printing Implicit Defensive.
 (* The accountable safety theorem                                             *)
 (******************************************************************************)
 
-(* A state has a fork when two conflicting blocks are both finalized *)
+(* A state has a fork when two conflicting blocks are both finalized          *)
 Definition finalization_fork st :=
   exists b1 b1_h b2 b2_h,
     finalized st b1 b1_h /\
     finalized st b2 b2_h /\
     b2 </~* b1 /\ b1 </~* b2.
 
-(* A fork may have finalizations of different depths *)
+(* A fork may have finalizations of different depths                          *)
 Definition k_finalization_fork st k1 k2 :=
   exists b1 b1_h b2 b2_h,
     k_finalized st b1 b1_h k1 /\
     k_finalized st b2 b2_h k2 /\
     b2 </~* b1 /\ b1 </~* b2.
 
-(* Or a fork may have finalizations of the same depth *)
+(* Or a fork may have finalizations of the same depth                         *)
 Definition same_k_finalization_fork st k :=
   k_finalization_fork st k k.
 
-(* finalization_fork means same_k_finalization_fork at depth 1 *)
+(* finalization_fork means same_k_finalization_fork at depth 1                *)
 Lemma finalization_fork_means_same_finalization_fork_one :
   forall st,
     finalization_fork st <-> same_k_finalization_fork st 1. 
@@ -59,7 +59,8 @@ Proof.
   eauto.
 Qed.
 
-(* No two different blocks can be justified at the same height without a quorum being slashed *)
+(* No two different blocks can be justified at the same height without a      *)
+(* quorum being slashed                                                       *)
 Lemma no_two_justified_same_height: forall st b1 b1_h b2 b2_h,
   justified st b1 b1_h ->
   justified st b2 b2_h ->
@@ -88,7 +89,7 @@ destruct Hj1 as [| sb1 sb1_h b1 b1_h Hjs1 [Hh1 [Ha1 Hsm1]]] eqn:E1.
     by move/andP: Hsm2 => [Hsub2 _].
   
   intros v Hvinq1 Hvinq2. unfold slashed. left.
-  unfold slashed_dbl_vote.
+  unfold slashed_double_vote.
   exists b1, b2. split;[assumption|].
   exists sb1, sb1_h, sb2, sb2_h, b2_h.
   unfold vote_msg.
@@ -97,8 +98,8 @@ destruct Hj1 as [| sb1 sb1_h b1 b1_h Hjs1 [Hh1 [Ha1 Hsm1]]] eqn:E1.
   easy.
 Qed.
 
-(* No block can be finalized at a height at which some other block is justified without a *)
-(* quorum being slashed *)
+(* No block can be finalized at a height at which some other block is         *)
+(* justified without a quorum being slashed *)
 Lemma no_k_finalized_justified_same_height : forall st bf bf_h bj bj_h k,
   k_finalized st bf bf_h k ->
   justified st bj bj_h ->
@@ -114,8 +115,8 @@ Proof.
   assumption. assumption.
 Qed. 
 
-(* Slash-surround case of the inductive step of the safety proof *)
-(* The specific case of proper link containment *)
+(* Slash-surround case of the inductive step of the safety proof              *)
+(* - The specific case of proper link containment                             *)
 Lemma k_slash_surround_case_general : forall st s t final s_h t_h final_h k,
   justified st s s_h ->
   justification_link st s t s_h t_h ->
@@ -143,7 +144,7 @@ Proof.
   intros v Hvinq1 Hvinq2.
   rewrite in_set in Hvinq1. rewrite in_set in Hvinq2.
   unfold slashed. right.
-  unfold slashed_surround.
+  unfold slashed_surround_vote.
   exists s, t, s_h, t_h. exists final, (last final ls), final_h, (final_h + k).
   repeat (split;try assumption).
   by apply/ltP.
@@ -202,9 +203,9 @@ Proof.
   contradiction. assumption. 
 Qed.
 
-(* Slash-surround case of the inductive step of the safety proof *)
-(* The general case *)
-(* The inductive reasoning step for the safety proof case of non-equal heights*)
+(* Slash-surround case of the inductive step of the safety proof              *)
+(* - The general case: The inductive reasoning step for the safety proof case *)
+(* of non-equal heights*)
 Lemma k_non_equal_height_case_ind : forall st b1 b1_h b2 b2_h k,
   justified st b1 b1_h ->
   k_finalized st b2 b2_h k ->
@@ -296,7 +297,7 @@ case: Ho => // Ho.
 apply Hconf in Ho;[contradiction|assumption].
 Qed.
 
-(* A quorum is slashed if any two conflicting blocks are finalized *)
+(* Safety: A quorum is slashed if any two conflicting blocks are finalized    *)
 Lemma k_safety' : forall st b1 b1_h b2 b2_h k1 k2,
   k_finalized st b1 b1_h k1 ->
   k_finalized st b2 b2_h k2 ->
@@ -324,7 +325,7 @@ Proof.
         by apply: k_non_equal_height_case; eauto.
 Qed.
 
-(* The main accountable safety theorem *)
+(** The main accountable safety theorems **)
 Theorem k_accountable_safety : forall st k1 k2, 
   k_finalization_fork st k1 k2 -> q_intersection_slashed st.
 Proof.
