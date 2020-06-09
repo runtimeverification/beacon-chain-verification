@@ -1,12 +1,12 @@
 # Settings
 # --------
 
-BUILD_DIR:=.build
-DEFN_DIR:=$(BUILD_DIR)/defn
+BUILD_DIR := .build
+DEFN_DIR  := $(BUILD_DIR)/defn
 
-DEPS_DIR:=../deps
-K_SUBMODULE:=$(abspath $(DEPS_DIR)/k)
-PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
+DEPS_DIR                := ../deps
+K_SUBMODULE             := $(abspath $(DEPS_DIR)/k)
+PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
 
 K_RELEASE ?= $(K_SUBMODULE)/k-distribution/target/release/k
 K_BIN     := $(K_RELEASE)/bin
@@ -15,14 +15,14 @@ export K_RELEASE
 
 K_BUILD_TYPE := FastBuild
 
-PATH:=$(K_BIN):$(PATH)
+PATH := $(K_BIN):$(PATH)
 export PATH
 
-PYTHONPATH:=$(K_LIB)
+PYTHONPATH := $(K_LIB)
 export PYTHONPATH
 
-TANGLER:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
-LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
+TANGLER  := $(PANDOC_TANGLE_SUBMODULE)/tangle.lua
+LUA_PATH := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
