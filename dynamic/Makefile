@@ -86,11 +86,9 @@ EXTRA_SOURCE_FILES :=
 
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_MD_FILES)) $(patsubst %, %.k, $(SOURCE_K_FILES)) $(EXTRA_SOURCE_FILES)
 
-.PHONY: defn  defn-concrete  defn-symbolic  \
-        build build-concrete build-symbolic \
+.PHONY: build build-concrete build-symbolic \
         split-proof
 
-defn:  defn-concrete  defn-symbolic
 build: build-concrete build-symbolic split-proof
 
 split-proof: process-justification-finalization-spec.k process-justification-finalization-lemma.k
@@ -127,7 +125,6 @@ concrete_main_file     := verification.k
 concrete_kompiled      := $(concrete_dir)/verification-kompiled/timestamp
 concrete_tangle        := k & (concrete | ! symbolic)
 
-defn-concrete:  $(concrete_files)
 build-concrete: $(concrete_kompiled)
 
 $(concrete_kompiled): $(concrete_files)
@@ -148,7 +145,6 @@ symbolic_main_file     := verification.k
 symbolic_kompiled      := $(symbolic_dir)/verification-kompiled/timestamp
 symbolic_tangle        := k & (symbolic | ! concrete)
 
-defn-symbolic:  $(symbolic_files)
 build-symbolic: $(symbolic_kompiled)
 
 $(symbolic_kompiled): $(symbolic_files)
