@@ -41,9 +41,6 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -f process-justification-finalization-spec.k process-justification-finalization-lemma.k
 
-clean-submodules:
-	rm -rf $(DEPS_DIR)/k/submodule.timestamp $(DEPS_DIR)/k/mvn.timestamp $(DEPS_DIR)/pandoc-tangle/submodule.timestamp
-
 # Dependencies
 # ------------
 
@@ -51,11 +48,7 @@ clean-submodules:
 
 deps: deps-k deps-tangle
 deps-k: $(K_JAR)
-deps-tangle: $(PANDOC_TANGLE_SUBMODULE)/submodule.timestamp
-
-%/submodule.timestamp:
-	git submodule update --init --recursive -- $*
-	touch $@
+deps-tangle: $(TANGLER)
 
 $(K_JAR):
 	cd $(K_SUBMODULE) && mvn package -DskipTests -Dproject.build.type=$(K_BUILD_TYPE)
