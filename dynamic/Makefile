@@ -64,10 +64,27 @@ MAIN_MODULE    := DYNAMIC-ABSTRACT-BEACON-CHAIN
 SYNTAX_MODULE  := $(MAIN_MODULE)-SYNTAX
 MAIN_DEFN_FILE := dynamic-abstract-beacon-chain
 
-KOMPILE_OPTS :=
+SOURCE_MD_FILES    := dynamic-abstract-beacon-chain           \
+                      dynamic-abstract-beacon-chain-syntax    \
+                      process-justification-finalization-spec
 
-k_files := $(MAIN_DEFN_FILE).k \
-           $(MAIN_DEFN_FILE)-syntax.k
+SOURCE_K_FILES     := process-attestation-spec                      \
+                      process-block-spec                            \
+                      process-deposit-spec                          \
+                      process-epoch-spec                            \
+                      process-rewards-penalties-spec                \
+                      process-slashing-spec                         \
+                      process-slots-spec                            \
+                      process-validator-activation-eligibility-spec \
+                      process-validator-activation-spec             \
+                      process-validator-ejection-spec               \
+                      process-validator-exit-spec                   \
+                      process-validator-updates-spec                \
+                      verification
+
+EXTRA_SOURCE_FILES :=
+
+ALL_FILES          := $(patsubst %, %.md, $(SOURCE_MD_FILES)) $(patsubst %, %.k, $(SOURCE_K_FILES)) $(EXTRA_SOURCE_FILES)
 
 .PHONY: defn  defn-concrete  defn-symbolic  \
         build build-concrete build-symbolic \
@@ -84,47 +101,62 @@ process-justification-finalization-spec.k: process-justification-finalization-sp
 process-justification-finalization-lemma.k: process-justification-finalization-spec.md
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@
 
+KOMPILE_OPTS += --emit-json
+
+ifneq (,$(RELEASE))
+    KOMPILE_OPTS += -O3
+endif
+
+KOMPILE_CONCRETE_OPTS :=
+
+KOMPILE_CONCRETE := kompile --debug --backend java --md-selector $(tangle_concrete) \
+                    $(KOMPILE_OPTS) $(KOMPILE_CONCRETE_OPTS)
+
+KOMPILE_SYMBOLIC_OPTS :=
+
+KOMPILE_SYMBOLIC := kompile --debug --backend java --md-selector $(tangle_symbolic) \
+                    $(KOMPILE_OPTS) $(KOMPILE_SYMBOLIC_OPTS)
+
 ### Concrete Backend
 
-concrete_dir      := $(DEFN_DIR)/concrete
-concrete_files    := $(patsubst %,$(concrete_dir)/%,$(k_files))
-concrete_kompiled := $(concrete_dir)/verification-kompiled/timestamp
-concrete_tangle   := .k:not(.symbolic),.concrete
+concrete_dir           := $(DEFN_DIR)/concrete
+concrete_files         := $(ALL_FILES)
+concrete_main_module   := VERIFICATION
+concrete_syntax_module := $(concrete_main_module)-SYNTAX
+concrete_main_file     := verification.k
+concrete_kompiled      := $(concrete_dir)/verification-kompiled/timestamp
+concrete_tangle        := k & (concrete | ! symbolic)
 
-defn-concrete: $(concrete_files)
+defn-concrete:  $(concrete_files)
 build-concrete: $(concrete_kompiled)
 
-$(concrete_dir)/%.k: %.md
-	@mkdir -p $(concrete_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
-
-$(concrete_kompiled): $(concrete_files) verification.k
-	kompile --debug --main-module VERIFICATION --backend java \
-	        --syntax-module $(SYNTAX_MODULE) verification.k   \
-	        --directory $(concrete_dir) -I $(concrete_dir)    \
-	        --emit-json                                       \
-	        $(KOMPILE_OPTS)
+$(concrete_kompiled): $(concrete_files)
+	$(KOMPILE_CONCRETE) $(concrete_main_file)         \
+	        --main-module $(concrete_main_module)     \
+	        --syntax-module $(concrete_syntax_module) \
+	        --directory $(concrete_dir)               \
+	        -I $(CURDIR)
 
 ### Symbolic Backend
 
-symbolic_dir      := $(DEFN_DIR)/symbolic
-symbolic_files    := $(patsubst %,$(symbolic_dir)/%,$(k_files))
-symbolic_kompiled := $(symbolic_dir)/verification-kompiled/timestamp
-symbolic_tangle   := .k:not(.concrete),.symbolic
+
+symbolic_dir           := $(DEFN_DIR)/symbolic
+symbolic_files         := $(ALL_FILES)
+symbolic_main_module   := VERIFICATION
+symbolic_syntax_module := $(symbolic_main_module)-SYNTAX
+symbolic_main_file     := verification.k
+symbolic_kompiled      := $(symbolic_dir)/verification-kompiled/timestamp
+symbolic_tangle        := k & (symbolic | ! concrete)
 
 defn-symbolic:  $(symbolic_files)
 build-symbolic: $(symbolic_kompiled)
 
-$(symbolic_dir)/%.k: %.md
-	@mkdir -p $(symbolic_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
-
-$(symbolic_kompiled): $(symbolic_files) verification.k
-	kompile --debug --main-module VERIFICATION --backend java \
-	        --syntax-module $(SYNTAX_MODULE) verification.k   \
-	        --directory $(symbolic_dir) -I $(symbolic_dir)    \
-	        --emit-json                                       \
-	        $(KOMPILE_OPTS)
+$(symbolic_kompiled): $(symbolic_files)
+	$(KOMPILE_SYMBOLIC) $(symbolic_main_file)         \
+	        --main-module $(symbolic_main_module)     \
+	        --syntax-module $(symbolic_syntax_module) \
+	        --directory $(symbolic_dir)               \
+	        -I $(CURDIR)
 
 # Test
 # ----
