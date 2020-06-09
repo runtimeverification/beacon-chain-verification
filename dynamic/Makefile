@@ -18,8 +18,6 @@ K_BIN := $(K_RELEASE)/bin
 K_LIB := $(K_RELEASE)/lib/kframework
 export K_RELEASE
 
-K_BUILD_TYPE := FastBuild
-
 PATH := $(K_BIN):$(PATH)
 export PATH
 
@@ -49,6 +47,12 @@ clean:
 deps: deps-k deps-tangle
 deps-k: $(K_JAR)
 deps-tangle: $(TANGLER)
+
+ifneq ($(RELEASE),)
+    K_BUILD_TYPE := FastBuild
+else
+    K_BUILD_TYPE := Debug
+endif
 
 $(K_JAR):
 	cd $(K_SUBMODULE) && mvn package -DskipTests -Dproject.build.type=$(K_BUILD_TYPE)
