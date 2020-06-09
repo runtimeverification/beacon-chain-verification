@@ -8,6 +8,7 @@ DEPS_DIR                := ../deps
 PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
 
 K_SUBMODULE := $(abspath $(DEPS_DIR)/k)
+K_JAR       := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
 ifneq (,$(wildcard $(K_SUBMODULE)/k-distribution/target/release/k/bin/*))
     K_RELEASE ?= $(abspath $(K_SUBMODULE)/k-distribution/target/release/k)
 else
@@ -49,16 +50,15 @@ clean-submodules:
 .PHONY: deps deps-k deps-tangle
 
 deps: deps-k deps-tangle
-deps-k: $(K_SUBMODULE)/mvn.timestamp
+deps-k: $(K_JAR)
 deps-tangle: $(PANDOC_TANGLE_SUBMODULE)/submodule.timestamp
 
 %/submodule.timestamp:
 	git submodule update --init --recursive -- $*
 	touch $@
 
-$(K_SUBMODULE)/mvn.timestamp: $(K_SUBMODULE)/submodule.timestamp
+$(K_JAR):
 	cd $(K_SUBMODULE) && mvn package -DskipTests -Dproject.build.type=$(K_BUILD_TYPE)
-	touch $(K_SUBMODULE)/mvn.timestamp
 
 # Building
 # --------
