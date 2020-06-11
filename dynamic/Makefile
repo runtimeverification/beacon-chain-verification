@@ -97,10 +97,10 @@ build: build-concrete build-symbolic split-proof
 
 split-proof: process-justification-finalization-spec.k process-justification-finalization-lemma.k
 
-process-justification-finalization-spec.k: process-justification-finalization-spec.md
+process-justification-finalization-spec.k: process-justification-finalization-spec.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.lemma),.proof" $< > $@
 
-process-justification-finalization-lemma.k: process-justification-finalization-spec.md
+process-justification-finalization-lemma.k: process-justification-finalization-spec.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@
 
 KOMPILE_OPTS += --emit-json
