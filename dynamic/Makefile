@@ -115,7 +115,7 @@ KOMPILE_SYMBOLIC := kompile --debug --backend java --md-selector "$(tangle_symbo
 concrete_dir           := $(DEFN_DIR)/concrete
 concrete_files         := $(ALL_FILES)
 concrete_main_module   := VERIFICATION
-concrete_syntax_module := $(concrete_main_module)-SYNTAX
+concrete_syntax_module := DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 concrete_main_file     := verification.k
 concrete_kompiled      := $(concrete_dir)/verification-kompiled/timestamp
 
@@ -134,7 +134,7 @@ $(concrete_kompiled): $(concrete_files)
 symbolic_dir           := $(DEFN_DIR)/symbolic
 symbolic_files         := $(ALL_FILES)
 symbolic_main_module   := VERIFICATION
-symbolic_syntax_module := $(symbolic_main_module)-SYNTAX
+symbolic_syntax_module := DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
 symbolic_main_file     := verification.k
 symbolic_kompiled      := $(symbolic_dir)/verification-kompiled/timestamp
 
