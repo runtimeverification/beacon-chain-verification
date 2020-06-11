@@ -8,7 +8,7 @@ DEPS_DIR                := ../deps
 PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
 
 K_SUBMODULE := $(abspath $(DEPS_DIR)/k)
-K_JAR       := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
+
 ifneq (,$(wildcard $(K_SUBMODULE)/k-distribution/target/release/k/bin/*))
     K_RELEASE ?= $(abspath $(K_SUBMODULE)/k-distribution/target/release/k)
 else
@@ -42,11 +42,12 @@ clean:
 # Dependencies
 # ------------
 
-.PHONY: deps deps-k deps-tangle
+K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
 
-deps: deps-k deps-tangle
+.PHONY: deps deps-k
+
+deps: deps-k
 deps-k: $(K_JAR)
-deps-tangle: $(TANGLER)
 
 ifneq ($(RELEASE),)
     K_BUILD_TYPE := FastBuild
