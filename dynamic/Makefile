@@ -86,6 +86,9 @@ EXTRA_SOURCE_FILES :=
 
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_MD_FILES)) $(patsubst %, %.k, $(SOURCE_K_FILES)) $(EXTRA_SOURCE_FILES)
 
+tangle_concrete := k & (concrete | ! symbolic)
+tangle_symbolic := k & (symbolic | ! concrete)
+
 .PHONY: build build-concrete build-symbolic \
         split-proof
 
@@ -107,12 +110,12 @@ endif
 
 KOMPILE_CONCRETE_OPTS :=
 
-KOMPILE_CONCRETE := kompile --debug --backend java --md-selector $(tangle_concrete) \
+KOMPILE_CONCRETE := kompile --debug --backend java --md-selector "$(tangle_concrete)" \
                     $(KOMPILE_OPTS) $(KOMPILE_CONCRETE_OPTS)
 
 KOMPILE_SYMBOLIC_OPTS :=
 
-KOMPILE_SYMBOLIC := kompile --debug --backend java --md-selector $(tangle_symbolic) \
+KOMPILE_SYMBOLIC := kompile --debug --backend java --md-selector "$(tangle_symbolic)" \
                     $(KOMPILE_OPTS) $(KOMPILE_SYMBOLIC_OPTS)
 
 ### Concrete Backend
@@ -123,7 +126,6 @@ concrete_main_module   := VERIFICATION
 concrete_syntax_module := $(concrete_main_module)-SYNTAX
 concrete_main_file     := verification.k
 concrete_kompiled      := $(concrete_dir)/verification-kompiled/timestamp
-concrete_tangle        := k & (concrete | ! symbolic)
 
 build-concrete: $(concrete_kompiled)
 
@@ -143,7 +145,6 @@ symbolic_main_module   := VERIFICATION
 symbolic_syntax_module := $(symbolic_main_module)-SYNTAX
 symbolic_main_file     := verification.k
 symbolic_kompiled      := $(symbolic_dir)/verification-kompiled/timestamp
-symbolic_tangle        := k & (symbolic | ! concrete)
 
 build-symbolic: $(symbolic_kompiled)
 
