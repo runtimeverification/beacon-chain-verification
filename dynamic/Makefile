@@ -140,12 +140,14 @@ concrete_tests := $(wildcard tests/concrete/*.abc)
 tests/concrete/%.abc.run: tests/concrete/%.abc $(concrete_kompiled)
 	krun -d $(concrete_dir) $< > $<.out
 	$(CHECK) $<.out $<.expected
+	rm $<.out
 
 prove_tests := $(wildcard *-spec.k)
 
 %-spec.k.prove: %-spec.k $(symbolic_kompiled)
 	kprove -d $(symbolic_dir) -m VERIFICATION -w none $< > $<.out
 	$(CHECK) $<.out tests/success.out
+	rm $<.out
 
 test-concrete: $(concrete_tests:=.run)
 test-prove:    $(prove_tests:=.prove)
