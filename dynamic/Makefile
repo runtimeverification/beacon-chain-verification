@@ -174,7 +174,7 @@ tests/concrete/%.abc.run: tests/concrete/%.abc $(concrete_kompiled)
 
 prove_tests := $(wildcard *-spec.k)
 
-%-spec.k.prove: %-spec.k $(symbolic_kompiled)
+%-spec.k.prove: %-spec.k $(symbolic_kompiled) process-justification-finalization-spec.k process-justification-finalization-lemma.k
 	kprove -d $(symbolic_dir) -m VERIFICATION -w none $< > $<.out
 	$(CHECK) $<.out tests/success.out
 	rm $<.out
