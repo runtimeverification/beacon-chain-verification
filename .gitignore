@@ -2,6 +2,7 @@
 /dynamic/process-justification-finalization-lemma.k
 /dynamic/process-justification-finalization-spec.k
 /dynamic/tests/concrete/*.out
+/dynamic/*-spec.k.out
 .kompile*
 .kprove*
 .krun*
