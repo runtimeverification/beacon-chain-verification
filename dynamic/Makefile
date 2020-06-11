@@ -8,7 +8,7 @@ DEPS_DIR                := ../deps
 PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
 
 K_SUBMODULE := $(abspath $(DEPS_DIR)/k)
-K_JAR       := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
+
 ifneq (,$(wildcard $(K_SUBMODULE)/k-distribution/target/release/k/bin/*))
     K_RELEASE ?= $(abspath $(K_SUBMODULE)/k-distribution/target/release/k)
 else
@@ -42,11 +42,12 @@ clean:
 # Dependencies
 # ------------
 
-.PHONY: deps deps-k deps-tangle
+K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
 
-deps: deps-k deps-tangle
+.PHONY: deps deps-k
+
+deps: deps-k
 deps-k: $(K_JAR)
-deps-tangle: $(TANGLER)
 
 ifneq ($(RELEASE),)
     K_BUILD_TYPE := FastBuild
@@ -64,67 +65,72 @@ MAIN_MODULE    := DYNAMIC-ABSTRACT-BEACON-CHAIN
 SYNTAX_MODULE  := $(MAIN_MODULE)-SYNTAX
 MAIN_DEFN_FILE := dynamic-abstract-beacon-chain
 
-KOMPILE_OPTS :=
+SOURCE_MD_FILES    := dynamic-abstract-beacon-chain        \
+                      dynamic-abstract-beacon-chain-syntax
+SOURCE_K_FILES     := verification
+EXTRA_SOURCE_FILES :=
 
-k_files := $(MAIN_DEFN_FILE).k \
-           $(MAIN_DEFN_FILE)-syntax.k
+ALL_FILES          := $(patsubst %, %.md, $(SOURCE_MD_FILES)) $(patsubst %, %.k, $(SOURCE_K_FILES)) $(EXTRA_SOURCE_FILES)
 
-.PHONY: defn  defn-concrete  defn-symbolic  \
-        build build-concrete build-symbolic \
-        split-proof
+tangle_concrete := k & (concrete | ! symbolic)
+tangle_symbolic := k & (symbolic | ! concrete)
 
-defn:  defn-concrete  defn-symbolic
-build: build-concrete build-symbolic split-proof
+.PHONY: build build-concrete build-symbolic
 
-split-proof: process-justification-finalization-spec.k process-justification-finalization-lemma.k
+build: build-concrete build-symbolic
 
-process-justification-finalization-spec.k: process-justification-finalization-spec.md
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.lemma),.proof" $< > $@
+KOMPILE_OPTS += --emit-json
 
-process-justification-finalization-lemma.k: process-justification-finalization-spec.md
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@
+ifneq (,$(RELEASE))
+    KOMPILE_OPTS += -O3
+endif
+
+KOMPILE_CONCRETE_OPTS :=
+
+KOMPILE_CONCRETE := kompile --debug --backend java --md-selector "$(tangle_concrete)" \
+                    $(KOMPILE_OPTS) $(KOMPILE_CONCRETE_OPTS)
+
+KOMPILE_SYMBOLIC_OPTS :=
+
+KOMPILE_SYMBOLIC := kompile --debug --backend java --md-selector "$(tangle_symbolic)" \
+                    $(KOMPILE_OPTS) $(KOMPILE_SYMBOLIC_OPTS)
 
 ### Concrete Backend
 
-concrete_dir      := $(DEFN_DIR)/concrete
-concrete_files    := $(patsubst %,$(concrete_dir)/%,$(k_files))
-concrete_kompiled := $(concrete_dir)/verification-kompiled/timestamp
-concrete_tangle   := .k:not(.symbolic),.concrete
+concrete_dir           := $(DEFN_DIR)/concrete
+concrete_files         := $(ALL_FILES)
+concrete_main_module   := VERIFICATION
+concrete_syntax_module := DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
+concrete_main_file     := verification.k
+concrete_kompiled      := $(concrete_dir)/verification-kompiled/timestamp
 
-defn-concrete: $(concrete_files)
 build-concrete: $(concrete_kompiled)
 
-$(concrete_dir)/%.k: %.md
-	@mkdir -p $(concrete_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
-
-$(concrete_kompiled): $(concrete_files) verification.k
-	kompile --debug --main-module VERIFICATION --backend java \
-	        --syntax-module $(SYNTAX_MODULE) verification.k   \
-	        --directory $(concrete_dir) -I $(concrete_dir)    \
-	        --emit-json                                       \
-	        $(KOMPILE_OPTS)
+$(concrete_kompiled): $(concrete_files)
+	$(KOMPILE_CONCRETE) $(concrete_main_file)         \
+	        --main-module $(concrete_main_module)     \
+	        --syntax-module $(concrete_syntax_module) \
+	        --directory $(concrete_dir)               \
+	        -I $(CURDIR)
 
 ### Symbolic Backend
 
-symbolic_dir      := $(DEFN_DIR)/symbolic
-symbolic_files    := $(patsubst %,$(symbolic_dir)/%,$(k_files))
-symbolic_kompiled := $(symbolic_dir)/verification-kompiled/timestamp
-symbolic_tangle   := .k:not(.concrete),.symbolic
 
-defn-symbolic:  $(symbolic_files)
+symbolic_dir           := $(DEFN_DIR)/symbolic
+symbolic_files         := $(ALL_FILES)
+symbolic_main_module   := VERIFICATION
+symbolic_syntax_module := DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
+symbolic_main_file     := verification.k
+symbolic_kompiled      := $(symbolic_dir)/verification-kompiled/timestamp
+
 build-symbolic: $(symbolic_kompiled)
 
-$(symbolic_dir)/%.k: %.md
-	@mkdir -p $(symbolic_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
-
-$(symbolic_kompiled): $(symbolic_files) verification.k
-	kompile --debug --main-module VERIFICATION --backend java \
-	        --syntax-module $(SYNTAX_MODULE) verification.k   \
-	        --directory $(symbolic_dir) -I $(symbolic_dir)    \
-	        --emit-json                                       \
-	        $(KOMPILE_OPTS)
+$(symbolic_kompiled): $(symbolic_files)
+	$(KOMPILE_SYMBOLIC) $(symbolic_main_file)         \
+	        --main-module $(symbolic_main_module)     \
+	        --syntax-module $(symbolic_syntax_module) \
+	        --directory $(symbolic_dir)               \
+	        -I $(CURDIR)
 
 # Test
 # ----
@@ -144,10 +150,16 @@ tests/concrete/%.abc.run: tests/concrete/%.abc $(concrete_kompiled)
 
 prove_tests := $(wildcard *-spec.k)
 
-%-spec.k.prove: %-spec.k $(symbolic_kompiled)
+%-spec.k.prove: %-spec.k $(symbolic_kompiled) process-justification-finalization-spec.k process-justification-finalization-lemma.k
 	kprove -d $(symbolic_dir) -m VERIFICATION -w none $< > $<.out
 	$(CHECK) $<.out tests/success.out
 	rm $<.out
 
 test-concrete: $(concrete_tests:=.run)
 test-prove:    $(prove_tests:=.prove)
+
+process-justification-finalization-spec.k: process-justification-finalization-spec.md $(TANGLER)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.lemma),.proof" $< > $@
+
+process-justification-finalization-lemma.k: process-justification-finalization-spec.md $(TANGLER)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@

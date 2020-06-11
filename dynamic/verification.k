@@ -1,4 +1,4 @@
-require "dynamic-abstract-beacon-chain.k"
+require "dynamic-abstract-beacon-chain.md"
 require "substitution.k"
 
 module LEMMAS-JAVA [kast]
