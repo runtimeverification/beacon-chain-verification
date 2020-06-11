@@ -70,10 +70,19 @@ k_files := $(MAIN_DEFN_FILE).k \
            $(MAIN_DEFN_FILE)-syntax.k
 
 .PHONY: defn  defn-concrete  defn-symbolic  \
-        build build-concrete build-symbolic
+        build build-concrete build-symbolic \
+        split-proof
 
 defn:  defn-concrete  defn-symbolic
-build: build-concrete build-symbolic
+build: build-concrete build-symbolic split-proof
+
+split-proof: process-justification-finalization-spec.k process-justification-finalization-lemma.k
+
+process-justification-finalization-spec.k: process-justification-finalization-spec.md
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.lemma),.proof" $< > $@
+
+process-justification-finalization-lemma.k: process-justification-finalization-spec.md
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@
 
 ### Concrete Backend
 
@@ -120,34 +129,23 @@ $(symbolic_kompiled): $(symbolic_files) verification.k
 # Test
 # ----
 
-.PHONY: test test-concrete proof proof-lemmas
+CHECK := git --no-pager diff --no-index --ignore-all-space -R
 
-test: test-concrete proof proof-lemmas
+.PHONY: test test-concrete test-prove
 
-test-concrete: build-concrete
-	krun   -d $(concrete_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out-java
-	krun   -d $(concrete_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out-java
-	krun   -d $(concrete_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out-java
+test: test-concrete test-prove
 
-proof: build-symbolic process-justification-finalization-spec.k process-justification-finalization-lemma.k
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-block-spec.k                            | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-epoch-spec.k                            | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-justification-finalization-spec.k       | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-slots-spec.k                            | diff - tests/success.out
+concrete_tests := $(wildcard tests/concrete/*.abc)
 
-proof-lemmas: build-symbolic
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-attestation-spec.k                      | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-deposit-spec.k                          | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-rewards-penalties-spec.k                | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-slashing-spec.k                         | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-activation-eligibility-spec.k | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-activation-spec.k             | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-ejection-spec.k               | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-exit-spec.k                   | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-updates-spec.k                | diff - tests/success.out
+tests/concrete/%.abc.run: tests/concrete/%.abc $(concrete_kompiled)
+	krun -d $(concrete_dir) $< > $<.out
+	$(CHECK) $<.out $<.expected
 
-process-justification-finalization-spec.k: process-justification-finalization-spec.md
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.lemma),.proof" $< > $@
+prove_tests := $(wildcard *-spec.k)
 
-process-justification-finalization-lemma.k: process-justification-finalization-spec.md
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@
+%-spec.k.prove: %-spec.k $(symbolic_kompiled)
+	kprove -d $(symbolic_dir) -m VERIFICATION -w none $< > $<.out
+	$(CHECK) $<.out tests/success.out
+
+test-concrete: $(concrete_tests:=.run)
+test-prove:    $(prove_tests:=.prove)

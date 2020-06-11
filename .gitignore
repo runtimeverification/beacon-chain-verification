@@ -1,4 +1,6 @@
 /*/.build
+/dynamic/process-justification-finalization-lemma.k
+/dynamic/process-justification-finalization-spec.k
 .kompile*
 .kprove*
 .krun*
