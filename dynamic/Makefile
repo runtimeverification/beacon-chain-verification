@@ -90,18 +90,9 @@ ALL_FILES          := $(patsubst %, %.md, $(SOURCE_MD_FILES)) $(patsubst %, %.k,
 tangle_concrete := k & (concrete | ! symbolic)
 tangle_symbolic := k & (symbolic | ! concrete)
 
-.PHONY: build build-concrete build-symbolic \
-        split-proof
+.PHONY: build build-concrete build-symbolic
 
-build: build-concrete build-symbolic split-proof
-
-split-proof: process-justification-finalization-spec.k process-justification-finalization-lemma.k
-
-process-justification-finalization-spec.k: process-justification-finalization-spec.md $(TANGLER)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.lemma),.proof" $< > $@
-
-process-justification-finalization-lemma.k: process-justification-finalization-spec.md $(TANGLER)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@
+build: build-concrete build-symbolic
 
 KOMPILE_OPTS += --emit-json
 
@@ -181,3 +172,9 @@ prove_tests := $(wildcard *-spec.k)
 
 test-concrete: $(concrete_tests:=.run)
 test-prove:    $(prove_tests:=.prove)
+
+process-justification-finalization-spec.k: process-justification-finalization-spec.md $(TANGLER)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.lemma),.proof" $< > $@
+
+process-justification-finalization-lemma.k: process-justification-finalization-spec.md $(TANGLER)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@
