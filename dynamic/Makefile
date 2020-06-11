@@ -65,24 +65,9 @@ MAIN_MODULE    := DYNAMIC-ABSTRACT-BEACON-CHAIN
 SYNTAX_MODULE  := $(MAIN_MODULE)-SYNTAX
 MAIN_DEFN_FILE := dynamic-abstract-beacon-chain
 
-SOURCE_MD_FILES    := dynamic-abstract-beacon-chain           \
-                      dynamic-abstract-beacon-chain-syntax    \
-                      process-justification-finalization-spec
-
-SOURCE_K_FILES     := process-attestation-spec                      \
-                      process-block-spec                            \
-                      process-deposit-spec                          \
-                      process-epoch-spec                            \
-                      process-rewards-penalties-spec                \
-                      process-slashing-spec                         \
-                      process-slots-spec                            \
-                      process-validator-activation-eligibility-spec \
-                      process-validator-activation-spec             \
-                      process-validator-ejection-spec               \
-                      process-validator-exit-spec                   \
-                      process-validator-updates-spec                \
-                      verification
-
+SOURCE_MD_FILES    := dynamic-abstract-beacon-chain        \
+                      dynamic-abstract-beacon-chain-syntax
+SOURCE_K_FILES     := verification
 EXTRA_SOURCE_FILES :=
 
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_MD_FILES)) $(patsubst %, %.k, $(SOURCE_K_FILES)) $(EXTRA_SOURCE_FILES)
