@@ -9,7 +9,7 @@ This model is designed for the safety and liveness proofs of the Beacon chain fi
 The data types used in this model are defiend [here](dynamic-abstract-beacon-chain-syntax.md).
 
 ```k
-require "dynamic-abstract-beacon-chain-syntax.k"
+require "dynamic-abstract-beacon-chain-syntax.md"
 
 module DYNAMIC-ABSTRACT-BEACON-CHAIN
 

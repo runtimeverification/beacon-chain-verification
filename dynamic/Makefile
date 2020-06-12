@@ -1,28 +1,31 @@
 # Settings
 # --------
 
-BUILD_DIR:=.build
-DEFN_DIR:=$(BUILD_DIR)/defn
+BUILD_DIR := .build
+DEFN_DIR  := $(BUILD_DIR)/defn
 
-DEPS_DIR:=../deps
-K_SUBMODULE:=$(abspath $(DEPS_DIR)/k)
-PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
+DEPS_DIR                := ../deps
+PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
 
-K_RELEASE ?= $(K_SUBMODULE)/k-distribution/target/release/k
-K_BIN     := $(K_RELEASE)/bin
-K_LIB     := $(K_RELEASE)/lib
+K_SUBMODULE := $(abspath $(DEPS_DIR)/k)
+
+ifneq (,$(wildcard $(K_SUBMODULE)/k-distribution/target/release/k/bin/*))
+    K_RELEASE ?= $(abspath $(K_SUBMODULE)/k-distribution/target/release/k)
+else
+    K_RELEASE ?= $(dir $(shell which kompile))..
+endif
+K_BIN := $(K_RELEASE)/bin
+K_LIB := $(K_RELEASE)/lib/kframework
 export K_RELEASE
 
-K_BUILD_TYPE := FastBuild
-
-PATH:=$(K_BIN):$(PATH)
+PATH := $(K_BIN):$(PATH)
 export PATH
 
-PYTHONPATH:=$(K_LIB)
+PYTHONPATH := $(K_LIB)
 export PYTHONPATH
 
-TANGLER:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
-LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
+TANGLER  := $(PANDOC_TANGLE_SUBMODULE)/tangle.lua
+LUA_PATH := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
@@ -36,25 +39,24 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -f process-justification-finalization-spec.k process-justification-finalization-lemma.k
 
-clean-submodules:
-	rm -rf $(DEPS_DIR)/k/submodule.timestamp $(DEPS_DIR)/k/mvn.timestamp $(DEPS_DIR)/pandoc-tangle/submodule.timestamp
-
 # Dependencies
 # ------------
 
-.PHONY: deps deps-k deps-tangle
+K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
 
-deps: deps-k deps-tangle
-deps-k: $(K_SUBMODULE)/mvn.timestamp
-deps-tangle: $(PANDOC_TANGLE_SUBMODULE)/submodule.timestamp
+.PHONY: deps deps-k
 
-%/submodule.timestamp:
-	git submodule update --init --recursive -- $*
-	touch $@
+deps: deps-k
+deps-k: $(K_JAR)
 
-$(K_SUBMODULE)/mvn.timestamp: $(K_SUBMODULE)/submodule.timestamp
+ifneq ($(RELEASE),)
+    K_BUILD_TYPE := FastBuild
+else
+    K_BUILD_TYPE := Debug
+endif
+
+$(K_JAR):
 	cd $(K_SUBMODULE) && mvn package -DskipTests -Dproject.build.type=$(K_BUILD_TYPE)
-	touch $(K_SUBMODULE)/mvn.timestamp
 
 # Building
 # --------
@@ -63,90 +65,101 @@ MAIN_MODULE    := DYNAMIC-ABSTRACT-BEACON-CHAIN
 SYNTAX_MODULE  := $(MAIN_MODULE)-SYNTAX
 MAIN_DEFN_FILE := dynamic-abstract-beacon-chain
 
-KOMPILE_OPTS      :=
+SOURCE_MD_FILES    := dynamic-abstract-beacon-chain        \
+                      dynamic-abstract-beacon-chain-syntax
+SOURCE_K_FILES     := verification
+EXTRA_SOURCE_FILES :=
 
-k_files := $(MAIN_DEFN_FILE).k \
-           $(MAIN_DEFN_FILE)-syntax.k
+ALL_FILES          := $(patsubst %, %.md, $(SOURCE_MD_FILES)) $(patsubst %, %.k, $(SOURCE_K_FILES)) $(EXTRA_SOURCE_FILES)
 
-concrete_dir := $(DEFN_DIR)/concrete
-symbolic_dir := $(DEFN_DIR)/symbolic
-
-concrete_files := $(patsubst %,$(concrete_dir)/%,$(k_files))
-symbolic_files := $(patsubst %,$(symbolic_dir)/%,$(k_files))
-
-concrete_kompiled := $(concrete_dir)/verification-kompiled/timestamp
-symbolic_kompiled := $(symbolic_dir)/verification-kompiled/timestamp
+tangle_concrete := k & (concrete | ! symbolic)
+tangle_symbolic := k & (symbolic | ! concrete)
 
 .PHONY: build build-concrete build-symbolic
 
 build: build-concrete build-symbolic
+
+KOMPILE_OPTS += --emit-json
+
+ifneq (,$(RELEASE))
+    KOMPILE_OPTS += -O3
+endif
+
+KOMPILE_CONCRETE_OPTS :=
+
+KOMPILE_CONCRETE := kompile --debug --backend java --md-selector "$(tangle_concrete)" \
+                    $(KOMPILE_OPTS) $(KOMPILE_CONCRETE_OPTS)
+
+KOMPILE_SYMBOLIC_OPTS :=
+
+KOMPILE_SYMBOLIC := kompile --debug --backend java --md-selector "$(tangle_symbolic)" \
+                    $(KOMPILE_OPTS) $(KOMPILE_SYMBOLIC_OPTS)
+
+### Concrete Backend
+
+concrete_dir           := $(DEFN_DIR)/concrete
+concrete_files         := $(ALL_FILES)
+concrete_main_module   := VERIFICATION
+concrete_syntax_module := DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
+concrete_main_file     := verification.k
+concrete_kompiled      := $(concrete_dir)/verification-kompiled/timestamp
+
 build-concrete: $(concrete_kompiled)
+
+$(concrete_kompiled): $(concrete_files)
+	$(KOMPILE_CONCRETE) $(concrete_main_file)         \
+	        --main-module $(concrete_main_module)     \
+	        --syntax-module $(concrete_syntax_module) \
+	        --directory $(concrete_dir)               \
+	        -I $(CURDIR)
+
+### Symbolic Backend
+
+
+symbolic_dir           := $(DEFN_DIR)/symbolic
+symbolic_files         := $(ALL_FILES)
+symbolic_main_module   := VERIFICATION
+symbolic_syntax_module := DYNAMIC-ABSTRACT-BEACON-CHAIN-SYNTAX
+symbolic_main_file     := verification.k
+symbolic_kompiled      := $(symbolic_dir)/verification-kompiled/timestamp
+
 build-symbolic: $(symbolic_kompiled)
 
-# Generate definitions from source files
-
-.PHONY: defn defn-concrete defn-symbolic
-
-defn: defn-concrete defn-symbolic
-defn-concrete: $(concrete_files)
-defn-symbolic: $(symbolic_files)
-
-concrete_tangle := .k:not(.symbolic),.concrete
-symbolic_tangle := .k:not(.concrete),.symbolic
-
-$(concrete_dir)/%.k: %.md
-	@mkdir -p $(concrete_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
-
-$(symbolic_dir)/%.k: %.md
-	@mkdir -p $(symbolic_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
-
-$(concrete_kompiled): $(concrete_files) verification.k
-	kompile --debug --main-module VERIFICATION --backend java \
-	        --syntax-module $(SYNTAX_MODULE) verification.k   \
-	        --directory $(concrete_dir) -I $(concrete_dir)    \
-	        --emit-json                                       \
-	        $(KOMPILE_OPTS)
-
-$(symbolic_kompiled): $(symbolic_files) verification.k
-	kompile --debug --main-module VERIFICATION --backend java \
-	        --syntax-module $(SYNTAX_MODULE) verification.k   \
-	        --directory $(symbolic_dir) -I $(symbolic_dir)    \
-	        --emit-json                                       \
-	        $(KOMPILE_OPTS)
+$(symbolic_kompiled): $(symbolic_files)
+	$(KOMPILE_SYMBOLIC) $(symbolic_main_file)         \
+	        --main-module $(symbolic_main_module)     \
+	        --syntax-module $(symbolic_syntax_module) \
+	        --directory $(symbolic_dir)               \
+	        -I $(CURDIR)
 
 # Test
 # ----
 
-.PHONY: test test-concrete proof proof-lemmas
+CHECK := git --no-pager diff --no-index --ignore-all-space -R
 
-test: test-concrete proof proof-lemmas
+.PHONY: test test-concrete test-prove
 
-test-concrete: build-concrete
-	krun   -d $(concrete_dir) tests/concrete/test1.abc | diff - tests/concrete/test1.abc.out-java
-	krun   -d $(concrete_dir) tests/concrete/test2.abc | diff - tests/concrete/test2.abc.out-java
-	krun   -d $(concrete_dir) tests/concrete/test3.abc | diff - tests/concrete/test3.abc.out-java
+test: test-concrete test-prove
 
-proof: build-symbolic process-justification-finalization-spec.k process-justification-finalization-lemma.k
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-block-spec.k                            | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-epoch-spec.k                            | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-justification-finalization-spec.k       | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-slots-spec.k                            | diff - tests/success.out
+concrete_tests := $(wildcard tests/concrete/*.abc)
 
-proof-lemmas: build-symbolic
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-attestation-spec.k                      | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-deposit-spec.k                          | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-rewards-penalties-spec.k                | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-slashing-spec.k                         | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-activation-eligibility-spec.k | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-activation-spec.k             | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-ejection-spec.k               | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-exit-spec.k                   | diff - tests/success.out
-	kprove -d $(symbolic_dir) -m VERIFICATION -w none process-validator-updates-spec.k                | diff - tests/success.out
+tests/concrete/%.abc.run: tests/concrete/%.abc $(concrete_kompiled)
+	krun -d $(concrete_dir) $< > $<.out
+	$(CHECK) $<.out $<.expected
+	rm $<.out
 
-process-justification-finalization-spec.k: process-justification-finalization-spec.md
+prove_tests := $(wildcard *-spec.k)
+
+%-spec.k.prove: %-spec.k $(symbolic_kompiled) process-justification-finalization-spec.k process-justification-finalization-lemma.k
+	kprove -d $(symbolic_dir) -m VERIFICATION -w none $< > $<.out
+	$(CHECK) $<.out tests/success.out
+	rm $<.out
+
+test-concrete: $(concrete_tests:=.run)
+test-prove:    $(prove_tests:=.prove)
+
+process-justification-finalization-spec.k: process-justification-finalization-spec.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.lemma),.proof" $< > $@
 
-process-justification-finalization-lemma.k: process-justification-finalization-spec.md
+process-justification-finalization-lemma.k: process-justification-finalization-spec.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k:not(.proof),.lemma" $< > $@
