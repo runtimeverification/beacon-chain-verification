@@ -280,7 +280,7 @@ The Coq source files are available at:\\
 \section{Introduction}
 \label{sec:intro}
 
-Ethereum 2.0~\cite{Wood2014,Eth2Specs} is a major upgrade to the Ethereum platform~\cite{Wood2014} that introduces a new proof-of-stake protocol, the Beacon Chain protocol~\cite{Beacon}, with the primary goal of increasing efficiency, scalability and security of Ethereum. Participating nodes in the protocol, called validators, lock up a portion of their holdings of the underlying currency of the platform (Ether) so that they may be chosen as members of committees that propose and validate new blocks. The beacon chain protocol is built on top of important gadgets, including Casper FFG~\cite{Buterin2017} for finalizing blocks and slashing finalization violations, LMD GHOST~\cite{ButerinBHKPQRSWZ:2020} as the fork-choice rule for determining the canonical chain, a rewards/penalties system for incentivizing proper validation behavior, a mechanism for managing validators joining and exiting the network, and a form of shuffling-based pseudo-randomization for decentralized committee selection (secured by verifiable delay functions). 
+Ethereum 2.0~\cite{Wood2014,Eth2Specs} is a major upgrade to the Ethereum platform~\cite{Wood2014} that introduces a new proof-of-stake protocol, the Beacon Chain protocol~\cite{Beacon}, with the primary goal of increasing efficiency, scalability and security of Ethereum. Participating nodes in the protocol, called validators, lock up a portion of their holdings of the underlying currency of the platform (Ether) so that they may be chosen as members of committees that propose and validate new blocks. The beacon chain protocol is built on top of important gadgets, including Casper FFG~\cite{Buterin2017} for finalizing blocks and slashing finalization violations, LMD GHOST~\cite{ButerinBHKPQRSWZ:2020} as the fork-choice rule for determining the canonical chain, a rewards/penalties system for incentivizing proper validation behavior, a mechanism for managing validators joining and exiting the network, and a form of RANDAO-based pseudo-randomization for decentralized committee selection. 
 
 %As in any distributed consensus protocol, two fundamental properties are desirable: safety, no two blocks belonging to two different forks in the blockchain are both finalized, and liveness, block production in the blockchain is never deadlocked. 
 
@@ -291,7 +291,7 @@ A key component of Gasper is a finality mechanism that generalizes the original 
 \item Plausible Liveness: Regardless of what happened in the past, the block finalization process can never be deadlocked.
 \end{itemize}
 
-Gasper describes another generalization of Casper in which the set of validators can change over time, which is implemented by the Beacon Chain protocol. Validators may join the network (by depositing stake) or leave the network (and reclaim their staked deposit). Dynamic validator sets introduce another challenging problem: the system is now less likely to be able to provably slash the misbehaving validators since they may now misbehave and then leave the network before their deposits are actually slashed. Therefore, in addition to safety and liveness, Gasper describes a third property, the slashable bound, that gives a lower bound on the slashable stake in the system expressed in terms of validator activations and exits, which can be controlled by external policies.
+Gasper describes another generalization of Casper in which the set of validators can change over time, which is implemented by the Beacon Chain protocol. Validators may join the network (by depositing stake) or leave the network (and reclaim their staked deposit). Dynamic validator sets introduce another challenging problem: the system is now less likely to be able to provably slash the misbehaving validators since they may now misbehave and then leave the network before their deposits are actually slashed. Therefore, in addition to safety and liveness, Gasper describes a third property, the slashable bound, that gives a lower bound on the slashable stake in the system expressed in terms of validator activations and exits, which can be controlled by external policies. Finally, Gasper also handles ``probabilistic liveness''~\cite{ButerinBHKPQRSWZ:2020}, which quantifies the likelihood of finalizing a new block given certain assumptions about good validator behavior. This property, however, is outside the scope of this work.
 
 In this work, we formalize the finality mechanism of Gasper (the latest Casper version) in the general setting of dynamic validator sets in Coq. We state and prove all three key properties of Gasper in this setting: accountable safety, plausible liveness and the slashable bound theorem, all in the same Coq model. Deductive verification with Coq of the protocol gives the greatest confidence in the correctness and completeness of arguments, ensuring that there are no unstated assumptions or invalid deduction steps. The formalization also feeds back into the description of the protocol making it more precise and complete. We describe our effort in this report and explain how the formalization was developed and in what ways this formalization helped improve the original statements and arguments in the Gasper paper~\cite{ButerinBHKPQRSWZ:2020}.
 
@@ -336,7 +336,7 @@ Due to, e.g., delays or adversarial behavior, there may be competing leaf blocks
 of similar tree height, defining different blockchain \emph{forks}.
 
 Casper, the finalization tool in Gasper, overlays a blockchain system, and intuitively works by engaging a group
-of autonomous \emph{validators} who attest to, by broadcast votes, that
+of autonomous \emph{validators} who attest to, by broadcasting votes, that
 certain blocks in the special tree belong to the designated canonical
 blockchain.
 To participate, validators must demonstrate that they have a stake in the
@@ -680,7 +680,7 @@ attacker losing a significant amount of money by having their validator deposits
 This is formalized as the accountable safety theorem. In the fixed validator sets setting, the theorem says that if two
 blocks are finalized and neither is an ancestor of the other, then validators
 having at least $\frac{1}{3}$ of the total stake must have violated the slashing
-conditions~\cite{Buterin2017}. In the more general setting where validators are allowed to join and leave the network, the lower bound on the deposits that can be slashed is dependent on how much validator churn is allowed, which can be controlled by externally specified validator activation and exist policies~\cite{ButerinBHKPQRSWZ:2020}. 
+conditions~\cite{Buterin2017}. In the more general setting where validators are allowed to join and leave the network, the lower bound on the deposits that can be slashed is dependent on how much validator churn is allowed, which can be controlled by externally specified validator activation and exit policies~\cite{ButerinBHKPQRSWZ:2020}. 
 Note that the difference between slashing violations and actually losing funds is
 addressed and handled with other countermeasures in the protocol~\cite{Buterin2017,Beacon}.
 
