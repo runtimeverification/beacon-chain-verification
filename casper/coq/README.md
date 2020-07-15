@@ -1,24 +1,26 @@
-# Modeling and Verifying Casper in Coq
+# Modeling and Verifying Gasper in Coq
 
-This part of the repository gives a formalization in Coq of the most recent version of Casper FFG, which is one of two main ingredients of the Gasper protocol (an abstraction of the Beacon Chain specification described [here](https://arxiv.org/abs/2003.03052)). With this formalization, we mechanize proofs of three main results of Casper:
+This part of the repository gives a formalization in Coq of finality in Gasper, an abstraction of the Beacon Chain specification described [here](https://arxiv.org/abs/2003.03052). Gasper's finality generalizes [Casper FFG](https://arxiv.org/abs/1710.09437). With this formalization, we mechanize proofs of three main results of Gasper:
 
-- Accountable safety: No two conflicting blocks are finalized without having at least 1/3 of validator deposits slashed.
+- **Accountable safety:** No two conflicting blocks are finalized without having at least 1/3 of validator deposits slashed.
 
-- Plausible liveness: Assuming that at least 2/3 of validators (by deposit) follow the protocol, it is always possible to continue to finalize new blocks irrespective of what has happened before.
+- **Plausible liveness:** Assuming that at least 2/3 of validators (by deposit) follow the protocol, it is always possible to continue to finalize new blocks irrespective of what has happened before.
 
-- Slashable bound: Even when the set of active validators is dynamic, a lower bound (given in terms of validator activation and exit policies) on what stake worth of validators is provably slashable can be guaranteed.
+- **Slashable bound:** Even when the set of active validators is dynamic, a lower bound (given in terms of validator activation and exit policies) on what stake worth of validators is provably slashable can be guaranteed.
 
-This development is based on previously developed models and proofs of Casper in Coq [here](https://github.com/runtimeverification/casper-proofs). It extends that work in three significant ways:
+This development is based on previously developed models and proofs of Casper in Coq [here](https://github.com/runtimeverification/casper-proofs). It extends that work in four significant ways:
 
-- It unifies the two distinct models built sepearately for safey and liveness, and proves both properties in the same unified model.
+- Unifying the two distinct models built sepearately for safey and liveness, and proving both properties in the same unified model.
 
-- It generalizes the definition of finalization to k-finalization (as defined in the [Gasper protocol](https://arxiv.org/abs/2003.03052)), along with the accountable safety proof.
+- Generalizing the definition of finalization to k-finalization (as defined in the [Gasper protocol](https://arxiv.org/abs/2003.03052)), along with the accountable safety proof.
 
-- It generalizes the protocol to dynamic validator sets, generalizes the safety and liveness proofs and proves the slashable bound theorem.
+- Generalizing the model and proofs to dynamic validator sets, and
+
+- Modeling validator set weights and proving the slashable bound theorem.
 
 A more detailed explanation of the models and proofs can be found in the technical report:
 
-<img src="../../resources/pdf-icon.png" alt="PDF" width="2%" /> *[Formal Modeling and Verification of Casper FFG in Coq - TBA](#)*
+<img src="../../resources/pdf-icon.png" alt="PDF" width="2%" /> *[Verifying Gasper with Dynamic Validator Sets in Coq](../report/report.pdf)*
 
 ## Model Layout
 
