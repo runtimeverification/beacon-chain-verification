@@ -1,4 +1,4 @@
-Copyright (c) 2019 Beacon Chain Verification team. All Rights Reserved.
+Copyright (c) 2019 Beacon Chain Verification Team. All Rights Reserved.
 
 Developed by:
 
@@ -21,7 +21,7 @@ so, subject to the following conditions:
       this list of conditions and the following disclaimers in the
       documentation and/or other materials provided with the distribution.
 
-* Neither the names of the Algorand verification team, The University of Texas at Austin,
+* Neither the names of the Beacon Chain Verification Team,
       Runtime Verification, Inc., nor the names of
       its contributors may be used to endorse or promote products derived from
       this Software without specific prior written permission.
