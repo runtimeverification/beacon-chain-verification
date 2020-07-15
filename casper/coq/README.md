@@ -1,22 +1,22 @@
 # Modeling and Verifying Gasper in Coq
 
-This part of the repository gives a formalization in Coq of finality in Gasper, an abstraction of the Beacon Chain specification described [here](https://arxiv.org/abs/2003.03052)). Gasper's finality generalizes [Casper FFG](https://arxiv.org/abs/1710.09437). With this formalization, we mechanize proofs of three main results of Gasper:
+This part of the repository gives a formalization in Coq of finality in Gasper, an abstraction of the Beacon Chain specification described [here](https://arxiv.org/abs/2003.03052). Gasper's finality generalizes [Casper FFG](https://arxiv.org/abs/1710.09437). With this formalization, we mechanize proofs of three main results of Gasper:
 
-- Accountable safety: No two conflicting blocks are finalized without having at least 1/3 of validator deposits slashed.
+- **Accountable safety:** No two conflicting blocks are finalized without having at least 1/3 of validator deposits slashed.
 
-- Plausible liveness: Assuming that at least 2/3 of validators (by deposit) follow the protocol, it is always possible to continue to finalize new blocks irrespective of what has happened before.
+- **Plausible liveness:** Assuming that at least 2/3 of validators (by deposit) follow the protocol, it is always possible to continue to finalize new blocks irrespective of what has happened before.
 
-- Slashable bound: Even when the set of active validators is dynamic, a lower bound (given in terms of validator activation and exit policies) on what stake worth of validators is provably slashable can be guaranteed.
+- **Slashable bound:** Even when the set of active validators is dynamic, a lower bound (given in terms of validator activation and exit policies) on what stake worth of validators is provably slashable can be guaranteed.
 
 This development is based on previously developed models and proofs of Casper in Coq [here](https://github.com/runtimeverification/casper-proofs). It extends that work in four significant ways:
 
-- Unifies the two distinct models built sepearately for safey and liveness, and proves both properties in the same unified model.
+- Unifying the two distinct models built sepearately for safey and liveness, and proving both properties in the same unified model.
 
-- Generalizes the definition of finalization to k-finalization (as defined in the [Gasper protocol](https://arxiv.org/abs/2003.03052)), along with the accountable safety proof.
+- Generalizing the definition of finalization to k-finalization (as defined in the [Gasper protocol](https://arxiv.org/abs/2003.03052)), along with the accountable safety proof.
 
-- Generalizes the model and proofs to dynamic validator sets, and
+- Generalizing the model and proofs to dynamic validator sets, and
 
-- Models validator set weights and proves the slashable bound theorem.
+- Modeling validator set weights and proving the slashable bound theorem.
 
 A more detailed explanation of the models and proofs can be found in the technical report:
 
