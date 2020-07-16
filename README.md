@@ -6,6 +6,6 @@ This repository consists of two developments:
 	- Model and proofs (in Coq): [`casper/coq/`](casper/coq)
 	- A technical report describing the model and the proofs: [`casper/report/`](casper/report)
 
-2. Mechanized proofs of the refinement soundness of [the state transition (Phase 0)](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md) w.r.t. the Gasper protocol:
+2. _(ongoing)_ Mechanized proofs of the refinement soundness of [the state transition (Phase 0)](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md) w.r.t. the Gasper protocol:
 	- Model (in K): [`dynamic/dynamic-abstract-beacon-chain.md`](dynamic/dynamic-abstract-beacon-chain.md)
 	- Proofs (in K): `*-spec.k` files in [`dynamic/`](dynamic)
