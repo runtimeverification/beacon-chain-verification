@@ -344,7 +344,7 @@ blockchain system by locking up a \emph{deposit} of the blockchain's cryptocurre
 The deposit will be \emph{slashed} if the validator is verifiably reported by
 other validators to be behaving adversarially. Moreover, validators may be allowed to join and leave the network and thus the set of active validators may change over time during the execution of the protocol.
 
-For verification, we focus on the three main properties of Casper that were proved
+For verification, we focus on the three main properties of Gasper that were proved
 informally in~\cite{ButerinBHKPQRSWZ:2020} (i.e. without using a mechanical proof
 assistant): accountable safety, plausible liveness and the slashable bound theorem, assuming dynamic validator sets.
 Accountable safety intuitively states that conflicting blocks in different block
@@ -371,7 +371,7 @@ $\frac{2}{3}$ have a common subset of weight at least $\frac{1}{3}$.
 This is how that property was expressed in Isabelle:
 $$\bigwedge q_1\, q_2\, .\, \exists\, q_3\, .\, \forall\, v\, .\, v \in_2 q_3 \rightarrow v \in_1 q_1 \land v \in_1 q_2$$
 % assumes "\<And> q1 q2 . \<exists> q3 . \<forall> n . n \<in>\<^sub>2 q3 \<longrightarrow> n \<in>\<^sub>1 q1 \<and> n \<in>\<^sub>1 q2"
-Here, $\bigwedge$ is all-quantification,
+Here, $\bigwedge$ is universal quantification,
 the subscripted operator $v \in_1 q$ means that validator $v$ is a member of a
 set $q$ which belongs to the type $'q_1$ that represents sets of weight at least
 $\frac{2}{3}$,
@@ -489,7 +489,7 @@ Axiom hash_at_most_one_parent :
 \end{lstlisting}
 \end{enumerate}
 
-We also define the ``ancestor'' binary relation `<~*` as the reflexive-transitive closure of `<~`, using the closure operation \lstinline|connect|:
+We also define the ``ancestor'' binary relation \lstinline|<~*| as the reflexive-transitive closure of \lstinline|<~|, using the closure operation \lstinline|connect|:
 \begin{lstlisting}[language=Coq]
 Definition hash_ancestor h1 h2 := connect hash_parent h1 h2.
 \end{lstlisting}
@@ -621,7 +621,7 @@ We have, in the current state, a supermajority link from block \lstinline|s| to 
 
 Note that a supermajority link as defined above does not yet capture proper justification links in Gasper, which must be valid forward links in the block forest with the target block being a descendant block of the source at the appropriate heights:
 \begin{lstlisting}
-Definition justification_link (st:State) (s t : Hash) (s_h t_h : nat) : Prop :=
+Definition justification_link (st:State) s t s_h t_h : Prop :=
   t_h > s_h /\
   nth_ancestor (t_h - s_h) s t /\
   supermajority_link st s t s_h t_h.
@@ -1038,7 +1038,7 @@ implementation~\cite{Beacon}.
 %% Acknowledgments
 \begin{acks}
 
-We thank Danny Ryan, Carl Beekhuizen, Martin Lundfallfrom, Yan Zhang and Aditya Asgaonkar from the Ethereum Foundation for their valuable feedback and comments. This work was funded by the Ethereum Foundation.
+We thank Danny Ryan, Carl Beekhuizen, Martin Lundfall, Yan Zhang and Aditya Asgaonkar from the Ethereum Foundation for their valuable feedback and comments. This work was funded by the Ethereum Foundation.
   
 %                                        %% contents suppressed with 'anonymous'
 %  %% Commands \grantsponsor{<sponsorID>}{<name>}{<url>} and
