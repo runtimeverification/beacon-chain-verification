@@ -419,7 +419,7 @@ rule lastSlotOf(Epoch) >=Int firstSlotOf(Epoch) => true [concrete, smt-lemma]
 
 /*
 // injectivity of firstSlotOf
-rule implies(firstSlotOf(E1) ==K firstSlotOf(E1), E1 ==K E2) => true [concrete, smt-lemma]
+rule implies(firstSlotOf(E1) ==K firstSlotOf(E2), E1 ==K E2) => true [concrete, smt-lemma]
 */
 ```
 
