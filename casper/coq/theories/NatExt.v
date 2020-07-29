@@ -73,12 +73,12 @@ Parameter two_third : nat -> nat.
 
 (* Basic axioms assumed to hold for these function symbols *)
 Axiom thirds_def : forall n, n - two_third n = one_third n.
-Axiom leq_two_thrids : forall n, two_third n <= n.
+Axiom leq_two_thirds : forall n, two_third n <= n.
 
-(* This property follows from leq_two_thrids above *)
+(* This property follows from leq_two_thirds above *)
 Lemma wt_two_thirds_sum : forall n m,
   two_third n + two_third m <= n + m.
 Proof. 
-by move => n m; apply: (leq_add (leq_two_thrids n) (leq_two_thrids m)).
+by move => n m; apply: (leq_add (leq_two_thirds n) (leq_two_thirds m)).
 Qed.
 

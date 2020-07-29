@@ -150,9 +150,9 @@ rewrite [wt vL + wt vR]addnC -leq_subCr in Hbound; last first.
     apply (leq_add (wt_nonneg (qL :&: qR)) (wt_two_thirds_sum (wt vL) (wt vR))).
   
 rewrite subnDA addnA in Hbound.
-rewrite addnDAr in Hbound; last by (apply leq_two_thrids).
+rewrite addnDAr in Hbound; last by (apply leq_two_thirds).
 rewrite thirds_def in Hbound.
-rewrite -addnA [wt vR + _]addnC addnA addnDAr in Hbound; last by (apply leq_two_thrids).
+rewrite -addnA [wt vR + _]addnC addnA addnDAr in Hbound; last by (apply leq_two_thirds).
 rewrite thirds_def in Hbound.
 
 rewrite !leq_subLR addnC [one_third _ + _]addnC -addnA [one_third _ + _]addnC addnA.
