@@ -1,0 +1,50 @@
+\section{Discussion}
+
+Compared to the limit of the validator activations and exits, the per-epoch limit of balance top-ups is quite high.  In the current configuration, while the activation/exit limit is $\max(4, N \cdot 2^{-16})$, the balance top-up limit is 512 regardless of the total number of validators $N$.  The high limit of balance top-ups causes the weak subjectivity period to quickly decrease as the average balance decreases.
+As shown in Table~\ref{tbl:weak-subjectivity}, the weak subjectivity period becomes too small to be practically maintained even for a reasonably large validator set, if the average balance falls below a certain threshold, say 24 ETH.  This shows that the current limit of balance top-ups is too high, and it is recommended to significantly decrease the top-up limit.
+Note that it is \emph{not} recommended to merely increase the validator ejection balance (currently 16 ETH).  Although it could help to increase the lower bound of the average balance, it is risky because a higher ejection balance could be abused by adversaries to make it easier to forcibly eject honest validators.
+
+\begin{table}[t]
+\caption[Weak Subjectivity Period]{Weak subjectivity period (in number of epochs) for dynamic validator set with balance top-ups,\footnotemark~where the safety decay $D = 10\%$, the maximum effective balance $T = 32$ ETH, the balance top-up limit $\Delta = 512$, and the activation/exit limit $\delta = 4$.}
+\label{tbl:weak-subjectivity}
+\centering
+\begingroup
+\newdimen{\colWidth}
+\settowidth{\colWidth}{262,144} % column size fit to the given text
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{cr|rrrrrrr}
+%\hline
+ &    & \multicolumn{7}{c}{Validator Set Size ($N$)} \\
+ &    & \makebox[\colWidth][r]{262,144}
+      & \makebox[\colWidth][r]{131,072}
+      & \makebox[\colWidth][r]{ 65,536}
+      & \makebox[\colWidth][r]{ 32,768}
+      & \makebox[\colWidth][r]{ 16,384}
+      & \makebox[\colWidth][r]{  8,192}
+      & \makebox[\colWidth][r]{  4,096} \\
+\hline
+\multirow{9}{*}{\rotatebox{90}{Average Balance ($t$)}}
+ & 32 & 3,276 & 1,638 & 819 & 409 & 204 & 102 & 51 \\
+ & 30 & 2,659 & 1,329 & 664 & 332 & 166 &  83 & 41 \\
+ & 28 & 1,985 &   992 & 496 & 248 & 124 &  62 & 31 \\
+ & 26 & 1,248 &   624 & 312 & 156 &  78 &  39 & 19 \\
+ & 24 &   436 &   218 & 109 &  54 &  27 &  13 &  6 \\
+ & 22 &   169 &    84 &  42 &  21 &  11 &   5 &  3 \\
+ & 20 &   128 &    64 &  32 &  16 &   8 &   4 &  2 \\
+ & 18 &    99 &    49 &  25 &  12 &   6 &   3 &  2 \\
+ & 16 &    77 &    38 &  19 &  10 &   5 &   2 &  1 \\
+%\hline
+\end{tabular}
+\endgroup
+\end{table}
+\footnotetext{The entries of the first low for $t = 32$ agree with the table presented in~\cite{weak-subjectivity-aditya}. The off-by-one difference is due to the use of the floor function instead of ceiling.}
+
+On the other hands, as a workaround for the small weak subjectivity period problem, a relaxed notion of weak subjectivity has been proposed by others.  The relaxed notion does \emph{not} aim to prevent conflicting finalized blocks from being descendants of the latest weak subjectivity checkpoint, thus does \emph{not} guarantee the unique finalized block to be identified by the fork choice rule.  Instead, it relies on the withdrawal delay (currently 256 epochs $\approx$ 27 hours), so that arguably the slashable validators can be indeed slashed.  However, the implication of the relaxed notion of weak subjectivity has not been thoroughly analyzed, thus it is not recommended to adopt it until more detailed analysis has been made.
+
+\paragraph{Limitation.}
+
+It is not yet known whether the period given in Theorem~\ref{thm:weak-subjectivity-balance-top-ups} is indeed the lower bound (i.e., $\E_2$) or not.
+This means that the weak subjectivity period in the setting of dynamic validator set with balance top-ups might need to be much smaller.
+However, when $N$ is not large enough, the given weak subjectivity period is already very small, thus does not affect the practical implication.
+
+On the other hands, if the balance top-up limit $\Delta$ is reduced to close to the activation/exit limit $\delta$, then Theorem~\ref{thm:weak-subjectivity-balance-top-ups} is no longer directly applicable as it assumes $\Delta \gg \delta$.
