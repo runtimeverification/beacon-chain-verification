@@ -211,13 +211,13 @@ Let $\delta$ be the per-epoch limit of validator activations and exits.
 Let $D$ be the safety decay.
 %
 Assume that $\Delta \gg \delta$.
-Then, given $0 \le D \le \frac{1}{3}$, and $\frac{T}{2} \le t \le T$, the current weak subjectivity period must be smaller than:
+Then, given $0 \le D \le \frac{1}{3}$, and $\frac{T}{2} \le t \le T$, the current weak subjectivity period must be smaller than:\footnotemark
 \begin{itemize}
 \item Case $(\frac{1}{3} - D) < (2t - T)/(4t - T)$:
 \[
 \max\left(
 \frac{N}{\delta} \cdot \frac{(\frac{1}{3} + 2D)t - (\frac{1}{3} + \frac{D}{2})T}{2t+T},~~
-\frac{N}{\Delta} \cdot \frac{(\frac{1}{3} - D)t + (\frac{2}{3} + D)T}{2t+T}
+\frac{N}{\Delta} \cdot (\frac{1}{3} + \frac{D}{2}) % \frac{(\frac{2}{3} + D)t + (\frac{1}{3} + \frac{D}{2})T}{2t+T}
 \right)
 \]
 \item Case $(\frac{1}{3} - D) \ge (2t - T)/(4t - T)$:
@@ -226,6 +226,9 @@ Then, given $0 \le D \le \frac{1}{3}$, and $\frac{T}{2} \le t \le T$, the curren
 \]
 \end{itemize}
 \end{theorem}
+\footnotetext{Note that the two cases agree on when $(\frac{1}{3} - D) = (2t - T)/(4t - T)$.
+Specifically, the first argument of max() becomes 0, i.e., $(\frac{1}{3} + 2D)t - (\frac{1}{3} + \frac{D}{2})T = 0$,
+and the second argument of max() becomes equal to the second case, i.e., $\frac{1}{3} + \frac{D}{2} = \frac{3}{2} \cdot \frac{tD}{T-t}$.}
 \begin{proof}
 Let us present an adversarial scenario of exploiting diverging validator sets.
 
@@ -262,7 +265,7 @@ Now, by \eqref{eq:a=e}, \eqref{eq:q=dN}, and \eqref{eq:a-e-p-q=s}, we have:
 E & = N \frac{(\frac{1}{3} + 2D)t - (\frac{1}{3} + \frac{D}{2})T}{2t+T} \\
 P & = N \frac{(\frac{1}{3} - D)t + (\frac{2}{3} + D)T}{2t+T}
 \end{align*}
-and the number of epochs required for that is $\max(E/\delta, P/\Delta)$.
+and the number of epochs required for that is $\max(\frac{E}{\delta}, \frac{P+E}{\Delta})$.
 
 \paragraph{Case 2:}
 
