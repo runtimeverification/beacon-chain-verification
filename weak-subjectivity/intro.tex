@@ -1,0 +1,10 @@
+\section{Introduction}
+
+Weak subjectivity~\cite{weak-subjectivity} is a social-consensus-driven approach for solving the fundamental ``nothing-at-stake'' problem of proof-of-stake protocols.  In particular, it addresses the problem in the presence of long-range forks, while the slashing mechanism handles the case of short-range forks.  Specifically, the current weak subjectivity mechanism deals with the following two types of long-range attacks:\footnote{It is unknown whether this mechanism can deal with other types of long-range attacks, if any, in general.}
+\begin{itemize}
+\item 
+\emph{Exploiting retired validators}: Adversaries can create and reveal a new chain branching from a certain block on the canonical chain, after $2/3$ of validators who were active for the block have exited.  Note that such validators can still justify and finalize conflicting blocks at earlier slots without being slashed after they have exited.
+\item
+\emph{Exploiting diverging validator sets}: Adversaries can build a new chain until the validator set for the new chain is sufficiently different from that of the canonical chain.  The larger the difference between the two validator sets, the lower the accountable safety tolerance.  For example, if the intersection of the two sets is smaller than $2/3$ of each set, then it is possible to have conflicting blocks to be finalized without any validators violating the slashing conditions.
+\end{itemize}
+The current weak subjectivity mechanism employs a social consensus layer in parallel to maintain sufficiently many checkpoints (called weak subjectivity checkpoints) so that there exist no conflicting finalized blocks that are descendants of the latest weak subjectivity checkpoint.  In other words, the purpose of the latest weak subjectivity checkpoints is to \emph{deterministically} identify the unique canonical chain even in the presence of conflicting finalized blocks caused by the long-range attacks.
